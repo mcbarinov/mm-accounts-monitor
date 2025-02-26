@@ -1,0 +1,43 @@
+{% extends "inc/base.j2" %}
+{% block content %}
+  <nav>
+    <ul>
+      <li><h3>coins</h3></li>
+      <li><a data-target="modal-import" onclick="toggleModal(event)">import</a></li>
+      <li><a href="/export-coins">export</a></li>
+    </ul>
+  </nav>
+
+  <dialog id="modal-import">
+    <article>
+      <header>
+        <h3>import coins</h3>
+      </header>
+      <form method="post" action="/import-coins">
+        <textarea name="value" rows="10" cols="10" required></textarea>
+        <input type="submit" value="import">
+      </form>
+    </article>
+  </dialog>
+
+  <table>
+    <tr>
+      <th>network</th>
+      <th>symbol</th>
+      <th>token</th>
+      <th>decimals</th>
+      <th>notes</th>
+    </tr>
+    {% for c in coins %}
+      <tr>
+        <td>{{ c.network }}</td>
+        <td>{{ c.symbol }}</td>
+        <td>{{ c.token | empty }}</td>
+        <td>{{ c.decimals }}</td>
+        <td>{{ c.notes }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+
+{% endblock %}

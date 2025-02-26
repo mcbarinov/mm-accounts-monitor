@@ -12,7 +12,6 @@ class BotService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]):
 
     @synchronized
     def update_proxies(self) -> int:
-        self.logger.debug("update_proxies called")
         res = hr(self.dconfig.proxies_url)
         if res.is_error():
             self.dlog("update_proxies", {"error": res.error})

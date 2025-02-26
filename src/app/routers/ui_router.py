@@ -24,6 +24,11 @@ class PagesController(Controller):
         networks = core.db.network.find({}, "_id")
         return render_html("networks.j2", networks=networks)
 
+    @get("coins")
+    def coins(self, core: Core) -> Template:
+        coins = core.db.coin.find({}, "network,symbol")
+        return render_html("coins.j2", coins=coins)
+
 
 class ActionsController(Controller):
     path = "/"
@@ -73,6 +78,19 @@ class ActionsController(Controller):
         else:
             flash(request, f"{res.ok} networks imported successfully", "success")
         return Redirect("/networks")
+
+    @get("export-coins")
+    def export_coins(self, core: Core) -> str:
+        return core.coin_service.export_as_toml()
+
+    @post("import-coins")
+    def import_coins(self, core: Core, data: FormData, request: Request[Any, Any, Any]) -> Redirect:
+        res = core.coin_service.import_from_toml(data["value"])
+        if isinstance(res, Err):
+            flash(request, f"can't import coins: {res.err}", "error")
+        else:
+            flash(request, f"{res.ok} coins imported successfully", "success")
+        return Redirect("/coins")
 
 
 ui_router = Router(path="/", route_handlers=[PagesController, ActionsController], include_in_schema=False)
