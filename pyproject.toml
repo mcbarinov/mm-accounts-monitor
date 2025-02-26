@@ -4,7 +4,7 @@ version = "0.0.1"
 description = ""
 requires-python = ">=3.13"
 dependencies = [
-    "mm-base3==0.0.6",
+    "mm-base3==0.0.7",
     "tomlkit>=0.13.2",
 ]
 

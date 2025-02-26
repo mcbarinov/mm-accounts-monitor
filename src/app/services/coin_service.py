@@ -1,4 +1,3 @@
-import pydash
 import toml
 import tomlkit
 from mm_base3 import BaseService
@@ -26,15 +25,22 @@ class CoinService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]):
         try:
             coins = [ImportCoinItem(**n) for n in tomlkit.loads(toml_str)["coins"]]  # type:ignore[arg-type,union-attr]
             for c in coins:
-                self.db.coin.update_one(
-                    {"network": c.network, "symbol": c.symbol},
-                    {"$set": {"decimals": c.decimals, "token": c.token, "notes": c.notes}},
-                    upsert=True,
+                self.db.coin.set(
+                    f"{c.network}__{c.symbol}", {"decimals": c.decimals, "token": c.token, "notes": c.notes}, upsert=True
                 )
             return Ok(len(coins))
         except Exception as e:
             return Err(e)
 
     def export_as_toml(self) -> str:
-        coins = [pydash.omit(c.model_dump(), "_id") for c in self.db.coin.find({}, "network,symbol")]
+        coins = []
+        for c in self.db.coin.find({}, "_id"):
+            coin = remove_empty_keys(
+                {"network": c.network, "symbol": c.symbol, "decimals": c.decimals, "token": c.token, "notes": c.notes}
+            )
+            coins.append(coin)
         return toml.dumps({"coins": coins})
+
+
+def remove_empty_keys(d: dict[str, object]) -> dict[str, object]:
+    return {k: v for k, v in d.items() if v}
