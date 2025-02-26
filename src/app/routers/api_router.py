@@ -1,6 +1,7 @@
-from litestar import Controller, Router, post
+from litestar import Controller, Router, delete, get, post
 
 from app.core import Core
+from app.db import Network
 
 
 class BotController(Controller):
@@ -12,4 +13,22 @@ class BotController(Controller):
         return core.bot_service.update_proxies()
 
 
-api_router = Router(path="/api", route_handlers=[BotController])
+class NetworkController(Controller):
+    path = "networks"
+    tags = ["network"]
+
+    @get()
+    def get_all_networks(self, core: Core) -> list[Network]:
+        return core.db.network.find({}, "_id")
+
+    @get("{id:str}")
+    def get_network(self, core: Core, id: str) -> Network:
+        return core.db.network.get(id)
+
+    @delete("{id:str}")
+    def delete_network(self, core: Core, id: str) -> None:
+        # TODO: delete all coins associated with this network
+        core.db.network.delete(id)
+
+
+api_router = Router(path="/api", route_handlers=[BotController, NetworkController])

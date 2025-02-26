@@ -44,7 +44,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "mm-base3", specifier = "==0.0.4" }]
+requires-dist = [{ name = "mm-base3", specifier = "==0.0.6" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -541,7 +541,7 @@ wheels = [
 
 [[package]]
 name = "mm-base3"
-version = "0.0.4"
+version = "0.0.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "litestar", extra = ["standard"] },
@@ -549,7 +549,7 @@ dependencies = [
     { name = "pydantic-settings" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/75/9b/1de6a5ae159df26f53067c1ada53f1c3f5250d8442261d7e49c534ff6153/mm_base3-0.0.4-py3-none-any.whl", hash = "sha256:8bc67a8b84bb49463784d860be73050683ef3590c36e59bc5eeda4ade5926309", size = 33902 },
+    { url = "https://files.pythonhosted.org/packages/e2/ed/1c67254b30082ad8d824e9d27e35463fb5e03cd6a98d2756cda3549eb3bb/mm_base3-0.0.6-py3-none-any.whl", hash = "sha256:ec30501478ed6cad9f5f278ecb09e8740fb5da1b2801fc282c9f7564ad3fff6c", size = 35197 },
 ]
 
 [[package]]

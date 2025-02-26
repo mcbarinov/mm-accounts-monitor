@@ -4,7 +4,7 @@ version = "0.0.1"
 description = ""
 requires-python = ">=3.13"
 dependencies = [
-    "mm-base3==0.0.4",
+    "mm-base3==0.0.6",
 ]
 
 [build-system]
@@ -64,6 +64,8 @@ ignore = [
     "RUF012", # ruff: mutable-class-default
     "COM812", # it's used in ruff formatter
 ]
+[tool.ruff.lint.flake8-builtins]
+builtins-ignorelist = ["id"]
 [tool.ruff.lint.pep8-naming]
 classmethod-decorators = ["field_validator"]
 [tool.ruff.lint.per-file-ignores]

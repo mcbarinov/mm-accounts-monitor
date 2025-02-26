@@ -1,0 +1,90 @@
+{% extends "inc/base.j2" %}
+{% block content %}
+  <div>
+    <h3>networks</h3>
+  </div>
+
+  <table>
+    <tr>
+      <th>id</th>
+      <th>rpc</th>
+      <th>explorer</th>
+      <th>actions</th>
+    </tr>
+    {% for n in networks %}
+      <tr>
+        <td>{{ n.id }}</td>
+        <td>
+          {% for u in n.rpc_urls %}
+            {{ u }}<br>
+          {% endfor %}
+        </td>
+        <td>{{ n.explorer_url }}</td>
+        <td>
+          <details class="dropdown">
+            <summary>actions</summary>
+            <ul>
+              <li><a data-target="modal-add-rpc-{{ n.id }}" onclick="toggleModal(event)">add rpc url</a></li>
+              <li><a data-target="modal-delete-rpc-{{ n.id }}" onclick="toggleModal(event)">delete rpc url</a></li>
+              <li><a data-target="modal-explorer-{{ n.id }}" onclick="toggleModal(event)">update explorer url</a></li>
+              <li><a href="/api-delete/networks/{{ n.id }}" {{ confirm }}>delete</a></li>
+              <li><a href="/api/networks/{{ n.id }}">view</a></li>
+            </ul>
+          </details>
+
+          <dialog id="modal-explorer-{{ n.id }}">
+            <article>
+              <header>
+                <h3>update explorer url</h3>
+              </header>
+              <form method="post" action="/update-explorer-url/{{ n.id }}">
+                <input type="text" name="value" value="{{ n.explorer_url }}">
+                <input type="submit" value="save">
+              </form>
+            </article>
+          </dialog>
+
+          <dialog id="modal-add-rpc-{{ n.id }}">
+            <article>
+              <header>
+                <h3>add rpc url</h3>
+              </header>
+              <form method="post" action="/add-rpc-url/{{ n.id }}">
+                <input type="text" name="value">
+                <input type="submit" value="add">
+              </form>
+            </article>
+          </dialog>
+
+          <dialog id="modal-delete-rpc-{{ n.id }}">
+            <article>
+              <header>
+                <h3>delete rpc url</h3>
+              </header>
+              <ul>
+                {% for u in n.rpc_urls %}
+                  <li>
+                    {{ u }}
+                    <a href="/delete-rpc-url/{{ n.id }}?value={{ u }}" {{ confirm }}>delete</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </article>
+          </dialog>
+
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <section>
+    <h4>add network</h4>
+    <form action="/add-network" method="post">
+      <input type="text" name="id" placeholder="id" required>
+      <textarea name="rpc_urls" placeholder="rpc urls" required></textarea>
+      <input type="text" name="explorer_url" placeholder="explorer url">
+      <input type="submit" value="add">
+    </form>
+  </section>
+
+{% endblock %}
