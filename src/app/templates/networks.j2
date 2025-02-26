@@ -1,8 +1,15 @@
 {% extends "inc/base.j2" %}
 {% block content %}
-  <div>
-    <h3>networks</h3>
-  </div>
+
+  <nav>
+    <ul>
+      <li><h3>networks</h3></li>
+      <li><a href="#">import</a></li>
+      <li><a href="/export-networks">export</a></li>
+    </ul>
+  </nav>
+
+
 
   <table>
     <tr>
@@ -77,14 +84,16 @@
     {% endfor %}
   </table>
 
-  <section>
-    <h4>add network</h4>
+  <details>
+    <summary role="button" class="outline">add network</summary>
     <form action="/add-network" method="post">
       <input type="text" name="id" placeholder="id" required>
       <textarea name="rpc_urls" placeholder="rpc urls" required></textarea>
       <input type="text" name="explorer_url" placeholder="explorer url">
       <input type="submit" value="add">
     </form>
-  </section>
+  </details>
+
+
 
 {% endblock %}

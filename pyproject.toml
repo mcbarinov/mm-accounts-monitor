@@ -5,6 +5,7 @@ description = ""
 requires-python = ">=3.13"
 dependencies = [
     "mm-base3==0.0.6",
+    "tomlkit>=0.13.2",
 ]
 
 [build-system]
@@ -20,6 +21,7 @@ dev-dependencies = [
     "pip-audit~=2.8.0",
     "bandit~=1.8.3",
     "mypy~=1.15.0",
+    "types-toml>=0.10.8.20240310",
 ]
 
 [tool.mypy]

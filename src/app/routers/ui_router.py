@@ -60,5 +60,9 @@ class ActionsController(Controller):
         flash(request, "rpc url deleted successfully", "success")
         return Redirect("/networks")
 
+    @get("export-networks")
+    def export_networks(self, core: Core) -> str:
+        return core.network_service.export_as_toml()
+
 
 ui_router = Router(path="/", route_handlers=[PagesController, ActionsController], include_in_schema=False)
