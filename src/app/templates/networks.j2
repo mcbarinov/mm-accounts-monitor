@@ -4,11 +4,22 @@
   <nav>
     <ul>
       <li><h3>networks</h3></li>
-      <li><a href="#">import</a></li>
+      <li><a data-target="modal-import" onclick="toggleModal(event)">import</a></li>
       <li><a href="/export-networks">export</a></li>
     </ul>
   </nav>
 
+  <dialog id="modal-import">
+    <article>
+      <header>
+        <h3>import networks</h3>
+      </header>
+      <form method="post" action="/import-networks">
+        <textarea name="value" rows="10" cols="10" required></textarea>
+        <input type="submit" value="import">
+      </form>
+    </article>
+  </dialog>
 
 
   <table>

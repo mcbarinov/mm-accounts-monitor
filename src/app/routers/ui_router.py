@@ -5,6 +5,7 @@ from litestar import Controller, Request, Router, get, post
 from litestar.plugins.flash import flash
 from litestar.response import Redirect, Template
 from mm_base3 import FormBody, FormData, render_html
+from mm_std import Err
 from pydantic import BaseModel
 
 from app.core import Core
@@ -63,6 +64,15 @@ class ActionsController(Controller):
     @get("export-networks")
     def export_networks(self, core: Core) -> str:
         return core.network_service.export_as_toml()
+
+    @post("import-networks")
+    def import_networks(self, core: Core, data: FormData, request: Request[Any, Any, Any]) -> Redirect:
+        res = core.network_service.import_from_toml(data["value"])
+        if isinstance(res, Err):
+            flash(request, f"can't import networks: {res.err}", "error")
+        else:
+            flash(request, f"{res.ok} networks imported successfully", "success")
+        return Redirect("/networks")
 
 
 ui_router = Router(path="/", route_handlers=[PagesController, ActionsController], include_in_schema=False)
