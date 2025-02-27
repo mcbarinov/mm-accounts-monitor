@@ -56,13 +56,6 @@ class Group(MongoModel[ObjectId]):
         return pydash.sort(pydash.uniq(symbols))
 
 
-# class GroupBalances(MongoModel[ObjectId]):
-#     group_id: ObjectId
-#     balances: dict[str, dict[str, Decimal]] = Field(default_factory=dict)  # account-> symbol -> balance
-#
-#     __collection__: str = "group_balances"
-
-
 class AccountBalance(MongoModel[ObjectId]):
     group_id: ObjectId
     account: str
@@ -75,9 +68,18 @@ class AccountBalance(MongoModel[ObjectId]):
     __indexes__ = ["group_id", "account", "coin", "checked_at"]
 
 
+class GroupBalances(MongoModel[ObjectId]):
+    group_id: ObjectId
+    coin: str
+    balances: dict[str, Decimal] = Field(default_factory=dict)  # account -> balance
+
+    __collection__: str = "group_balances"
+    __indexes__ = ["!group_id,coin", "group"]
+
+
 class Db(BaseDb):
     network: MongoCollection[str, Network]
     coin: MongoCollection[str, Coin]
     group: MongoCollection[ObjectId, Group]
     account_balance: MongoCollection[ObjectId, AccountBalance]
-    # group_balances: MongoCollection[ObjectId, GroupBalances]
+    group_balances: MongoCollection[ObjectId, GroupBalances]

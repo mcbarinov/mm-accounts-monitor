@@ -6,7 +6,7 @@ from mm_base3.base_service import BaseServiceParams
 from mm_std import synchronized
 
 from app.config import AppConfig, DConfigSettings, DValueSettings
-from app.db import AccountBalance, Db
+from app.db import AccountBalance, Db, GroupBalances
 
 
 @dataclass
@@ -35,6 +35,8 @@ class GroupService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]):
         group = self.db.group.get(id)
         inserted = 0
         for coin in group.coins:
+            if not self.db.group_balances.exists({"group_id": id, "coin": coin}):
+                self.db.group_balances.insert_one(GroupBalances(id=ObjectId(), group_id=id, coin=coin))
             for account in group.accounts:
                 if self.db.account_balance.exists({"group_id": id, "coin": coin, "account": account}):
                     continue

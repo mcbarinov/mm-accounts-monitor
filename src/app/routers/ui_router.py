@@ -40,7 +40,8 @@ class PagesController(Controller):
     @get("accounts/{group_id:str}")
     def accounts(self, core: Core, group_id: str) -> Template:
         group = core.db.group.get(ObjectId(group_id))
-        return render_html("accounts.j2", group=group)
+        group_balances = core.balance_service.get_group_balances_dict(ObjectId(group_id))
+        return render_html("accounts.j2", group=group, group_balances=group_balances)
 
     @get("account-balances/{group_id:str}")
     def account_balances(self, core: Core, group_id: str) -> Template:
