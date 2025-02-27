@@ -5,7 +5,7 @@ from mm_base3 import BaseService
 from mm_base3.base_service import BaseServiceParams
 from mm_std import ConcurrentTasks, Err, Result, synchronized, utc_delta, utc_now
 
-from app.blockchains import evm
+from app.blockchains import evm, solana
 from app.config import AppConfig, DConfigSettings, DValueSettings
 from app.db import Db, NetworkType
 from app.services.coin_service import CoinService
@@ -45,6 +45,8 @@ class BalanceService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]
         match network.type:
             case NetworkType.EVM:
                 res = evm.get_balance(network.rpc_urls, account_balance.account, coin.token, proxies=self.dvalue.proxies)
+            case NetworkType.SOLANA:
+                res = solana.get_balance(network.rpc_urls, account_balance.account, coin.token, proxies=self.dvalue.proxies)
             case _:
                 raise NotImplementedError
 

@@ -23,10 +23,12 @@ class GroupService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]):
     def update_accounts(self, id: ObjectId, accounts: list[str]) -> None:
         # TODO: process balances, etc...
         self.db.group.set(id, {"accounts": accounts})
+        self.process_account_balances(id)
 
     def update_coins(self, id: ObjectId, coins: list[str]) -> None:
         # TODO: process balances, etc...
         self.db.group.set(id, {"coins": coins})
+        self.process_account_balances(id)
 
     @synchronized
     def process_account_balances(self, id: ObjectId) -> ProcessAccountBalancesResult:
