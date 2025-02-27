@@ -1,0 +1,26 @@
+{% extends "inc/base.j2" %}
+{% block content %}
+  <div>
+    <h3>accounts / {{ group.name }}</h3>
+  </div>
+
+  <table>
+    <tr>
+      <th>n</th>
+      <th>account</th>
+      {% for coin in group.coins %}
+        <th>{{ coin }}</th>
+      {% endfor %}
+    </tr>
+    {% for account in group.accounts %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ account }}</td>
+        {% for coin in group.coins %}
+          <td>{{ coin }}</td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </table>
+
+{% endblock %}

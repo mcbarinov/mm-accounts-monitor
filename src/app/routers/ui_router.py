@@ -10,7 +10,7 @@ from mm_std import Err
 from pydantic import BaseModel
 
 from app.core import Core
-from app.db import Group, Network
+from app.db import Group, Network, NetworkType
 from app.utils import multilines
 
 
@@ -24,7 +24,7 @@ class PagesController(Controller):
     @get("networks")
     def networks_page(self, core: Core) -> Template:
         networks = core.db.network.find({}, "_id")
-        return render_html("networks.j2", networks=networks)
+        return render_html("networks.j2", networks=networks, network_types=[t.value for t in NetworkType])
 
     @get("coins")
     def coins(self, core: Core) -> Template:
@@ -37,18 +37,30 @@ class PagesController(Controller):
         coins = core.coin_service.get_coins()
         return render_html("groups.j2", groups=groups, coins=coins)
 
+    @get("accounts/{group_id:str}")
+    def accounts(self, core: Core, group_id: str) -> Template:
+        group = core.db.group.get(ObjectId(group_id))
+        return render_html("accounts.j2", group=group)
+
+    @get("account-balances/{group_id:str}")
+    def account_balances(self, core: Core, group_id: str) -> Template:
+        group = core.db.group.get(ObjectId(group_id))
+        account_balances = core.db.account_balance.find({"group_id": ObjectId(group_id)}, "account,coin")
+        return render_html("account_balances.j2", group=group, account_balances=account_balances)
+
 
 class ActionsController(Controller):
     path = "/"
 
     class AddNetworkForm(BaseModel):
         id: str
+        type: NetworkType
         rpc_urls: str
         explorer_url: str
 
         def to_db(self) -> Network:
             rpc_urls = [line.strip() for line in self.rpc_urls.split("\n") if line.strip()]
-            return Network(id=self.id, rpc_urls=pydash.uniq(rpc_urls), explorer_url=self.explorer_url)
+            return Network(id=self.id, type=self.type, rpc_urls=pydash.uniq(rpc_urls), explorer_url=self.explorer_url)
 
     class AddGroupForm(BaseModel):
         name: str

@@ -1,8 +1,10 @@
 from bson import ObjectId
 from litestar import Controller, Router, delete, get, post
+from mm_std import Result
 
 from app.core import Core
-from app.db import Group, Network
+from app.db import AccountBalance, Group, Network
+from app.services.group_service import ProcessAccountBalancesResult
 
 
 class BotController(Controller):
@@ -48,5 +50,21 @@ class GroupController(Controller):
     def delete_group(self, core: Core, id: str) -> None:
         core.db.group.delete(ObjectId(id))
 
+    @post("{id:str}/process-account-balances")
+    def process_account_balances(self, core: Core, id: str) -> ProcessAccountBalancesResult:
+        return core.group_service.process_account_balances(ObjectId(id))
 
-api_router = Router(path="/api", route_handlers=[BotController, NetworkController, GroupController])
+
+class AccountBalanceController(Controller):
+    path = "account-balances"
+
+    @get("/{id:str}")
+    def get_account_balance(self, core: Core, id: str) -> AccountBalance:
+        return core.db.account_balance.get(ObjectId(id))
+
+    @post("/{id:str}/check")
+    def check_account_balance(self, core: Core, id: str) -> Result[int]:
+        return core.balance_service.check_account_balance(ObjectId(id))
+
+
+api_router = Router(path="/api", route_handlers=[BotController, NetworkController, GroupController, AccountBalanceController])

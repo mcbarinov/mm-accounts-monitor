@@ -8,11 +8,12 @@ from pydantic import BaseModel
 from tomlkit.items import Table
 
 from app.config import AppConfig, DConfigSettings, DValueSettings
-from app.db import Db, Network
+from app.db import Db, Network, NetworkType
 
 
 class ImportNetworkItem(BaseModel):
     id: str
+    type: NetworkType
     rpc_urls: str
     explorer_url: str
 
@@ -31,6 +32,7 @@ class NetworkService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]
         for n in self.db.network.find({}, "_id"):
             network = tomlkit.table()
             network.add("id", n.id)
+            network.add("type", n.type)
             network.add("rpc_urls", tomlkit.string("\n".join(n.rpc_urls), multiline=True))
             network.add("explorer_url", n.explorer_url)
             networks.append(network)
@@ -42,7 +44,9 @@ class NetworkService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]
         try:
             networks = [ImportNetworkItem(**n) for n in tomlkit.loads(toml_str)["networks"]]  # type:ignore[arg-type,union-attr]
             for n in networks:
-                self.db.network.set(n.id, {"rpc_urls": n.rpc_urls_list, "explorer_url": n.explorer_url}, upsert=True)
+                self.db.network.set(
+                    n.id, {"type": n.type, "rpc_urls": n.rpc_urls_list, "explorer_url": n.explorer_url}, upsert=True
+                )
             return Ok(len(networks))
         except Exception as e:
             return Err(e)
@@ -50,3 +54,7 @@ class NetworkService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]
     def get_networks(self) -> list[Network]:
         # TODO: cache it
         return self.db.network.find({}, "_id")
+
+    def get_network(self, id: str) -> Network:
+        # TODO: cache it
+        return self.db.network.get(id)

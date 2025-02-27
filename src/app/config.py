@@ -11,6 +11,7 @@ class AppConfig(BaseAppConfig):
 
 class DConfigSettings(DConfigDict):
     proxies_url = DC("http://localhost:8000", "proxies url, each proxy on new line")
+    round_ndigits = DC(5, "round ndigits")
 
 
 class DValueSettings(DValueDict):

@@ -25,6 +25,7 @@
   <table>
     <tr>
       <th>id</th>
+      <th>type</th>
       <th>rpc</th>
       <th>explorer</th>
       <th>actions</th>
@@ -32,6 +33,7 @@
     {% for n in networks %}
       <tr>
         <td>{{ n.id }}</td>
+        <td>{{ n.type.value }}</td>
         <td>
           {% for u in n.rpc_urls %}
             {{ u }}<br>
@@ -99,6 +101,11 @@
     <summary role="button" class="outline">add network</summary>
     <form action="/add-network" method="post">
       <input type="text" name="id" placeholder="id" required>
+      <select name="type">
+        {% for t in network_types %}
+          <option value="{{ t }}">{{ t }}</option>
+        {% endfor %}
+      </select>
       <textarea name="rpc_urls" placeholder="rpc urls" required></textarea>
       <input type="text" name="explorer_url" placeholder="explorer url">
       <input type="submit" value="add">

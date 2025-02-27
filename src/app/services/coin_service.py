@@ -45,6 +45,10 @@ class CoinService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]):
         # TODO: cache it
         return self.db.coin.find({}, "_id")
 
+    def get_coin(self, id: str) -> Coin:
+        # TODO: cache it
+        return self.db.coin.get(id)
+
 
 def remove_empty_keys(d: dict[str, object]) -> dict[str, object]:
     return {k: v for k, v in d.items() if v}

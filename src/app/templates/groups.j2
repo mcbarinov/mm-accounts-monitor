@@ -23,7 +23,7 @@
             <br>
           {% endfor %}
         </td>
-        <td>{{ g.accounts | length }}</td>
+        <td><a href="/accounts/{{ g.id }}">accounts</a> / {{ g.accounts | length }}</td>
         <td>
           <details class="dropdown">
             <summary>actions</summary>
@@ -31,6 +31,8 @@
               <li><a data-target="modal-update-accounts-{{ g.id }}" onclick="toggleModal(event)">update accounts</a>
               </li>
               <li><a data-target="modal-update-coins-{{ g.id }}" onclick="toggleModal(event)">update coins</a></li>
+              <li><a href="/api-post/groups/{{ g.id }}/process-account-balances">process account balances</a></li>
+              <li><a href="/account-balances/{{ g.id }}">account balances</a></li>
               <li><a href="/api/groups/{{ g.id }}">view</a></li>
             </ul>
           </details>

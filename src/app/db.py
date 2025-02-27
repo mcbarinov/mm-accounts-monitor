@@ -1,3 +1,7 @@
+from datetime import datetime
+from decimal import Decimal
+from enum import Enum, unique
+
 import pydash
 from bson import ObjectId
 from mm_base3.base_db import BaseDb
@@ -5,11 +9,18 @@ from mm_mongo import MongoCollection, MongoModel
 from pydantic import Field
 
 
+@unique
+class NetworkType(str, Enum):
+    EVM = "evm"
+    SOLANA = "solana"
+    APTOS = "aptos"
+
+
 class Network(MongoModel[str]):
+    __collection__: str = "network"
+    type: NetworkType
     rpc_urls: list[str] = Field(default_factory=list)
     explorer_url: str
-
-    __collection__: str = "network"
 
 
 class Coin(MongoModel[str]):  # id = {network}__{symbol}
@@ -45,7 +56,28 @@ class Group(MongoModel[ObjectId]):
         return pydash.sort(pydash.uniq(symbols))
 
 
+# class GroupBalances(MongoModel[ObjectId]):
+#     group_id: ObjectId
+#     balances: dict[str, dict[str, Decimal]] = Field(default_factory=dict)  # account-> symbol -> balance
+#
+#     __collection__: str = "group_balances"
+
+
+class AccountBalance(MongoModel[ObjectId]):
+    group_id: ObjectId
+    account: str
+    coin: str
+    balance: Decimal | None = None
+    balance_raw: int | None = None
+    checked_at: datetime | None = None
+
+    __collection__: str = "account_balance"
+    __indexes__ = ["group_id", "account", "coin", "checked_at"]
+
+
 class Db(BaseDb):
     network: MongoCollection[str, Network]
     coin: MongoCollection[str, Coin]
     group: MongoCollection[ObjectId, Group]
+    account_balance: MongoCollection[ObjectId, AccountBalance]
+    # group_balances: MongoCollection[ObjectId, GroupBalances]

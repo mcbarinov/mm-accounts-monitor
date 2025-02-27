@@ -2,6 +2,7 @@ from mm_base3 import BaseCore
 
 from app.config import AppConfig, DConfigSettings, DValueSettings
 from app.db import Db
+from app.services.balance_service import BalanceService
 from app.services.bot_service import BotService
 from app.services.coin_service import CoinService
 from app.services.group_service import GroupService
@@ -15,6 +16,7 @@ class Core(BaseCore[AppConfig, DConfigSettings, DValueSettings, Db]):
         self.network_service = NetworkService(self.base_service_params)
         self.coin_service = CoinService(self.base_service_params)
         self.group_service = GroupService(self.base_service_params)
+        self.balance_service = BalanceService(self.base_service_params, self.network_service, self.coin_service)
 
         self.scheduler.add_job(self.bot_service.update_proxies, interval=60)
 
