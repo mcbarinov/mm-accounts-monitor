@@ -1,6 +1,7 @@
 from typing import Annotated, Any
 
 import pydash
+from bson import ObjectId
 from litestar import Controller, Request, Router, get, post
 from litestar.plugins.flash import flash
 from litestar.response import Redirect, Template
@@ -9,7 +10,8 @@ from mm_std import Err
 from pydantic import BaseModel
 
 from app.core import Core
-from app.db import Network
+from app.db import Group, Network
+from app.utils import multilines
 
 
 class PagesController(Controller):
@@ -29,6 +31,12 @@ class PagesController(Controller):
         coins = core.db.coin.find({}, "network,symbol")
         return render_html("coins.j2", coins=coins)
 
+    @get("groups")
+    def groups(self, core: Core) -> Template:
+        groups = core.db.group.find({}, "name")
+        coins = core.coin_service.get_coins()
+        return render_html("groups.j2", groups=groups, coins=coins)
+
 
 class ActionsController(Controller):
     path = "/"
@@ -38,15 +46,32 @@ class ActionsController(Controller):
         rpc_urls: str
         explorer_url: str
 
-        def db_model(self) -> Network:
+        def to_db(self) -> Network:
             rpc_urls = [line.strip() for line in self.rpc_urls.split("\n") if line.strip()]
             return Network(id=self.id, rpc_urls=pydash.uniq(rpc_urls), explorer_url=self.explorer_url)
 
+    class AddGroupForm(BaseModel):
+        name: str
+        notes: str
+        coins: list[str]
+
+        def to_db(self) -> Group:
+            return Group(id=ObjectId(), name=self.name, notes=self.notes, coins=self.coins)
+
+    class UpdateCoins(BaseModel):
+        value: list[str]
+
     @post("add-network")
     def add_network(self, core: Core, data: Annotated[AddNetworkForm, FormBody], request: Request[Any, Any, Any]) -> Redirect:
-        core.db.network.insert_one(data.db_model())
+        core.db.network.insert_one(data.to_db())
         flash(request, "network added successfully", "success")
         return Redirect("/networks")
+
+    @post("add-group")
+    def add_group(self, core: Core, data: Annotated[AddGroupForm, FormBody], request: Request[Any, Any, Any]) -> Redirect:
+        core.db.group.insert_one(data.to_db())
+        flash(request, "group added successfully", "success")
+        return Redirect("/groups")
 
     @post("update-explorer-url/{id:str}")
     def update_explorer_url(self, core: Core, id: str, data: FormData, request: Request[Any, Any, Any]) -> Redirect:
@@ -91,6 +116,20 @@ class ActionsController(Controller):
         else:
             flash(request, f"{res.ok} coins imported successfully", "success")
         return Redirect("/coins")
+
+    @post("update-accounts/{group_id:str}")
+    def update_accounts(self, core: Core, group_id: str, data: FormData, request: Request[Any, Any, Any]) -> Redirect:
+        core.group_service.update_accounts(ObjectId(group_id), multilines(data["value"]))
+        flash(request, "accounts updated successfully", "success")
+        return Redirect("/groups")
+
+    @post("update-coins/{group_id:str}")
+    def update_coins(
+        self, core: Core, group_id: str, data: Annotated[UpdateCoins, FormBody], request: Request[Any, Any, Any]
+    ) -> Redirect:
+        core.group_service.update_coins(ObjectId(group_id), data.value)
+        flash(request, "coins updated successfully", "success")
+        return Redirect("/groups")
 
 
 ui_router = Router(path="/", route_handlers=[PagesController, ActionsController], include_in_schema=False)

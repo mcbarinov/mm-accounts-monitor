@@ -1,7 +1,8 @@
+from bson import ObjectId
 from litestar import Controller, Router, delete, get, post
 
 from app.core import Core
-from app.db import Network
+from app.db import Group, Network
 
 
 class BotController(Controller):
@@ -31,4 +32,21 @@ class NetworkController(Controller):
         core.db.network.delete(id)
 
 
-api_router = Router(path="/api", route_handlers=[BotController, NetworkController])
+class GroupController(Controller):
+    path = "groups"
+    tags = ["group"]
+
+    @get()
+    def get_all_groups(self, core: Core) -> list[Group]:
+        return core.db.group.find({}, "_id")
+
+    @get("{id:str}")
+    def get_group(self, core: Core, id: str) -> Group:
+        return core.db.group.get(ObjectId(id))
+
+    @delete("{id:str}")
+    def delete_group(self, core: Core, id: str) -> None:
+        core.db.group.delete(ObjectId(id))
+
+
+api_router = Router(path="/api", route_handlers=[BotController, NetworkController, GroupController])

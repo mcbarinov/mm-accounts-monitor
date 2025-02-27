@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from tomlkit.items import Table
 
 from app.config import AppConfig, DConfigSettings, DValueSettings
-from app.db import Db
+from app.db import Db, Network
 
 
 class ImportNetworkItem(BaseModel):
@@ -46,3 +46,7 @@ class NetworkService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]
             return Ok(len(networks))
         except Exception as e:
             return Err(e)
+
+    def get_networks(self) -> list[Network]:
+        # TODO: cache it
+        return self.db.network.find({}, "_id")

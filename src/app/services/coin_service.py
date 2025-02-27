@@ -6,7 +6,7 @@ from mm_std import Err, Ok, Result
 from pydantic import BaseModel
 
 from app.config import AppConfig, DConfigSettings, DValueSettings
-from app.db import Db
+from app.db import Coin, Db
 
 
 class ImportCoinItem(BaseModel):
@@ -40,6 +40,10 @@ class CoinService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]):
             )
             coins.append(coin)
         return toml.dumps({"coins": coins})
+
+    def get_coins(self) -> list[Coin]:
+        # TODO: cache it
+        return self.db.coin.find({}, "_id")
 
 
 def remove_empty_keys(d: dict[str, object]) -> dict[str, object]:

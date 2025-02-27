@@ -1,0 +1,86 @@
+{% extends "inc/base.j2" %}
+{% block content %}
+  <div>
+    <h3>groups</h3>
+  </div>
+
+  <table>
+    <tr>
+      <th>name</th>
+      <th>notes</th>
+      <th>coins</th>
+      <th>accounts</th>
+      <th>actions</th>
+    </tr>
+    {% for g in groups %}
+      <tr>
+        <td>{{ g.name }}</td>
+        <td>{{ g.notes }}</td>
+        <td>
+          {% for n in g.get_networks() %}
+            {{ n }}:
+            {% for s in g.get_symbols(n) %}{{ s }} {% endfor %}
+            <br>
+          {% endfor %}
+        </td>
+        <td>{{ g.accounts | length }}</td>
+        <td>
+          <details class="dropdown">
+            <summary>actions</summary>
+            <ul>
+              <li><a data-target="modal-update-accounts-{{ g.id }}" onclick="toggleModal(event)">update accounts</a>
+              </li>
+              <li><a data-target="modal-update-coins-{{ g.id }}" onclick="toggleModal(event)">update coins</a></li>
+              <li><a href="/api/groups/{{ g.id }}">view</a></li>
+            </ul>
+          </details>
+
+          <dialog id="modal-update-accounts-{{ g.id }}">
+            <article>
+              <header>
+                <h3>update accounts for {{ g.name }}</h3>
+              </header>
+              <form method="post" action="/update-accounts/{{ g.id }}">
+                <textarea name="value" rows="10" cols="10" required>{{ "\n".join(g.accounts) }}</textarea>
+                <input type="submit" value="save">
+              </form>
+            </article>
+          </dialog>
+
+          <dialog id="modal-update-coins-{{ g.id }}">
+            <article>
+              <header>
+                <h3>update coins for {{ g.name }}</h3>
+              </header>
+              <form method="post" action="/update-coins/{{ g.id }}">
+                <select name="value" multiple>
+                  {% for c in coins %}
+                    <option value="{{ c.id }}" {{ 'selected' if c.id in g.coins else '' }}>{{ c.network }} / {{ c.symbol }}</option>
+                  {% endfor %}
+                </select>
+                <input type="submit" value="save">
+              </form>
+            </article>
+          </dialog>
+
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+
+
+  <details>
+    <summary role="button" class="outline">add group</summary>
+    <form action="/add-group" method="post">
+      <input type="text" name="name" placeholder="name" required>
+      <input type="text" name="notes" placeholder="notes">
+      <select name="coins" multiple>
+        {% for c in coins %}
+          <option value="{{ c.id }}">{{ c.network }} / {{ c.symbol }}</option>
+        {% endfor %}
+      </select>
+      <input type="submit" value="add">
+    </form>
+  </details>
+
+{% endblock %}
