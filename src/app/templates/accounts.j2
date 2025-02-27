@@ -4,14 +4,20 @@
     <h3>accounts / {{ group.name }}</h3>
   </div>
 
-  <table>
+  <table class="sortable">
+    <thead>
     <tr>
       <th>n</th>
       <th>account</th>
       {% for coin in group.coins %}
-        <th>{{ coin }}</th>
+        <th>
+          {{ coin | network_from_coin_id }}<br>
+          {{ coin | symbol_from_coin_id }}
+        </th>
       {% endfor %}
     </tr>
+    </thead>
+    <tbody>
     {% for account in group.accounts %}
       <tr>
         <td>{{ loop.index }}</td>
@@ -21,6 +27,7 @@
         {% endfor %}
       </tr>
     {% endfor %}
+    </tbody>
   </table>
 
 {% endblock %}

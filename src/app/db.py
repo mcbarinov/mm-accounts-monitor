@@ -17,10 +17,11 @@ class NetworkType(str, Enum):
 
 
 class Network(MongoModel[str]):
-    __collection__: str = "network"
     type: NetworkType
     rpc_urls: list[str] = Field(default_factory=list)
     explorer_url: str
+
+    __collection__: str = "network"
 
 
 class Coin(MongoModel[str]):  # id = {network}__{symbol}
