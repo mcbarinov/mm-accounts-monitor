@@ -37,8 +37,8 @@ class BalanceService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]
         tasks.execute()
 
     def check_account_balance(self, id: ObjectId) -> Result[int]:
+        self.logger.debug("check_account_balance: %s", id)
         account_balance = self.db.account_balance.get(id)
-        self.logger.debug("check_account_balance: %s", account_balance)
         coin = self.coin_service.get_coin(account_balance.coin)
         network = self.network_service.get_network(coin.network)
 
@@ -67,9 +67,3 @@ class BalanceService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]
         self.db.account_balance.set(id, {"balance_raw": balance_raw, "balance": balance, "checked_at": utc_now()})
 
         return res
-
-    def get_group_balances_dict(self, group_id: ObjectId) -> dict[str, dict[str, Decimal]]:
-        result = {}
-        for gb in self.db.group_balances.find({"group_id": group_id}):
-            result[gb.coin] = gb.balances
-        return result

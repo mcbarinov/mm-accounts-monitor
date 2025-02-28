@@ -1,9 +1,11 @@
 from dataclasses import dataclass
+from decimal import Decimal
 
 from bson import ObjectId
 from mm_base3 import BaseService
 from mm_base3.base_service import BaseServiceParams
 from mm_std import synchronized
+from pydantic import BaseModel
 
 from app.config import AppConfig, DConfigSettings, DValueSettings
 from app.db import AccountBalance, Db, GroupBalances
@@ -16,9 +18,28 @@ class ProcessAccountBalancesResult:
     deleted_by_account: int
 
 
+class GroupAccountsInfo(BaseModel):
+    coins_sum: dict[str, Decimal]  # coin -> sum(balance)
+    balances: dict[str, dict[str, Decimal]]  # coin -> account -> balance
+
+    def get_balance(self, coin: str, account: str) -> Decimal | None:
+        return self.balances.get(coin, {}).get(account, None)
+
+
 class GroupService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]):
     def __init__(self, base_params: BaseServiceParams[AppConfig, DConfigSettings, DValueSettings, Db]) -> None:
         super().__init__(base_params)
+
+    def get_group_accounts_info(self, group_id: ObjectId) -> GroupAccountsInfo:
+        balances: dict[str, dict[str, Decimal]] = {}
+        for gb in self.db.group_balances.find({"group_id": group_id}):
+            balances[gb.coin] = gb.balances
+
+        coins_sum: dict[str, Decimal] = {}
+        for coin, coin_balances in balances.items():
+            coins_sum[coin] = sum(coin_balances.values())
+
+        return GroupAccountsInfo(coins_sum=coins_sum, balances=balances)
 
     def update_accounts(self, id: ObjectId, accounts: list[str]) -> None:
         # TODO: process balances, etc...

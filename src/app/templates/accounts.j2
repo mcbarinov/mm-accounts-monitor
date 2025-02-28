@@ -16,6 +16,13 @@
         </th>
       {% endfor %}
     </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      {% for coin in group.coins %}
+        <th>{{ info.coins_sum[coin] }}</th>
+      {% endfor %}
+    </tr>
     </thead>
     <tbody>
     {% for account in group.accounts %}
@@ -23,7 +30,7 @@
         <td>{{ loop.index }}</td>
         <td>{{ account }}</td>
         {% for coin in group.coins %}
-          <td>{{ group_balances[coin][account] }}</td>
+          <td>{{ info.get_balance(coin, account) }}</td>
         {% endfor %}
       </tr>
     {% endfor %}

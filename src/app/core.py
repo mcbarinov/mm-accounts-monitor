@@ -12,11 +12,11 @@ from app.services.network_service import NetworkService
 class Core(BaseCore[AppConfig, DConfigSettings, DValueSettings, Db]):
     def __init__(self) -> None:
         super().__init__(AppConfig, DConfigSettings, DValueSettings, Db)
-        self.bot_service = BotService(self.base_service_params)
-        self.network_service = NetworkService(self.base_service_params)
-        self.coin_service = CoinService(self.base_service_params)
-        self.group_service = GroupService(self.base_service_params)
-        self.balance_service = BalanceService(self.base_service_params, self.network_service, self.coin_service)
+        self.bot_service: BotService = BotService(self.base_service_params)
+        self.network_service: NetworkService = NetworkService(self.base_service_params)
+        self.coin_service: CoinService = CoinService(self.base_service_params)
+        self.group_service: GroupService = GroupService(self.base_service_params)
+        self.balance_service: BalanceService = BalanceService(self.base_service_params, self.network_service, self.coin_service)
 
         self.scheduler.add_job(self.bot_service.update_proxies, interval=60)
         self.scheduler.add_job(self.balance_service.check_next_account_balance, interval=5)
