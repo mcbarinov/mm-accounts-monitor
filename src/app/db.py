@@ -60,13 +60,14 @@ class Group(MongoModel[ObjectId]):
 class AccountBalance(MongoModel[ObjectId]):
     group_id: ObjectId
     account: str
+    network: str  # network_id
     coin: str
     balance: Decimal | None = None
     balance_raw: int | None = None
     checked_at: datetime | None = None
 
     __collection__: str = "account_balance"
-    __indexes__ = ["group_id", "account", "coin", "checked_at"]
+    __indexes__ = ["group_id", "account", "coin", "network", "checked_at"]
 
 
 class GroupBalances(MongoModel[ObjectId]):

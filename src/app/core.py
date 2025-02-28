@@ -19,7 +19,7 @@ class Core(BaseCore[AppConfig, DConfigSettings, DValueSettings, Db]):
         self.balance_service: BalanceService = BalanceService(self.base_service_params, self.network_service, self.coin_service)
 
         self.scheduler.add_job(self.bot_service.update_proxies, interval=60)
-        self.scheduler.add_job(self.balance_service.check_next_account_balance, interval=5)
+        self.scheduler.add_job(self.balance_service.check_next_balances, interval=5)
 
     def start(self) -> None:
         pass

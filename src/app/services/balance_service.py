@@ -24,23 +24,32 @@ class BalanceService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]
         self.coin_service = coin_service
 
     @synchronized
-    def check_next_account_balance(self) -> None:
+    def check_next_balances(self) -> None:
+        tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_networks)
+        for network in self.network_service.get_networks():
+            tasks.add_task(f"check_next_network_balances_{network.id}", self.check_next_network_balances, args=(network.id,))
+        tasks.execute()
+
+    def check_next_network_balances(self, network: str) -> None:
+        self.logger.debug("check_next_network_balances called: %s", network)
+
         need_to_check = self.db.account_balance.find(
-            {"$or": [{"checked_at": None}, {"checked_at": {"$lt": utc_delta(minutes=-5)}}]}, "checked_at", 10
+            {"network": network, "$or": [{"checked_at": None}, {"checked_at": {"$lt": utc_delta(minutes=-5)}}]}, "checked_at", 10
         )
         if not need_to_check:
             return
 
-        tasks = ConcurrentTasks(max_workers=10)
+        tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_coins)
         for ab in need_to_check:
             tasks.add_task(f"check_account_balance_{ab.id}", self.check_account_balance, args=(ab.id,))
         tasks.execute()
 
     def check_account_balance(self, id: ObjectId) -> Result[int]:
-        self.logger.debug("check_account_balance: %s", id)
         account_balance = self.db.account_balance.get(id)
         coin = self.coin_service.get_coin(account_balance.coin)
         network = self.network_service.get_network(coin.network)
+
+        self.logger.debug("check_account_balance: %s / %s / %s", network.id, coin.symbol, account_balance.account)
 
         match network.type:
             case NetworkType.EVM:

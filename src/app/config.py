@@ -12,6 +12,8 @@ class AppConfig(BaseAppConfig):
 class DConfigSettings(DConfigDict):
     proxies_url = DC("http://localhost:8000", "proxies url, each proxy on new line")
     round_ndigits = DC(5, "round ndigits")
+    max_workers_networks = DC(10, "How many networks process in parallel")
+    max_workers_coins = DC(5, "How many coins process in parallel in one network")
 
 
 class DValueSettings(DValueDict):

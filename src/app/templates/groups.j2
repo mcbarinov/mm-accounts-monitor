@@ -1,8 +1,11 @@
 {% extends "inc/base.j2" %}
 {% block content %}
-  <div>
-    <h3>groups</h3>
-  </div>
+
+  <nav>
+    <ul>
+      <li><h3>groups</h3></li>
+    </ul>
+  </nav>
 
   <table>
     <tr>
@@ -57,7 +60,8 @@
               <form method="post" action="/update-coins/{{ g.id }}">
                 <select name="value" multiple>
                   {% for c in coins %}
-                    <option value="{{ c.id }}" {{ 'selected' if c.id in g.coins else '' }}>{{ c.network }} / {{ c.symbol }}</option>
+                    <option value="{{ c.id }}" {{ 'selected' if c.id in g.coins else '' }}>{{ c.network }}
+                      / {{ c.symbol }}</option>
                   {% endfor %}
                 </select>
                 <input type="submit" value="save">

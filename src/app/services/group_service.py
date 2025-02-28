@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import cast
 
 from bson import ObjectId
 from mm_base3 import BaseService
@@ -37,7 +38,8 @@ class GroupService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]):
 
         coins_sum: dict[str, Decimal] = {}
         for coin, coin_balances in balances.items():
-            coins_sum[coin] = sum(coin_balances.values())
+            if coin_balances:
+                coins_sum[coin] = cast(Decimal, sum(coin_balances.values()))
 
         return GroupAccountsInfo(coins_sum=coins_sum, balances=balances)
 
@@ -63,7 +65,10 @@ class GroupService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]):
             for account in group.accounts:
                 if self.db.account_balance.exists({"group_id": id, "coin": coin, "account": account}):
                     continue
-                self.db.account_balance.insert_one(AccountBalance(id=ObjectId(), group_id=id, coin=coin, account=account))
+                network = coin.split("__")[0]
+                self.db.account_balance.insert_one(
+                    AccountBalance(id=ObjectId(), group_id=id, network=network, coin=coin, account=account)
+                )
                 inserted += 1
 
         deleted_by_coin = self.db.account_balance.delete_many({"group_id": id, "coin": {"$nin": group.coins}}).deleted_count

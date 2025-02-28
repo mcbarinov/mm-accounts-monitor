@@ -1,8 +1,12 @@
 {% extends "inc/base.j2" %}
 {% block content %}
-  <div>
-    <h3>accounts / {{ group.name }}</h3>
-  </div>
+
+  <nav>
+    <ul>
+      <li><h3>accounts / {{ group.name }}</h3></li>
+      <li><a href="/account-balances/{{ group.id }}">balances</a></li>
+    </ul>
+  </nav>
 
   <table class="sortable">
     <thead>
