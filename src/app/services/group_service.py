@@ -3,13 +3,14 @@ from decimal import Decimal
 from typing import cast
 
 from bson import ObjectId
-from mm_base3 import BaseService
-from mm_base3.base_service import BaseServiceParams
+from mm_base3.errors import UserError
 from mm_std import synchronized
 from pydantic import BaseModel
 
-from app.config import AppConfig, DConfigSettings, DValueSettings
-from app.db import AccountBalance, Db, GroupBalances
+from app.db import AccountBalance, Group, GroupBalances, NetworkType
+from app.services.coin_service import CoinService
+from app.services.network_service import NetworkService
+from app.types_ import AppBaseService, AppBaseServiceParams
 
 
 @dataclass
@@ -27,9 +28,11 @@ class GroupAccountsInfo(BaseModel):
         return self.balances.get(coin, {}).get(account, None)
 
 
-class GroupService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]):
-    def __init__(self, base_params: BaseServiceParams[AppConfig, DConfigSettings, DValueSettings, Db]) -> None:
+class GroupService(AppBaseService):
+    def __init__(self, base_params: AppBaseServiceParams, network_service: NetworkService, coin_service: CoinService) -> None:
         super().__init__(base_params)
+        self.network_service = network_service
+        self.coin_service = coin_service
 
     def get_group_accounts_info(self, group_id: ObjectId) -> GroupAccountsInfo:
         balances: dict[str, dict[str, Decimal]] = {}
@@ -43,14 +46,28 @@ class GroupService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]):
 
         return GroupAccountsInfo(coins_sum=coins_sum, balances=balances)
 
+    def create_group(self, name: str, network_type: NetworkType, notes: str, coin_ids: list[str]) -> Group:
+        # check coins are correlated with the network type
+        for coin_id in coin_ids:
+            coin = self.coin_service.get_coin(coin_id)
+            network = self.network_service.get_network(coin.network)
+            if network.type != network_type:
+                raise UserError(f"Coin {coin_id} is not from the network {network_type.value}")
+        return Group(id=ObjectId(), name=name, network_type=network_type, notes=notes, coins=coin_ids)
+
     def update_accounts(self, id: ObjectId, accounts: list[str]) -> None:
-        # TODO: process balances, etc...
         self.db.group.set(id, {"accounts": accounts})
         self.process_account_balances(id)
 
-    def update_coins(self, id: ObjectId, coins: list[str]) -> None:
-        # TODO: process balances, etc...
-        self.db.group.set(id, {"coins": coins})
+    def update_coins(self, id: ObjectId, coin_ids: list[str]) -> None:
+        group = self.db.group.get(id)
+        # check coins are correlated with the network type
+        for coin_id in coin_ids:
+            coin = self.coin_service.get_coin(coin_id)
+            network = self.network_service.get_network(coin.network)
+            if network.type != group.network_type:
+                raise UserError(f"Coin {coin_id} is not from the network {group.network_type.value}")
+        self.db.group.set(id, {"coins": coin_ids})
         self.process_account_balances(id)
 
     @synchronized

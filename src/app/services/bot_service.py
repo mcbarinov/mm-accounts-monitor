@@ -1,13 +1,10 @@
-from mm_base3 import BaseService
-from mm_base3.base_service import BaseServiceParams
 from mm_std import hr, synchronized, utc_now
 
-from app.config import AppConfig, DConfigSettings, DValueSettings
-from app.db import Db
+from app.types_ import AppBaseService, AppBaseServiceParams
 
 
-class BotService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]):
-    def __init__(self, base_params: BaseServiceParams[AppConfig, DConfigSettings, DValueSettings, Db]) -> None:
+class BotService(AppBaseService):
+    def __init__(self, base_params: AppBaseServiceParams) -> None:
         super().__init__(base_params)
 
     @synchronized

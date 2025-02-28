@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import tomlkit
-from mm_base3 import BaseService
-from mm_base3.base_service import BaseServiceParams
 from mm_std import Err, Ok, Result
 from pydantic import BaseModel
 from tomlkit.items import Table
 
-from app.config import AppConfig, DConfigSettings, DValueSettings
-from app.db import Db, Network, NetworkType
+from app.db import Network, NetworkType
+from app.types_ import AppBaseService, AppBaseServiceParams
 
 
 class ImportNetworkItem(BaseModel):
@@ -22,8 +20,8 @@ class ImportNetworkItem(BaseModel):
         return [u.strip() for u in self.rpc_urls.splitlines() if u.strip()]
 
 
-class NetworkService(BaseService[AppConfig, DConfigSettings, DValueSettings, Db]):
-    def __init__(self, base_params: BaseServiceParams[AppConfig, DConfigSettings, DValueSettings, Db]) -> None:
+class NetworkService(AppBaseService):
+    def __init__(self, base_params: AppBaseServiceParams) -> None:
         super().__init__(base_params)
 
     def export_as_toml(self) -> str:

@@ -10,7 +10,7 @@ from mm_std import Err
 from pydantic import BaseModel
 
 from app.core import Core
-from app.db import Group, Network, NetworkType
+from app.db import Network, NetworkType
 from app.utils import multilines
 
 
@@ -35,7 +35,8 @@ class PagesController(Controller):
     def groups(self, core: Core) -> Template:
         groups = core.db.group.find({}, "name")
         coins = core.coin_service.get_coins()
-        return render_html("groups.j2", groups=groups, coins=coins)
+        network_types = NetworkType.list()
+        return render_html("groups.j2", groups=groups, coins=coins, network_types=network_types)
 
     @get("accounts/{group_id:str}")
     def accounts(self, core: Core, group_id: str) -> Template:
@@ -65,11 +66,15 @@ class ActionsController(Controller):
 
     class AddGroupForm(BaseModel):
         name: str
+        network_type: NetworkType
         notes: str
-        coins: list[str]
+        coins: list[str] | str
 
-        def to_db(self) -> Group:
-            return Group(id=ObjectId(), name=self.name, notes=self.notes, coins=self.coins)
+        @property
+        def coins_list(self) -> list[str]:
+            if isinstance(self.coins, str):
+                return [self.coins]
+            return self.coins
 
     class UpdateCoins(BaseModel):
         value: list[str]
@@ -82,7 +87,7 @@ class ActionsController(Controller):
 
     @post("add-group")
     def add_group(self, core: Core, data: Annotated[AddGroupForm, FormBody], request: Request[Any, Any, Any]) -> Redirect:
-        core.db.group.insert_one(data.to_db())
+        core.group_service.create_group(data.name, data.network_type, data.notes, data.coins_list)
         flash(request, "group added successfully", "success")
         return Redirect("/groups")
 

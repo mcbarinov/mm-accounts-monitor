@@ -14,6 +14,11 @@ class NetworkType(str, Enum):
     EVM = "evm"
     SOLANA = "solana"
     APTOS = "aptos"
+    STARKNET = "starknet"
+
+    @classmethod
+    def list(cls) -> list[str]:
+        return [t.value for t in cls]
 
 
 class Network(MongoModel[str]):
@@ -42,8 +47,10 @@ class Coin(MongoModel[str]):  # id = {network}__{symbol}
 
 class Group(MongoModel[ObjectId]):
     name: str
+    network_type: NetworkType
     notes: str
     coins: list[str]  # Coin.id
+    namings: list[str] = Field(default_factory=list)
     accounts: list[str] = Field(default_factory=list)
 
     __collection__: str = "group"

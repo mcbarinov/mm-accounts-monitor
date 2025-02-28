@@ -15,7 +15,7 @@ class Core(BaseCore[AppConfig, DConfigSettings, DValueSettings, Db]):
         self.bot_service: BotService = BotService(self.base_service_params)
         self.network_service: NetworkService = NetworkService(self.base_service_params)
         self.coin_service: CoinService = CoinService(self.base_service_params)
-        self.group_service: GroupService = GroupService(self.base_service_params)
+        self.group_service: GroupService = GroupService(self.base_service_params, self.network_service, self.coin_service)
         self.balance_service: BalanceService = BalanceService(self.base_service_params, self.network_service, self.coin_service)
 
         self.scheduler.add_job(self.bot_service.update_proxies, interval=60)
