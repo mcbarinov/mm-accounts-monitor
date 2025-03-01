@@ -14,6 +14,9 @@ class ImportCoinItem(BaseModel):
     token: str | None = None
     notes: str = ""
 
+    def to_db(self) -> Coin:
+        return Coin(id=f"{self.network}__{self.symbol}", decimals=self.decimals, token=self.token, notes=self.notes)
+
 
 class CoinService(AppBaseService):
     def __init__(self, base_params: AppBaseServiceParams) -> None:
@@ -21,12 +24,13 @@ class CoinService(AppBaseService):
 
     def import_from_toml(self, toml_str: str) -> Result[int]:
         try:
+            count = 0
             coins = [ImportCoinItem(**n) for n in tomlkit.loads(toml_str)["coins"]]  # type:ignore[arg-type,union-attr]
             for c in coins:
-                self.db.coin.set(
-                    f"{c.network}__{c.symbol}", {"decimals": c.decimals, "token": c.token, "notes": c.notes}, upsert=True
-                )
-            return Ok(len(coins))
+                if not self.db.coin.exists({"_id": f"{c.network}__{c.symbol}"}):
+                    self.db.coin.insert_one(c.to_db())
+                    count += 1
+            return Ok(count)
         except Exception as e:
             return Err(e)
 
