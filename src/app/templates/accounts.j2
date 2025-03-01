@@ -4,6 +4,7 @@
   <nav>
     <ul>
       <li><h3>accounts / {{ group.name }}</h3></li>
+      <li><a href="/account-namings/{{ group.id }}">namings</a></li>
       <li><a href="/account-balances/{{ group.id }}">balances</a></li>
     </ul>
   </nav>
@@ -13,6 +14,9 @@
     <tr>
       <th>n</th>
       <th>account</th>
+      {% for naming in group.namings %}
+        <td>{{ naming.value }}</td>
+      {% endfor %}
       {% for coin in group.coins %}
         <th>
           {{ coin | network_from_coin_id }}<br>
@@ -23,6 +27,9 @@
     <tr>
       <td></td>
       <td></td>
+      {% for naming in group.namings %}
+        <td></td>
+      {% endfor %}
       {% for coin in group.coins %}
         <th>{{ info.coins_sum[coin] }}</th>
       {% endfor %}
@@ -33,6 +40,9 @@
       <tr>
         <td>{{ loop.index }}</td>
         <td>{{ account }}</td>
+        {% for naming in group.namings %}
+          <td>{{ info.get_names(naming, account) | join(" ") }}</td>
+        {% endfor %}
         {% for coin in group.coins %}
           <td>{{ info.get_balance(coin, account) }}</td>
         {% endfor %}

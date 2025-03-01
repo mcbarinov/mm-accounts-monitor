@@ -4,7 +4,7 @@ from bson import ObjectId
 from mm_std import ConcurrentTasks, Err, Result, synchronized, utc_delta, utc_now
 
 from app.blockchains import evm, solana
-from app.db import NetworkType
+from app.constants import NetworkType
 from app.services.coin_service import CoinService
 from app.services.network_service import NetworkService
 from app.types_ import AppBaseService, AppBaseServiceParams
@@ -17,8 +17,8 @@ class BalanceService(AppBaseService):
         self.coin_service = coin_service
 
     @synchronized
-    def check_next_balances(self) -> None:
-        self.dvalue.check_balances = False
+    def check_next(self) -> None:
+        self.dvalue.check_balances = True  # TODO: remove it
         if not self.dvalue.check_balances:
             return
         tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_networks)
@@ -30,7 +30,9 @@ class BalanceService(AppBaseService):
         self.logger.debug("check_next_network_balances called: %s", network)
 
         need_to_check = self.db.account_balance.find(
-            {"network": network, "$or": [{"checked_at": None}, {"checked_at": {"$lt": utc_delta(minutes=-5)}}]}, "checked_at", 10
+            {"network": network, "$or": [{"checked_at": None}, {"checked_at": {"$lt": utc_delta(minutes=-5)}}]},
+            "checked_at",
+            self.dconfig.max_workers_coins,
         )
         if not need_to_check:
             return

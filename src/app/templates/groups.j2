@@ -4,6 +4,7 @@
   <nav>
     <ul>
       <li><h3>groups</h3></li>
+      <li><a href="/add-group">add</a></li>
     </ul>
   </nav>
 
@@ -11,6 +12,7 @@
     <tr>
       <th>name</th>
       <th>notes</th>
+      <th>namings</th>
       <th>coins</th>
       <th>accounts</th>
       <th>actions</th>
@@ -22,10 +24,11 @@
           {{ g.network_type.value }}
         </td>
         <td>{{ g.notes }}</td>
+        <td>{% for n in g.namings %} {{ n.value }} {% endfor %}</td>
         <td>
-          {% for n in g.get_networks() %}
+          {% for n in g.get_coin_networks() %}
             {{ n }}:
-            {% for s in g.get_symbols(n) %}{{ s }} {% endfor %}
+            {% for s in g.get_coin_symbols(n) %}{{ s }} {% endfor %}
             <br>
           {% endfor %}
         </td>
@@ -37,8 +40,10 @@
               <li><a data-target="modal-update-accounts-{{ g.id }}" onclick="toggleModal(event)">update accounts</a>
               </li>
               <li><a data-target="modal-update-coins-{{ g.id }}" onclick="toggleModal(event)">update coins</a></li>
+              <li><a href="/api-post/groups/{{ g.id }}/process-account-namings">process account namings</a></li>
               <li><a href="/api-post/groups/{{ g.id }}/process-account-balances">process account balances</a></li>
               <li><a href="/account-balances/{{ g.id }}">account balances</a></li>
+              <li><a href="/api-delete/groups/{{ g.id }}" {{ confirm }}>delete</a></li>
               <li><a href="/api/groups/{{ g.id }}">view</a></li>
             </ul>
           </details>
@@ -76,26 +81,5 @@
       </tr>
     {% endfor %}
   </table>
-
-
-  <details>
-    <summary role="button" class="outline">add group</summary>
-    <form action="/add-group" method="post">
-      <input type="text" name="name" placeholder="name" required>
-      <select name="network_type" required>
-        <option value="" disabled selected>network type...</option>
-        {% for nt in network_types %}
-          <option value="{{ nt }}">{{ nt }}</option>
-        {% endfor %}
-      </select>
-      <input type="text" name="notes" placeholder="notes">
-      <select name="coins" multiple>
-        {% for c in coins %}
-          <option value="{{ c.id }}">{{ c.network }} / {{ c.symbol }}</option>
-        {% endfor %}
-      </select>
-      <input type="submit" value="add">
-    </form>
-  </details>
 
 {% endblock %}

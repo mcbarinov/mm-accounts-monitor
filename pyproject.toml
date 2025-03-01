@@ -4,8 +4,8 @@ version = "0.0.1"
 description = ""
 requires-python = ">=3.13"
 dependencies = [
-    "mm-base3==0.0.10",
-    "mm-eth>=0.5.4",
+    "mm-base3==0.0.12",
+    "mm-eth>=0.5.6",
     "mm-sol>=0.5.3",
     "tomlkit>=0.13.2",
 ]
@@ -19,7 +19,7 @@ dev-dependencies = [
     "pytest~=8.3.4",
     "pytest-xdist~=3.6.1",
     "pytest-httpserver~=1.1.2",
-    "ruff~=0.9.6",
+    "ruff~=0.9.9",
     "pip-audit~=2.8.0",
     "bandit~=1.8.3",
     "mypy~=1.15.0",

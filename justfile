@@ -51,4 +51,4 @@ publish: docker-upload
 	git tag -a 'v{{version}}' -m 'v{{version}}' && git push origin v{{version}}
 
 dev:
-    LITESTAR_WARN_IMPLICIT_SYNC_TO_THREAD=0 uv run uvicorn --reload --port 3000 --log-level=warning --factory app.main:start
+    uv run uvicorn --reload --port 3000 --log-level=warning --factory app.main:start

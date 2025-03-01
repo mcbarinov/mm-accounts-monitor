@@ -5,7 +5,8 @@ from mm_std import Err, Ok, Result
 from pydantic import BaseModel
 from tomlkit.items import Table
 
-from app.db import Network, NetworkType
+from app.constants import NetworkType
+from app.db import Network
 from app.types_ import AppBaseService, AppBaseServiceParams
 
 

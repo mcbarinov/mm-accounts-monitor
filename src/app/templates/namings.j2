@@ -1,0 +1,19 @@
+{% extends "inc/base.j2" %}
+{% block content %}
+  <div>
+    <h3>namings</h3>
+  </div>
+
+  <table>
+    <tr>
+      <th>naming</th>
+      <th>network</th>
+    </tr>
+    {% for n in namings %}
+      <tr>
+      <td>{{ n.value }}</td>
+      <td>{{ n.network_id }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

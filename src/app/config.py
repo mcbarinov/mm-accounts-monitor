@@ -18,5 +18,6 @@ class DConfigSettings(DConfigDict):
 
 class DValueSettings(DValueDict):
     check_balances: DV[bool] = DV(True)
+    check_namings: DV[bool] = DV(True)
     proxies: DV[list[str]] = DV([])
     proxies_updated_at: DV[datetime | None] = DV(None)

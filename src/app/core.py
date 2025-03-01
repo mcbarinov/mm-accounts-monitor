@@ -6,6 +6,7 @@ from app.services.balance_service import BalanceService
 from app.services.bot_service import BotService
 from app.services.coin_service import CoinService
 from app.services.group_service import GroupService
+from app.services.naming_service import NamingService
 from app.services.network_service import NetworkService
 
 
@@ -17,9 +18,11 @@ class Core(BaseCore[AppConfig, DConfigSettings, DValueSettings, Db]):
         self.coin_service: CoinService = CoinService(self.base_service_params)
         self.group_service: GroupService = GroupService(self.base_service_params, self.network_service, self.coin_service)
         self.balance_service: BalanceService = BalanceService(self.base_service_params, self.network_service, self.coin_service)
+        self.naming_service: NamingService = NamingService(self.base_service_params, self.network_service)
 
         self.scheduler.add_job(self.bot_service.update_proxies, interval=60)
-        self.scheduler.add_job(self.balance_service.check_next_balances, interval=5)
+        self.scheduler.add_job(self.balance_service.check_next, interval=5)
+        self.scheduler.add_job(self.naming_service.check_next, interval=5)
 
     def start(self) -> None:
         pass

@@ -1,0 +1,27 @@
+{% extends "inc/base.j2" %}
+{% block content %}
+  <h3>add group</h3>
+
+  <form action="/add-group" method="post">
+    <input type="text" name="name" placeholder="name" required>
+    <select name="network_type" required>
+      <option value="" disabled selected>network type...</option>
+      {% for nt in network_types %}
+        <option value="{{ nt.value }}">{{ nt.value }}</option>
+      {% endfor %}
+    </select>
+    <input type="text" name="notes" placeholder="notes">
+    <select name="namings" multiple title="namings">
+      {% for n in namings %}
+        <option value="{{ n.value }}">{{ n.value }}</option>
+      {% endfor %}
+    </select>
+    <select name="coins" multiple style="height:300px" title="coins">
+      {% for c in coins %}
+        <option value="{{ c.id }}">{{ c.network }} / {{ c.symbol }}</option>
+      {% endfor %}
+    </select>
+    <input type="submit" value="add">
+  </form>
+
+{% endblock %}

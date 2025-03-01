@@ -1,0 +1,33 @@
+{% extends "inc/base.j2" %}
+{% block content %}
+  <div>
+    <h3>account namings / {{ group.name }}</h3>
+  </div>
+
+  <table>
+    <tr>
+      <th>account</th>
+      <th>naming</th>
+      <th>names</th>
+      <th>checked_at</th>
+      <th>actions</th>
+    </tr>
+    {% for n in account_namings %}
+      <tr>
+        <td>{{ n.account }}</td>
+        <td>{{ n.naming.value }}</td>
+        <td>{{ n.names}}</td>
+        <td>{{ n.checked_at | dt }}</td>
+        <td>
+          <details class="dropdown">
+            <summary>actions</summary>
+            <ul>
+              <li><a href="/api-post/account-namings/{{ n.id }}/check">check</a></li>
+              <li><a href="/api/account-namings/{{ n.id }}">view</a></li>
+            </ul>
+          </details>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}
