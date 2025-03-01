@@ -20,6 +20,9 @@ class ImportNetworkItem(BaseModel):
     def rpc_urls_list(self) -> list[str]:
         return [u.strip() for u in self.rpc_urls.splitlines() if u.strip()]
 
+    def to_db(self) -> Network:
+        return Network(id=self.id, type=self.type, rpc_urls=self.rpc_urls_list, explorer_url=self.explorer_url)
+
 
 class NetworkService(AppBaseService):
     def __init__(self, base_params: AppBaseServiceParams) -> None:
@@ -42,11 +45,12 @@ class NetworkService(AppBaseService):
     def import_from_toml(self, toml_str: str) -> Result[int]:
         try:
             networks = [ImportNetworkItem(**n) for n in tomlkit.loads(toml_str)["networks"]]  # type:ignore[arg-type,union-attr]
+            count = 0
             for n in networks:
-                self.db.network.set(
-                    n.id, {"type": n.type, "rpc_urls": n.rpc_urls_list, "explorer_url": n.explorer_url}, upsert=True
-                )
-            return Ok(len(networks))
+                if not self.db.network.exists({"_id": n.id}):
+                    self.db.network.insert_one(n.to_db())
+                    count += 1
+            return Ok(count)
         except Exception as e:
             return Err(e)
 

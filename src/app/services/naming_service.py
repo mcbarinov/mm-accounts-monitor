@@ -24,7 +24,7 @@ class NamingService(AppBaseService):
         tasks.execute()
 
     def check_next_naming(self, naming: Naming) -> None:
-        self.logger.debug("check_next_naming called: %s", naming)
+        # self.logger.debug("check_next_naming called: %s", naming)
         max_workers = 10
 
         need_to_check = self.db.account_naming.find(
@@ -44,7 +44,8 @@ class NamingService(AppBaseService):
         account_naming = self.db.account_naming.get(id)
         network = self.network_service.get_network(account_naming.network)
 
-        self.logger.debug("check_account_naming called: %s / %s", account_naming.naming, account_naming.account)
+        # self.logger.debug("check_account_naming called: %s / %s", account_naming.naming, account_naming.account)
+
         match account_naming.naming:
             case Naming.ENS:
                 res = evm.get_ens_names(network.rpc_urls, account_naming.account, proxies=self.dvalue.proxies)

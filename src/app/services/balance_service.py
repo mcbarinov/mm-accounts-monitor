@@ -27,8 +27,7 @@ class BalanceService(AppBaseService):
         tasks.execute()
 
     def check_next_network_balances(self, network: str) -> None:
-        self.logger.debug("check_next_network_balances called: %s", network)
-
+        # self.logger.debug("check_next_network_balances called: %s", network)
         need_to_check = self.db.account_balance.find(
             {"network": network, "$or": [{"checked_at": None}, {"checked_at": {"$lt": utc_delta(minutes=-5)}}]},
             "checked_at",
@@ -47,7 +46,7 @@ class BalanceService(AppBaseService):
         coin = self.coin_service.get_coin(account_balance.coin)
         network = self.network_service.get_network(coin.network)
 
-        self.logger.debug("check_account_balance: %s / %s / %s", network.id, coin.symbol, account_balance.account)
+        # self.logger.debug("check_account_balance: %s / %s / %s", network.id, coin.symbol, account_balance.account)
 
         match network.type:
             case NetworkType.EVM:
