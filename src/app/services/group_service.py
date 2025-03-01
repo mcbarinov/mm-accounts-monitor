@@ -32,12 +32,12 @@ class ProcessAccountNamingsResult:
 class GroupAccountsInfo(BaseModel):
     coins_sum: dict[str, Decimal]  # coin -> sum(balance)
     balances: dict[str, dict[str, Decimal]]  # coin -> account -> balance
-    namings: dict[Naming, dict[str, list[str]]]  # naming -> account -> names
+    namings: dict[Naming, dict[str, str]]  # naming -> account -> name
 
     def get_balance(self, coin: str, account: str) -> Decimal | None:
         return self.balances.get(coin, {}).get(account, None)
 
-    def get_names(self, naming: Naming, account: str) -> list[str] | None:
+    def get_name(self, naming: Naming, account: str) -> str | None:
         return self.namings.get(naming, {}).get(account, None)
 
 
@@ -57,7 +57,7 @@ class GroupService(AppBaseService):
             if coin_balances:
                 coins_sum[coin] = cast(Decimal, sum(coin_balances.values()))
 
-        namings: dict[Naming, dict[str, list[str]]] = {}
+        namings: dict[Naming, dict[str, str]] = {}
         for gn in self.db.group_namings.find({"group_id": group_id}):
             namings[gn.naming] = gn.names
 

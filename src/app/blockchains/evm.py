@@ -9,7 +9,5 @@ def get_balance(rpc_urls: list[str], account: str, token: str | None = None, pro
     return rpc.eth_get_balance(rpc_urls, account, proxies=proxies, attempts=5)
 
 
-def get_ens_names(rpc_urls: list[str], account: str, proxies: Proxies = None) -> Result[list[str]]:
-    return ens.get_name_with_retries(rpc_urls, account, retries=5, proxies=proxies).map(
-        lambda name: [] if name is None else [name]
-    )
+def get_ens_name(rpc_urls: list[str], account: str, proxies: Proxies = None) -> Result[str | None]:
+    return ens.get_name_with_retries(rpc_urls, account, retries=5, proxies=proxies)

@@ -15,7 +15,7 @@
       <th>n</th>
       <th>account</th>
       {% for naming in group.namings %}
-        <td>{{ naming.value }}</td>
+        <th>{{ naming.value }}</th>
       {% endfor %}
       {% for coin in group.coins %}
         <th>
@@ -41,7 +41,7 @@
         <td>{{ loop.index }}</td>
         <td>{{ account }}</td>
         {% for naming in group.namings %}
-          <td>{{ info.get_names(naming, account) }}</td>
+          <td>{{ info.get_name(naming, account) }}</td>
         {% endfor %}
         {% for coin in group.coins %}
           <td>{{ info.get_balance(coin, account) }}</td>

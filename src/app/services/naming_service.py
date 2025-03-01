@@ -40,7 +40,7 @@ class NamingService(AppBaseService):
             tasks.add_task(f"check_account_naming_{an.id}", self.check_account_naming, args=(an.id,))
         tasks.execute()
 
-    def check_account_naming(self, id: ObjectId) -> Result[list[str]]:
+    def check_account_naming(self, id: ObjectId) -> Result[str | None]:
         account_naming = self.db.account_naming.get(id)
         network = self.network_service.get_network(account_naming.network)
 
@@ -48,9 +48,9 @@ class NamingService(AppBaseService):
 
         match account_naming.naming:
             case Naming.ENS:
-                res = evm.get_ens_names(network.rpc_urls, account_naming.account, proxies=self.dvalue.proxies)
+                res = evm.get_ens_name(network.rpc_urls, account_naming.account, proxies=self.dvalue.proxies)
             case Naming.ANS:
-                res = aptos.get_ans_names(account_naming.account, proxies=self.dvalue.proxies)
+                res = aptos.get_ans_name(account_naming.account, proxies=self.dvalue.proxies)
             case _:
                 return Err("Not implemented")
 
@@ -58,12 +58,12 @@ class NamingService(AppBaseService):
             self.logger.debug("check_account_naming: %s", res.err)
             return res
 
-        names = res.ok
+        name = res.ok or ""
 
         self.db.group_namings.update_one(
             {"group_id": account_naming.group_id, "naming": account_naming.naming},
-            {"$set": {f"names.{account_naming.account}": names}},
+            {"$set": {f"names.{account_naming.account}": name}},
         )
-        self.db.account_naming.set(id, {"names": names, "checked_at": utc_now()})
+        self.db.account_naming.set(id, {"name": name, "checked_at": utc_now()})
 
         return res

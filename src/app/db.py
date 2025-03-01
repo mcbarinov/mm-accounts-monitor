@@ -71,7 +71,7 @@ class AccountNaming(MongoModel[ObjectId]):
     account: str
     network: str  # network_id
     naming: Naming
-    names: list[str] | None = None  # domains, ids, etc..
+    name: str | None = None  # domains, ids, etc..
     checked_at: datetime | None = None
 
     __collection__: str = "account_naming"
@@ -90,7 +90,7 @@ class GroupBalances(MongoModel[ObjectId]):
 class GroupNamings(MongoModel[ObjectId]):
     group_id: ObjectId
     naming: Naming
-    names: dict[str, list[str]] = Field(default_factory=dict)  # account -> [values]
+    names: dict[str, str] = Field(default_factory=dict)  # account -> name, name can be empty string
 
     __collection__: str = "group_namings"
     __indexes__ = ["!group_id,naming", "group_id"]

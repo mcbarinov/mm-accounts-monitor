@@ -79,7 +79,7 @@ class AccountNamingController(Controller):
         return core.db.account_naming.get(ObjectId(id))
 
     @post("/{id:str}/check", sync_to_thread=True)
-    def check_account_naming(self, core: Core, id: str) -> Result[list[str]]:
+    def check_account_naming(self, core: Core, id: str) -> Result[str | None]:
         return core.naming_service.check_account_naming(ObjectId(id))
 
 
