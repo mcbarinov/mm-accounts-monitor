@@ -18,3 +18,9 @@ class BotService(AppBaseService):
         self.dvalue.proxies = proxies
         self.dvalue.proxies_updated_at = utc_now()
         return len(proxies)
+
+    def toggle_check_balances(self) -> None:
+        self.dvalue.check_balances = not self.dvalue.check_balances
+
+    def toggle_check_namings(self) -> None:
+        self.dvalue.check_namings = not self.dvalue.check_namings

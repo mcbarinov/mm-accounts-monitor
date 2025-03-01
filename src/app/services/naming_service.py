@@ -14,7 +14,6 @@ class NamingService(AppBaseService):
 
     @synchronized
     def check_next(self) -> None:
-        self.dvalue.check_namings = True  # TODO: remove it
         if not self.dvalue.check_balances:
             return
 

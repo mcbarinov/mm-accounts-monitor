@@ -15,6 +15,14 @@ class BotController(Controller):
     def update_proxies(self, core: Core) -> int:
         return core.bot_service.update_proxies()
 
+    @post("toggle-check-balances", sync_to_thread=True)
+    def toggle_check_balances(self, core: Core) -> None:
+        core.bot_service.toggle_check_balances()
+
+    @post("toggle-check-namings", sync_to_thread=True)
+    def toggle_check_namings(self, core: Core) -> None:
+        core.bot_service.toggle_check_namings()
+
 
 class NetworkController(Controller):
     path = "networks"
@@ -61,6 +69,7 @@ class GroupController(Controller):
 
 class AccountBalanceController(Controller):
     path = "account-balances"
+    tags = ["balance"]
 
     @get("/{id:str}", sync_to_thread=True)
     def get_account_balance(self, core: Core, id: str) -> AccountBalance:
@@ -73,6 +82,7 @@ class AccountBalanceController(Controller):
 
 class AccountNamingController(Controller):
     path = "account-namings"
+    tags = ["naming"]
 
     @get("/{id:str}", sync_to_thread=True)
     def get_account_naming(self, core: Core, id: str) -> AccountNaming:
@@ -80,6 +90,7 @@ class AccountNamingController(Controller):
 
     @post("/{id:str}/check", sync_to_thread=True)
     def check_account_naming(self, core: Core, id: str) -> Result[str | None]:
+        core.logger.debug("check_account_naming called: %s", id)
         return core.naming_service.check_account_naming(ObjectId(id))
 
 

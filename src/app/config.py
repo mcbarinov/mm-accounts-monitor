@@ -6,7 +6,7 @@ from pydantic import Field
 
 class AppConfig(BaseAppConfig):
     tags: list[str] = Field(["bot", "network", "coin"])
-    main_menu: dict[str, str] = Field({"/networks": "networks", "/coins": "coins", "/namings": "namings", "/groups": "groups"})
+    main_menu: dict[str, str] = Field({"/bot": "bot", "/groups": "groups"})
 
 
 class DConfigSettings(DConfigDict):

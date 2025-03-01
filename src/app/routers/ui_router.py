@@ -22,6 +22,10 @@ class PagesController(Controller):
     def index(self) -> Template:
         return render_html("index.j2")
 
+    @get("bot", sync_to_thread=True)
+    def bot(self) -> Template:
+        return render_html("bot.j2")
+
     @get("networks", sync_to_thread=False)
     def networks_page(self, core: Core) -> Template:
         networks = core.network_service.get_networks()

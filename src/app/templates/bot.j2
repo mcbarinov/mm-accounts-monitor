@@ -1,0 +1,26 @@
+{% extends "inc/base.j2" %}
+{% block content %}
+
+  <nav>
+    <ul>
+      <li><h3>bot</h3></li>
+      <li><a href="/networks">networks</a></li>
+      <li><a href="/namings">namings</a></li>
+      <li><a href="/coins">coins</a></li>
+    </ul>
+  </nav>
+
+  <table>
+    <tr>
+      <th>check namings</th>
+      <th>{{ dvalue.check_namings | yes_no }}</th>
+      <td><a href="/api-post/bot/toggle-check-namings">toggle</a></td>
+    </tr>
+    <tr>
+      <th>check balances</th>
+      <th>{{ dvalue.check_balances | yes_no }}</th>
+      <td><a href="/api-post/bot/toggle-check-balances">toggle</a></td>
+    </tr>
+  </table>
+
+{% endblock %}

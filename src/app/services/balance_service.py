@@ -18,7 +18,6 @@ class BalanceService(AppBaseService):
 
     @synchronized
     def check_next(self) -> None:
-        self.dvalue.check_balances = True  # TODO: remove it
         if not self.dvalue.check_balances:
             return
         tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_networks)

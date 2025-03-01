@@ -4,7 +4,7 @@ version = "0.0.1"
 description = ""
 requires-python = ">=3.13"
 dependencies = [
-    "mm-base3==0.0.12",
+    "mm-base3==0.0.13",
     "mm-eth~=0.5.6",
     "mm-sol~=0.5.3",
     "mm-aptos~=0.2.2",

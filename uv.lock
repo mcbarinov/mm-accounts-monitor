@@ -105,7 +105,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "mm-aptos", specifier = "~=0.2.2" },
-    { name = "mm-base3", specifier = "==0.0.12" },
+    { name = "mm-base3", specifier = "==0.0.13" },
     { name = "mm-eth", specifier = "~=0.5.6" },
     { name = "mm-sol", specifier = "~=0.5.3" },
     { name = "tomlkit", specifier = ">=0.13.2" },
@@ -891,15 +891,16 @@ wheels = [
 
 [[package]]
 name = "mm-base3"
-version = "0.0.12"
+version = "0.0.13"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "litestar", extra = ["standard"] },
+    { name = "mm-jinja" },
     { name = "mm-mongo" },
     { name = "pydantic-settings" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/be/13/61ba4f4712ab5ad6ca50c61fb76bd6b605e8b9944b6d06ddd20ba889bb5c/mm_base3-0.0.12-py3-none-any.whl", hash = "sha256:9e69a05334d982465e88ae0292ad09e3e5ace06386ec11730a227b66f8ab9daf", size = 37858 },
+    { url = "https://files.pythonhosted.org/packages/23/55/81cbed90f1080800dd428c38d18fa0db67da512fd37d5d02d40ab652c1eb/mm_base3-0.0.13-py3-none-any.whl", hash = "sha256:96c9d019b20c9f7f8aaaf72c8230ed7508b6977287f3f7c9daa7f25b9999ce2f", size = 36199 },
 ]
 
 [[package]]
@@ -928,6 +929,17 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/00/4d/6be4b37b6f893da37752eebbac49f55304307aa895ef3542307cbace3221/mm_eth-0.5.6.tar.gz", hash = "sha256:d950a0680acc3d78015347923a923120c48494accedc56756259c7d7c272a513", size = 97294 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b6/9e/75d9d1fb9df6053470fe2f681e7c953dd9ef0dbda4fc1ff5d5511e95481a/mm_eth-0.5.6-py3-none-any.whl", hash = "sha256:f725fc7f68474796c0c5f04628f1a0b39a389adceba2f8cc47726ad40eb73af1", size = 37857 },
+]
+
+[[package]]
+name = "mm-jinja"
+version = "0.0.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jinja2" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/36/39/ead30a471e5cbe0cbc18b63c1177e311aa773f3ac3e6bd6f25e6f5e84619/mm_jinja-0.0.3-py3-none-any.whl", hash = "sha256:89af60c99c901a4fcc19a2ba4c3b61aa5f5f037700f4b5b9c1a2cd37a0948c46", size = 2840 },
 ]
 
 [[package]]
