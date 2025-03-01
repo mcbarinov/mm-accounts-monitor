@@ -1,7 +1,7 @@
 from bson import ObjectId
 from mm_std import ConcurrentTasks, Err, Result, synchronized, utc_delta, utc_now
 
-from app.blockchains import evm
+from app.blockchains import aptos, evm
 from app.constants import Naming
 from app.services.network_service import NetworkService
 from app.types_ import AppBaseService, AppBaseServiceParams
@@ -49,6 +49,8 @@ class NamingService(AppBaseService):
         match account_naming.naming:
             case Naming.ENS:
                 res = evm.get_ens_names(network.rpc_urls, account_naming.account, proxies=self.dvalue.proxies)
+            case Naming.ANS:
+                res = aptos.get_ans_names(account_naming.account, proxies=self.dvalue.proxies)
             case _:
                 return Err("Not implemented")
 

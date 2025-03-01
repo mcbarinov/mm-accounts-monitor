@@ -83,6 +83,7 @@ name = "app"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [
+    { name = "mm-aptos" },
     { name = "mm-base3" },
     { name = "mm-eth" },
     { name = "mm-sol" },
@@ -103,9 +104,10 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "mm-aptos", specifier = "~=0.2.1" },
     { name = "mm-base3", specifier = "==0.0.12" },
-    { name = "mm-eth", specifier = ">=0.5.6" },
-    { name = "mm-sol", specifier = ">=0.5.3" },
+    { name = "mm-eth", specifier = "~=0.5.6" },
+    { name = "mm-sol", specifier = "~=0.5.3" },
     { name = "tomlkit", specifier = ">=0.13.2" },
 ]
 
@@ -873,6 +875,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba", size = 8729 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8", size = 9979 },
+]
+
+[[package]]
+name = "mm-aptos"
+version = "0.2.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mm-crypto-utils" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/97/26/048382be248f60ece2bc32d66457cfc2ba0d5760d4e67152739f78ffca10/mm_aptos-0.2.1.tar.gz", hash = "sha256:37a31b6ba96a6edc7b61d43e4f8e0afca2d84fa9de4a88c60daf209535ec88a4", size = 33090 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1b/ba/5cc46ce7da8d7b0ec47d445d8b82246459f7512936e55d26eda58d7002b0/mm_aptos-0.2.1-py3-none-any.whl", hash = "sha256:2bb204f1a27ae3482d9f29e41ab769bda5a1261977071600e0308d2d77c0c2ff", size = 2814 },
 ]
 
 [[package]]

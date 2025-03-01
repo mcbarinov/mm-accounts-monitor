@@ -41,7 +41,7 @@
         <td>{{ loop.index }}</td>
         <td>{{ account }}</td>
         {% for naming in group.namings %}
-          <td>{{ info.get_names(naming, account) | join(" ") }}</td>
+          <td>{{ info.get_names(naming, account) }}</td>
         {% endfor %}
         {% for coin in group.coins %}
           <td>{{ info.get_balance(coin, account) }}</td>
