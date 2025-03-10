@@ -3,11 +3,10 @@ from __future__ import annotations
 import tomlkit
 from mm_std import Err, Ok, Result
 from pydantic import BaseModel
-from tomlkit.items import Table
 
-from app.constants import NetworkType
-from app.db import Network
-from app.types_ import AppBaseService, AppBaseServiceParams
+from app.core.constants import NetworkType
+from app.core.db import Network
+from app.core.types_ import AppService, AppServiceParams
 
 
 class ImportNetworkItem(BaseModel):
@@ -24,13 +23,13 @@ class ImportNetworkItem(BaseModel):
         return Network(id=self.id, type=self.type, rpc_urls=self.rpc_urls_list, explorer_url=self.explorer_url)
 
 
-class NetworkService(AppBaseService):
-    def __init__(self, base_params: AppBaseServiceParams) -> None:
+class NetworkService(AppService):
+    def __init__(self, base_params: AppServiceParams) -> None:
         super().__init__(base_params)
 
     def export_as_toml(self) -> str:
         doc = tomlkit.document()
-        networks: list[Table] = []
+        networks = tomlkit.aot()
         for n in self.db.network.find({}, "_id"):
             network = tomlkit.table()
             network.add("id", n.id)
@@ -39,7 +38,7 @@ class NetworkService(AppBaseService):
             network.add("explorer_url", n.explorer_url)
             networks.append(network)
 
-        doc.add("networks", *networks)
+        doc.add("networks", networks)
         return tomlkit.dumps(doc)
 
     def import_from_toml(self, toml_str: str) -> Result[int]:

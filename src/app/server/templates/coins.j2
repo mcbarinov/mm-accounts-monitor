@@ -4,7 +4,7 @@
     <ul>
       <li><h3>coins</h3></li>
       <li><a data-target="modal-import" onclick="toggleModal(event)">import</a></li>
-      <li><a href="/export-coins">export</a></li>
+      <li><a href="/coins/export">export</a></li>
     </ul>
   </nav>
 
@@ -13,7 +13,7 @@
       <header>
         <h3>import coins</h3>
       </header>
-      <form method="post" action="/import-coins">
+      <form method="post" action="/coins/import">
         <textarea name="value" rows="10" cols="10" required></textarea>
         <input type="submit" value="import">
       </form>
@@ -30,7 +30,7 @@
     </tr>
     {% for c in coins %}
       <tr>
-        <td>{{ c.network }}</td>
+        <td nowrap="nowrap">{{ c.network }}</td>
         <td>{{ c.symbol }}</td>
         <td>{{ c.token | empty }}</td>
         <td>{{ c.decimals }}</td>

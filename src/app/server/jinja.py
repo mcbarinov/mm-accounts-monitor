@@ -1,7 +1,7 @@
 from markupsafe import Markup
-from mm_base3 import CustomJinja
+from mm_base5 import CustomJinja
 
-from app.core import Core
+from app.core.core import Core
 
 
 def header_info(_core: Core) -> Markup:

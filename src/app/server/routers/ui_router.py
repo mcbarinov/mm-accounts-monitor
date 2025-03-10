@@ -1,0 +1,183 @@
+from typing import Annotated
+
+import pydash
+from bson import ObjectId
+from fastapi import APIRouter, Form
+from mm_base5 import RenderDep, redirect
+from mm_std import Err, str_to_list
+from pydantic import BaseModel, Field
+from starlette.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+
+from app.core.constants import Naming, NetworkType
+from app.core.db import Network
+from app.server.deps import CoreDep
+
+router = APIRouter(include_in_schema=False)
+
+
+@router.get("/")
+def index_page(render: RenderDep) -> HTMLResponse:
+    return render.html("index.j2")
+
+
+@router.get("/bot")
+def bot_page(render: RenderDep) -> HTMLResponse:
+    return render.html("bot.j2")
+
+
+@router.get("/networks")
+def networks_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
+    networks = core.network_service.get_networks()
+    return render.html("networks.j2", networks=networks, network_types=[t.value for t in NetworkType])
+
+
+@router.get("/namings")
+def namings_page(render: RenderDep) -> HTMLResponse:
+    return render.html("namings.j2", namings=list(Naming))
+
+
+@router.get("/coins")
+def coins_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
+    coins = core.db.coin.find({}, "network,symbol")
+    return render.html("coins.j2", coins=coins)
+
+
+@router.get("/groups")
+def groups_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
+    groups = core.db.group.find({}, "name")
+    coins = core.coin_service.get_coins()
+    return render.html("groups.j2", groups=groups, coins=coins, network_types=list(NetworkType), namings=list(Naming))
+
+
+@router.get("/accounts/{group_id}")
+def accounts(render: RenderDep, core: CoreDep, group_id: ObjectId) -> HTMLResponse:
+    group = core.db.group.get(group_id)
+    info = core.group_service.get_group_accounts_info(group_id)
+    return render.html("accounts.j2", group=group, info=info)
+
+
+@router.get("/accounts/{group_id}/balances")
+def account_balances_page(render: RenderDep, core: CoreDep, group_id: ObjectId) -> HTMLResponse:
+    group = core.db.group.get(ObjectId(group_id))
+    account_balances = core.db.account_balance.find({"group_id": ObjectId(group_id)}, "account,coin")
+    return render.html("account_balances.j2", group=group, account_balances=account_balances)
+
+
+@router.get("/accounts/{group_id}/namings")
+def account_namings_page(render: RenderDep, core: CoreDep, group_id: ObjectId) -> HTMLResponse:
+    group = core.db.group.get(ObjectId(group_id))
+    account_namings = core.db.account_naming.find({"group_id": ObjectId(group_id)}, "account,naming")
+    return render.html("account_namings.j2", group=group, account_namings=account_namings)
+
+
+# ACTIONS
+
+
+class AddNetworkForm(BaseModel):
+    id: str
+    type: NetworkType
+    rpc_urls: str
+    explorer_url: str
+
+    def to_db(self) -> Network:
+        rpc_urls = [line.strip() for line in self.rpc_urls.split("\n") if line.strip()]
+        return Network(id=self.id, type=self.type, rpc_urls=pydash.uniq(rpc_urls), explorer_url=self.explorer_url)
+
+
+@router.post("/networks")
+def add_network(render: RenderDep, core: CoreDep, data: Annotated[AddNetworkForm, Form()]) -> RedirectResponse:
+    core.db.network.insert_one(data.to_db())
+    render.flash("network added successfully")
+    return redirect("/networks")
+
+
+@router.post("/networks/import")
+def import_networks(render: RenderDep, core: CoreDep, value: Annotated[str, Form()]) -> RedirectResponse:
+    res = core.network_service.import_from_toml(value)
+    if isinstance(res, Err):
+        render.flash(f"can't import networks: {res.err}", is_error=True)
+    else:
+        render.flash(f"{res.ok} networks imported successfully")
+    return redirect("/networks")
+
+
+@router.get("/networks/export", response_class=PlainTextResponse)
+def export_networks(core: CoreDep) -> str:
+    return core.network_service.export_as_toml()
+
+
+@router.post("/networks/{id}/explorer")
+def update_explorer_url(render: RenderDep, core: CoreDep, id: str, value: Annotated[str, Form()]) -> RedirectResponse:
+    core.db.network.update_one({"_id": id}, {"$set": {"explorer_url": value}})
+    render.flash("explorer url updated successfully")
+    return redirect("/networks")
+
+
+@router.post("/networks/{id}/add-rpc")
+def add_rpc_url(render: RenderDep, core: CoreDep, id: str, value: Annotated[str, Form()]) -> RedirectResponse:
+    core.db.network.update_one({"_id": id}, {"$push": {"rpc_urls": value}})
+    render.flash("rpc url added successfully")
+    return redirect("/networks")
+
+
+@router.get("/networks/{id}/delete-rpc")
+def delete_rpc_url(render: RenderDep, core: CoreDep, id: str, value: str) -> RedirectResponse:
+    core.db.network.update_one({"_id": id}, {"$pull": {"rpc_urls": value}})
+    render.flash("rpc url deleted successfully")
+    return redirect("/networks")
+
+
+@router.get("/coins/export", response_class=PlainTextResponse)
+def export_coins(core: CoreDep) -> str:
+    return core.coin_service.export_as_toml()
+
+
+@router.post("/coins/import")
+def import_coins(render: RenderDep, core: CoreDep, value: Annotated[str, Form()]) -> RedirectResponse:
+    res = core.coin_service.import_from_toml(value)
+    if isinstance(res, Err):
+        render.flash(f"can't import coins: {res.err}", is_error=True)
+    else:
+        render.flash(f"{res.ok} coins imported successfully")
+    return redirect("/coins")
+
+
+class CreateGroupForm(BaseModel):
+    name: str
+    network_type: NetworkType
+    notes: str
+    coins: list[str] | str = Field(default_factory=list)  # type: ignore[arg-type]
+    namings: list[str] | str = Field(default_factory=list)  # type: ignore[arg-type]
+
+    @property
+    def coins_list(self) -> list[str]:
+        if isinstance(self.coins, str):
+            return [self.coins]
+        return self.coins
+
+    @property
+    def namings_list(self) -> list[Naming]:
+        if isinstance(self.namings, str):
+            return [Naming(self.namings)]
+        return [Naming(n) for n in self.namings]
+
+
+@router.post("/groups")
+def create_group(render: RenderDep, core: CoreDep, data: Annotated[CreateGroupForm, Form()]) -> RedirectResponse:
+    core.group_service.create_group(data.name, data.network_type, data.notes, data.namings_list, data.coins_list)
+    render.flash("group added successfully")
+    return redirect("/groups")
+
+
+@router.post("/groups/{id}/accounts")
+def update_accounts(render: RenderDep, core: CoreDep, id: ObjectId, value: Annotated[str, Form()]) -> RedirectResponse:
+    core.group_service.update_accounts(id, str_to_list(value, unique=True))
+    render.flash("accounts updated successfully")
+    return redirect("/groups")
+
+
+@router.post("/groups/{id}/coins")
+def update_coins(render: RenderDep, core: CoreDep, id: ObjectId, value: Annotated[list[str], Form()]) -> RedirectResponse:
+    core.group_service.update_coins(id, value)
+    render.flash("coins updated successfully")
+    return redirect("/groups")

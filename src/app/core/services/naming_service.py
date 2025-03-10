@@ -1,14 +1,14 @@
 from bson import ObjectId
 from mm_std import ConcurrentTasks, Err, Result, synchronized, utc_delta, utc_now
 
-from app.blockchains import aptos, evm
-from app.constants import Naming
-from app.services.network_service import NetworkService
-from app.types_ import AppBaseService, AppBaseServiceParams
+from app.core.blockchains import aptos, evm
+from app.core.constants import Naming
+from app.core.services.network_service import NetworkService
+from app.core.types_ import AppService, AppServiceParams
 
 
-class NamingService(AppBaseService):
-    def __init__(self, base_params: AppBaseServiceParams, network_service: NetworkService) -> None:
+class NamingService(AppService):
+    def __init__(self, base_params: AppServiceParams, network_service: NetworkService) -> None:
         super().__init__(base_params)
         self.network_service = network_service
 

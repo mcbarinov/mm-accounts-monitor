@@ -4,9 +4,37 @@
   <nav>
     <ul>
       <li><h3>groups</h3></li>
-      <li><a href="/add-group">add</a></li>
+      <li><a data-target="modal-add" onclick="toggleModal(event)">add</a></li>
     </ul>
   </nav>
+
+  <dialog id="modal-add">
+
+    <article>
+      <header>Add a group</header>
+      <form action="/groups" method="post">
+        <input type="text" name="name" placeholder="name" required>
+        <select name="network_type" required>
+          <option value="" disabled selected>network type...</option>
+          {% for nt in network_types %}
+            <option value="{{ nt.value }}">{{ nt.value }}</option>
+          {% endfor %}
+        </select>
+        <input type="text" name="notes" placeholder="notes">
+        <select name="namings" multiple title="namings">
+          {% for n in namings %}
+            <option value="{{ n.value }}">{{ n.value }}</option>
+          {% endfor %}
+        </select>
+        <select name="coins" multiple style="height:300px" title="coins">
+          {% for c in coins %}
+            <option value="{{ c.id }}">{{ c.network }} / {{ c.symbol }}</option>
+          {% endfor %}
+        </select>
+        <input type="submit" value="add">
+      </form>
+    </article>
+  </dialog>
 
   <table>
     <tr>
@@ -42,7 +70,6 @@
               <li><a data-target="modal-update-coins-{{ g.id }}" onclick="toggleModal(event)">update coins</a></li>
               <li><a href="/api-post/groups/{{ g.id }}/process-account-namings">process account namings</a></li>
               <li><a href="/api-post/groups/{{ g.id }}/process-account-balances">process account balances</a></li>
-              <li><a href="/account-balances/{{ g.id }}">account balances</a></li>
               <li><a href="/api-delete/groups/{{ g.id }}" {{ confirm }}>delete</a></li>
               <li><a href="/api/groups/{{ g.id }}">view</a></li>
             </ul>
@@ -53,7 +80,7 @@
               <header>
                 <h3>update accounts for {{ g.name }}</h3>
               </header>
-              <form method="post" action="/update-accounts/{{ g.id }}">
+              <form method="post" action="/groups/{{ g.id }}/accounts">
                 <textarea name="value" rows="10" cols="10" required>{{ "\n".join(g.accounts) }}</textarea>
                 <input type="submit" value="save">
               </form>
@@ -65,7 +92,7 @@
               <header>
                 <h3>update coins for {{ g.name }}</h3>
               </header>
-              <form method="post" action="/update-coins/{{ g.id }}">
+              <form method="post" action="/groups/{{ g.id }}/coins">
                 <select name="value" multiple>
                   {% for c in coins %}
                     <option value="{{ c.id }}" {{ 'selected' if c.id in g.coins else '' }}>{{ c.network }}

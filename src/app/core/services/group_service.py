@@ -3,16 +3,16 @@ from decimal import Decimal
 from typing import cast
 
 from bson import ObjectId
-from mm_base3.errors import UserError
+from mm_base5 import UserError
+from mm_mongo import MongoDeleteResult
 from mm_std import synchronized
 from pydantic import BaseModel
-from pymongo.results import DeleteResult
 
-from app.constants import Naming, NetworkType
-from app.db import AccountBalance, AccountNaming, Group, GroupBalances, GroupNamings
-from app.services.coin_service import CoinService
-from app.services.network_service import NetworkService
-from app.types_ import AppBaseService, AppBaseServiceParams
+from app.core.constants import Naming, NetworkType
+from app.core.db import AccountBalance, AccountNaming, Group, GroupBalances, GroupNamings
+from app.core.services.coin_service import CoinService
+from app.core.services.network_service import NetworkService
+from app.core.types_ import AppService, AppServiceParams
 
 
 @dataclass
@@ -41,8 +41,8 @@ class GroupAccountsInfo(BaseModel):
         return self.namings.get(naming, {}).get(account, None)
 
 
-class GroupService(AppBaseService):
-    def __init__(self, base_params: AppBaseServiceParams, network_service: NetworkService, coin_service: CoinService) -> None:
+class GroupService(AppService):
+    def __init__(self, base_params: AppServiceParams, network_service: NetworkService, coin_service: CoinService) -> None:
         super().__init__(base_params)
         self.network_service = network_service
         self.coin_service = coin_service
@@ -80,7 +80,7 @@ class GroupService(AppBaseService):
         self.process_account_balances(new_group.id)
         return new_group
 
-    def delete_group(self, id: ObjectId) -> DeleteResult:
+    def delete_group(self, id: ObjectId) -> MongoDeleteResult:
         self.db.account_balance.delete_many({"group_id": id})
         self.db.account_naming.delete_many({"group_id": id})
         self.db.group_namings.delete_many({"group_id": id})

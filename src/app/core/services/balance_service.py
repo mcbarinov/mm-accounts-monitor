@@ -3,15 +3,15 @@ from decimal import Decimal
 from bson import ObjectId
 from mm_std import ConcurrentTasks, Err, Result, synchronized, utc_delta, utc_now
 
-from app.blockchains import aptos, evm, solana
-from app.constants import NetworkType
-from app.services.coin_service import CoinService
-from app.services.network_service import NetworkService
-from app.types_ import AppBaseService, AppBaseServiceParams
+from app.core.blockchains import aptos, evm, solana
+from app.core.constants import NetworkType
+from app.core.services.coin_service import CoinService
+from app.core.services.network_service import NetworkService
+from app.core.types_ import AppService, AppServiceParams
 
 
-class BalanceService(AppBaseService):
-    def __init__(self, base_params: AppBaseServiceParams, network_service: NetworkService, coin_service: CoinService) -> None:
+class BalanceService(AppService):
+    def __init__(self, base_params: AppServiceParams, network_service: NetworkService, coin_service: CoinService) -> None:
         super().__init__(base_params)
         self.network_service = network_service
         self.coin_service = coin_service

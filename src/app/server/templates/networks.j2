@@ -5,7 +5,7 @@
     <ul>
       <li><h3>networks</h3></li>
       <li><a data-target="modal-import" onclick="toggleModal(event)">import</a></li>
-      <li><a href="/export-networks">export</a></li>
+      <li><a href="/networks/export">export</a></li>
     </ul>
   </nav>
 
@@ -14,7 +14,7 @@
       <header>
         <h3>import networks</h3>
       </header>
-      <form method="post" action="/import-networks">
+      <form method="post" action="/networks/import">
         <textarea name="value" rows="10" cols="10" required></textarea>
         <input type="submit" value="import">
       </form>
@@ -57,7 +57,7 @@
               <header>
                 <h3>update explorer url</h3>
               </header>
-              <form method="post" action="/update-explorer-url/{{ n.id }}">
+              <form method="post" action="/networks/{{ n.id }}/explorer">
                 <input type="text" name="value" value="{{ n.explorer_url }}">
                 <input type="submit" value="save">
               </form>
@@ -69,7 +69,7 @@
               <header>
                 <h3>add rpc url</h3>
               </header>
-              <form method="post" action="/add-rpc-url/{{ n.id }}">
+              <form method="post" action="/networks/{{ n.id }}/add-rpc">
                 <input type="text" name="value">
                 <input type="submit" value="add">
               </form>
@@ -85,7 +85,7 @@
                 {% for u in n.rpc_urls %}
                   <li>
                     {{ u }}
-                    <a href="/delete-rpc-url/{{ n.id }}?value={{ u }}" {{ confirm }}>delete</a>
+                    <a href="/networks/{{ n.id }}/delete-rpc?value={{ u }}" {{ confirm }}>delete</a>
                   </li>
                 {% endfor %}
               </ul>
@@ -99,7 +99,7 @@
 
   <details>
     <summary role="button" class="outline">add network</summary>
-    <form action="/add-network" method="post">
+    <form action="/networks" method="post">
       <input type="text" name="id" placeholder="id" required>
       <select name="type">
         {% for t in network_types %}

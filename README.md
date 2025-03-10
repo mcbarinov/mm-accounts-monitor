@@ -1,1 +1,1 @@
-# mm-proxy
+# mm-accounts-monitor

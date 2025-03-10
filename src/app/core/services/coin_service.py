@@ -1,10 +1,9 @@
-import toml
 import tomlkit
-from mm_std import Err, Ok, Result
+from mm_std import Err, Ok, Result, toml_dumps
 from pydantic import BaseModel
 
-from app.db import Coin
-from app.types_ import AppBaseService, AppBaseServiceParams
+from app.core.db import Coin
+from app.core.types_ import AppService, AppServiceParams
 
 
 class ImportCoinItem(BaseModel):
@@ -18,8 +17,8 @@ class ImportCoinItem(BaseModel):
         return Coin(id=f"{self.network}__{self.symbol}", decimals=self.decimals, token=self.token, notes=self.notes)
 
 
-class CoinService(AppBaseService):
-    def __init__(self, base_params: AppBaseServiceParams) -> None:
+class CoinService(AppService):
+    def __init__(self, base_params: AppServiceParams) -> None:
         super().__init__(base_params)
 
     def import_from_toml(self, toml_str: str) -> Result[int]:
@@ -41,7 +40,7 @@ class CoinService(AppBaseService):
                 {"network": c.network, "symbol": c.symbol, "decimals": c.decimals, "token": c.token, "notes": c.notes}
             )
             coins.append(coin)
-        return toml.dumps({"coins": coins})
+        return toml_dumps({"coins": coins})
 
     def get_coins(self) -> list[Coin]:
         # TODO: cache it

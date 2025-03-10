@@ -3,11 +3,11 @@ from decimal import Decimal
 
 import pydash
 from bson import ObjectId
-from mm_base3.base_db import BaseDb
+from mm_base5 import BaseDb
 from mm_mongo import MongoCollection, MongoModel
 from pydantic import Field
 
-from app.constants import Naming, NetworkType
+from app.core.constants import Naming, NetworkType
 
 
 class Network(MongoModel[str]):
@@ -15,7 +15,7 @@ class Network(MongoModel[str]):
     rpc_urls: list[str] = Field(default_factory=list)
     explorer_url: str
 
-    __collection__: str = "network"
+    __collection__: str = "networks"
 
 
 class Coin(MongoModel[str]):  # id = {network}__{symbol}
@@ -31,7 +31,7 @@ class Coin(MongoModel[str]):  # id = {network}__{symbol}
     def symbol(self) -> str:
         return self.id.split("__")[1]
 
-    __collection__: str = "coin"
+    __collection__: str = "coins"
 
 
 class Group(MongoModel[ObjectId]):
@@ -42,7 +42,7 @@ class Group(MongoModel[ObjectId]):
     namings: list[Naming] = Field(default_factory=list)
     accounts: list[str] = Field(default_factory=list)
 
-    __collection__: str = "group"
+    __collection__: str = "groups"
 
     def get_coin_networks(self) -> list[str]:
         networks = [c.split("__")[0] for c in self.coins]
@@ -62,7 +62,7 @@ class AccountBalance(MongoModel[ObjectId]):
     balance_raw: int | None = None
     checked_at: datetime | None = None
 
-    __collection__: str = "account_balance"
+    __collection__: str = "account_balances"
     __indexes__ = ["group_id", "account", "coin", "network", "checked_at"]
 
 
@@ -74,7 +74,7 @@ class AccountNaming(MongoModel[ObjectId]):
     name: str | None = None  # domains, ids, etc..
     checked_at: datetime | None = None
 
-    __collection__: str = "account_naming"
+    __collection__: str = "account_namings"
     __indexes__ = ["group_id", "account", "network", "naming", "checked_at"]
 
 
