@@ -15,5 +15,4 @@ def get_account_naming(core: CoreDep, id: ObjectId) -> AccountNaming:
 
 @router.post("/{id}/check")
 def check_account_naming(core: CoreDep, id: ObjectId) -> Result[str | None]:
-    core.logger.debug("check_account_naming called: %s", id)
     return core.naming_service.check_account_naming(id)

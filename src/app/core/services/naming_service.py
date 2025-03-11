@@ -1,7 +1,7 @@
 from bson import ObjectId
 from mm_std import ConcurrentTasks, Err, Result, synchronized, utc_delta, utc_now
 
-from app.core.blockchains import aptos, evm
+from app.core.blockchains import aptos, evm, starknet
 from app.core.constants import Naming
 from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
@@ -14,7 +14,7 @@ class NamingService(AppService):
 
     @synchronized
     def check_next(self) -> None:
-        if not self.dvalue.check_balances:
+        if not self.dvalue.check_namings:
             return
 
         tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_networks)
@@ -50,6 +50,8 @@ class NamingService(AppService):
                 res = evm.get_ens_name(network.rpc_urls, account_naming.account, proxies=self.dvalue.proxies)
             case Naming.ANS:
                 res = aptos.get_ans_name(account_naming.account, proxies=self.dvalue.proxies)
+            case Naming.STARKNET_ID:
+                res = starknet.get_starknet_id(account_naming.account, proxies=self.dvalue.proxies)
             case _:
                 return Err("Not implemented")
 
@@ -58,7 +60,6 @@ class NamingService(AppService):
             return res
 
         name = res.ok or ""
-
         self.db.group_namings.update_one(
             {"group_id": account_naming.group_id, "naming": account_naming.naming},
             {"$set": {f"names.{account_naming.account}": name}},
