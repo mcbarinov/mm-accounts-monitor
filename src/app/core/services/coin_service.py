@@ -1,4 +1,5 @@
 import tomlkit
+from mm_mongo import MongoDeleteResult
 from mm_std import Err, Ok, Result, toml_dumps
 from pydantic import BaseModel
 
@@ -49,6 +50,13 @@ class CoinService(AppService):
     def get_coin(self, id: str) -> Coin:
         # TODO: cache it
         return self.db.coin.get(id)
+
+    def delete(self, id: str) -> MongoDeleteResult:
+        self.db.group_balances.delete_many({"coin": id})
+        self.db.account_balance.delete_many({"coin": id})
+        self.db.group.update_many({"coins": id}, {"$pull": {"coins": id}})
+        # TODO: remove from cache
+        return self.db.coin.delete(id)
 
 
 def remove_empty_keys(d: dict[str, object]) -> dict[str, object]:

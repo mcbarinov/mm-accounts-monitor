@@ -26,15 +26,28 @@
       <th>symbol</th>
       <th>token</th>
       <th>decimals</th>
-      <th>notes</th>
+      <th>actions</th>
     </tr>
     {% for c in coins %}
       <tr>
         <td nowrap="nowrap">{{ c.network }}</td>
         <td>{{ c.symbol }}</td>
-        <td>{{ c.token | empty }}</td>
+        <td>
+          {{ c.token | empty }}
+          {{ c.notes }}
+        </td>
         <td>{{ c.decimals }}</td>
-        <td>{{ c.notes }}</td>
+
+        <td>
+          <details class="dropdown">
+            <summary>actions</summary>
+            <ul>
+              <li><a href="/api-delete/coins/{{ c.id }}" {{ confirm }}>delete</a></li>
+              <li><a href="/api/coins/{{ c.id }}">view</a></li>
+            </ul>
+
+          </details>
+        </td>
       </tr>
     {% endfor %}
   </table>

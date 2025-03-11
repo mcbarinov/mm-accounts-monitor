@@ -29,6 +29,7 @@ def get_router() -> APIRouter:
         account_balance_router,
         account_naming_router,
         bot_router,
+        coin_router,
         group_router,
         network_router,
         ui_router,
@@ -41,4 +42,5 @@ def get_router() -> APIRouter:
     router.include_router(group_router.router)
     router.include_router(account_balance_router.router)
     router.include_router(account_naming_router.router)
+    router.include_router(coin_router.router)
     return router

@@ -3,7 +3,7 @@ from decimal import Decimal
 from bson import ObjectId
 from mm_std import ConcurrentTasks, Err, Result, synchronized, utc_delta, utc_now
 
-from app.core.blockchains import aptos, evm, solana
+from app.core.blockchains import aptos, evm, solana, starknet
 from app.core.constants import NetworkType
 from app.core.services.coin_service import CoinService
 from app.core.services.network_service import NetworkService
@@ -54,6 +54,10 @@ class BalanceService(AppService):
                 res = solana.get_balance(network.rpc_urls, account_balance.account, coin.token, proxies=self.dvalue.proxies)
             case NetworkType.APTOS:
                 res = aptos.get_balance(network.rpc_urls, account_balance.account, coin.token, proxies=self.dvalue.proxies)
+            case NetworkType.STARKNET:
+                if coin.token is None:
+                    raise ValueError("can't get balance for coin on StarkNet without token address")
+                res = starknet.get_balance(network.rpc_urls, account_balance.account, coin.token, proxies=self.dvalue.proxies)
             case _:
                 raise NotImplementedError
 
