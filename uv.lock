@@ -134,7 +134,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "mm-aptos", specifier = "~=0.2.2" },
-    { name = "mm-base5", specifier = "~=0.0.6" },
+    { name = "mm-base5", specifier = "~=0.0.7" },
     { name = "mm-eth", specifier = "~=0.5.6" },
     { name = "mm-sol", specifier = "~=0.5.3" },
     { name = "mm-starknet", specifier = "~=0.2.1" },
@@ -1073,17 +1073,18 @@ wheels = [
 
 [[package]]
 name = "mm-base5"
-version = "0.0.6"
+version = "0.0.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "itsdangerous" },
     { name = "mm-jinja" },
     { name = "mm-mongo" },
+    { name = "mm-telegram" },
     { name = "pydantic-settings" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/15/89/04acfbc014ac57cf56418a4844b8094023a2e7d87f69253ec4adebc1b678/mm_base5-0.0.6-py3-none-any.whl", hash = "sha256:f3fa544ed8993868b91fdbc8a50b9bd5657d0cd942b5792b8618e9d495ac023b", size = 39786 },
+    { url = "https://files.pythonhosted.org/packages/d4/cb/ff2e33a46621c9ac430bd7aeee978ec0c26acb3b17a399c842cb239100f3/mm_base5-0.0.7-py3-none-any.whl", hash = "sha256:71ad1ec7702d0ad3bf05dd84f0ca52a5edf44b1286aae1b6470d0a3749be6c81", size = 40248 },
 ]
 
 [[package]]
@@ -1185,6 +1186,17 @@ dependencies = [
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/20/a6/d66ae863a81083e70883dc67c3c51295bd94023c9c9ce3a7e6cc1201681b/mm_std-0.3.7-py3-none-any.whl", hash = "sha256:e8af2601cc656fc65873748a08a703e39aef8bd9d4f7d59dbccf9711e7efcbc2", size = 15883 },
+]
+
+[[package]]
+name = "mm-telegram"
+version = "0.0.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mm-std" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/56/8c/48e7a01c81b804a79c1371df1c9d5b61696859997d2e026a53cb540f6a74/mm_telegram-0.0.5-py3-none-any.whl", hash = "sha256:63ca38890eb6467dfcb2f26d80f7094abc4f658ef7235ffbf3f06a40fa8cbff9", size = 1857 },
 ]
 
 [[package]]

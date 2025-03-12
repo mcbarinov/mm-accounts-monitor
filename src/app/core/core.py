@@ -15,7 +15,7 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
         super().__init__(core_config, DConfigSettings, DValueSettings, Db)
         self.bot_service: BotService = BotService(self.base_service_params)
         self.network_service: NetworkService = NetworkService(self.base_service_params)
-        self.coin_service: CoinService = CoinService(self.base_service_params)
+        self.coin_service: CoinService = CoinService(self.base_service_params, self.network_service)
         self.group_service: GroupService = GroupService(self.base_service_params, self.network_service, self.coin_service)
         self.balance_service: BalanceService = BalanceService(self.base_service_params, self.network_service, self.coin_service)
         self.naming_service: NamingService = NamingService(self.base_service_params, self.network_service)

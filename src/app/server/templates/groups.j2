@@ -9,7 +9,6 @@
   </nav>
 
   <dialog id="modal-add">
-
     <article>
       <header>Add a group</header>
       <form action="/groups" method="post">
@@ -27,8 +26,12 @@
           {% endfor %}
         </select>
         <select name="coins" multiple style="height:300px" title="coins">
-          {% for c in coins %}
-            <option value="{{ c.id }}">{{ c.network }} / {{ c.symbol }}</option>
+          {% for network_type, coins in coins_by_network_type.items() %}
+            <optgroup label="{{ network_type.value }}">
+              {% for c in coins %}
+                <option value="{{ c.id }}">{{ c.network }} / {{ c.symbol }}</option>
+              {% endfor %}
+            </optgroup>
           {% endfor %}
         </select>
         <input type="submit" value="add">
@@ -81,7 +84,7 @@
                 <h3>update accounts for {{ g.name }}</h3>
               </header>
               <form method="post" action="/groups/{{ g.id }}/accounts">
-                <textarea name="value" rows="10" cols="10" required>{{ "\n".join(g.accounts) }}</textarea>
+                <textarea name="value" rows="20" required>{{ "\n".join(g.accounts) }}</textarea>
                 <input type="submit" value="save">
               </form>
             </article>
@@ -93,10 +96,14 @@
                 <h3>update coins for {{ g.name }}</h3>
               </header>
               <form method="post" action="/groups/{{ g.id }}/coins">
-                <select name="value" multiple>
-                  {% for c in coins %}
-                    <option value="{{ c.id }}" {{ 'selected' if c.id in g.coins else '' }}>{{ c.network }}
-                      / {{ c.symbol }}</option>
+                <select name="value" multiple style="min-height:300px">
+                  {% for network_type, coins in coins_by_network_type.items() %}
+                    <optgroup label="{{ network_type.value }}">
+                      {% for c in coins %}
+                        <option value="{{ c.id }}" {{ 'selected' if c.id in g.coins else '' }}>{{ c.network }}
+                          / {{ c.symbol }}</option>
+                      {% endfor %}
+                    </optgroup>
                   {% endfor %}
                 </select>
                 <input type="submit" value="save">

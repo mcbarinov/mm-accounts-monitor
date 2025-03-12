@@ -5,6 +5,7 @@ from mm_std import ConcurrentTasks, Err, Result, synchronized, utc_delta, utc_no
 
 from app.core.blockchains import aptos, evm, solana, starknet
 from app.core.constants import NetworkType
+from app.core.db import BalanceProblem
 from app.core.services.coin_service import CoinService
 from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
@@ -63,6 +64,9 @@ class BalanceService(AppService):
 
         if isinstance(res, Err):
             self.logger.debug("check_account_balance: %s", res.err)
+            self.db.balance_problem.insert_one(
+                BalanceProblem(id=ObjectId(), network=network.id, coin=coin.id, account=account_balance.account, message=res.err)
+            )
             return res
 
         balance_raw = res.ok

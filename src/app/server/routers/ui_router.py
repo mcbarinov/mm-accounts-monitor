@@ -38,15 +38,22 @@ def namings_page(render: RenderDep) -> HTMLResponse:
 
 @router.get("/coins")
 def coins_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
-    coins = core.db.coin.find({}, "network,symbol")
-    return render.html("coins.j2", coins=coins)
+    return render.html("coins.j2", coins=core.coin_service.get_coins())
 
 
 @router.get("/groups")
 def groups_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
     groups = core.db.group.find({}, "name")
     coins = core.coin_service.get_coins()
-    return render.html("groups.j2", groups=groups, coins=coins, network_types=list(NetworkType), namings=list(Naming))
+    coins_by_network_type = core.coin_service.get_coins_by_network_type()
+    return render.html(
+        "groups.j2",
+        groups=groups,
+        coins=coins,
+        network_types=list(NetworkType),
+        namings=list(Naming),
+        coins_by_network_type=coins_by_network_type,
+    )
 
 
 @router.get("/accounts/{group_id}")
@@ -68,6 +75,12 @@ def account_namings_page(render: RenderDep, core: CoreDep, group_id: ObjectId) -
     group = core.db.group.get(ObjectId(group_id))
     account_namings = core.db.account_naming.find({"group_id": ObjectId(group_id)}, "account,naming")
     return render.html("account_namings.j2", group=group, account_namings=account_namings)
+
+
+@router.get("/balance-problems")
+def balance_problems_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
+    problems = core.db.balance_problem.find({}, "-created_at", 1000)
+    return render.html("balance_problems.j2", problems=problems)
 
 
 # ACTIONS

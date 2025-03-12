@@ -3,7 +3,9 @@ from mm_mongo import MongoDeleteResult
 from mm_std import Err, Ok, Result, toml_dumps
 from pydantic import BaseModel
 
+from app.core.constants import NetworkType
 from app.core.db import Coin
+from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
 
 
@@ -19,8 +21,9 @@ class ImportCoinItem(BaseModel):
 
 
 class CoinService(AppService):
-    def __init__(self, base_params: AppServiceParams) -> None:
+    def __init__(self, base_params: AppServiceParams, network_service: NetworkService) -> None:
         super().__init__(base_params)
+        self.network_service = network_service
 
     def import_from_toml(self, toml_str: str) -> Result[int]:
         try:
@@ -46,6 +49,14 @@ class CoinService(AppService):
     def get_coins(self) -> list[Coin]:
         # TODO: cache it
         return self.db.coin.find({}, "_id")
+
+    def get_coins_by_network_type(self) -> dict[NetworkType, list[Coin]]:
+        coins = self.get_coins()
+        coins_by_network_type: dict[NetworkType, list[Coin]] = {n: [] for n in NetworkType}
+        for c in coins:
+            network_type = self.network_service.get_network(c.network).type
+            coins_by_network_type[network_type].append(c)
+        return coins_by_network_type
 
     def get_coin(self, id: str) -> Coin:
         # TODO: cache it

@@ -5,6 +5,7 @@ import pydash
 from bson import ObjectId
 from mm_base5 import BaseDb
 from mm_mongo import MongoCollection, MongoModel
+from mm_std import utc_now
 from pydantic import Field
 
 from app.core.constants import Naming, NetworkType
@@ -96,6 +97,17 @@ class GroupNamings(MongoModel[ObjectId]):
     __indexes__ = ["!group_id,naming", "group_id"]
 
 
+class BalanceProblem(MongoModel[ObjectId]):
+    network: str
+    coin: str
+    account: str
+    message: str
+    created_at: datetime = Field(default_factory=utc_now)
+
+    __collection__: str = "balance_problems"
+    __indexes__ = ["network", "coin", "account"]
+
+
 class Db(BaseDb):
     network: MongoCollection[str, Network]
     coin: MongoCollection[str, Coin]
@@ -104,3 +116,4 @@ class Db(BaseDb):
     account_naming: MongoCollection[ObjectId, AccountNaming]
     group_balances: MongoCollection[ObjectId, GroupBalances]
     group_namings: MongoCollection[ObjectId, GroupNamings]
+    balance_problem: MongoCollection[ObjectId, BalanceProblem]
