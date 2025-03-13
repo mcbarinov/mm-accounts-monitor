@@ -105,7 +105,18 @@ class BalanceProblem(MongoModel[ObjectId]):
     created_at: datetime = Field(default_factory=utc_now)
 
     __collection__: str = "balance_problems"
-    __indexes__ = ["network", "coin", "account"]
+    __indexes__ = ["network", "coin", "account", "created_at"]
+
+
+class NamingProblem(MongoModel[ObjectId]):
+    network: str
+    naming: Naming
+    account: str
+    message: str
+    created_at: datetime = Field(default_factory=utc_now)
+
+    __collection__: str = "naming_problems"
+    __indexes__ = ["network", "naming", "account", "created_at"]
 
 
 class Db(BaseDb):
@@ -117,3 +128,4 @@ class Db(BaseDb):
     group_balances: MongoCollection[ObjectId, GroupBalances]
     group_namings: MongoCollection[ObjectId, GroupNamings]
     balance_problem: MongoCollection[ObjectId, BalanceProblem]
+    naming_problem: MongoCollection[ObjectId, NamingProblem]

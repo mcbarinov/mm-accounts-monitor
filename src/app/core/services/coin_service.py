@@ -1,6 +1,8 @@
+from datetime import datetime
+
 import tomlkit
 from mm_mongo import MongoDeleteResult
-from mm_std import Err, Ok, Result, toml_dumps
+from mm_std import Err, Ok, Result, replace_empty_dict_values, toml_dumps
 from pydantic import BaseModel
 
 from app.core.constants import NetworkType
@@ -40,7 +42,7 @@ class CoinService(AppService):
     def export_as_toml(self) -> str:
         coins = []
         for c in self.db.coin.find({}, "_id"):
-            coin = remove_empty_keys(
+            coin = replace_empty_dict_values(
                 {"network": c.network, "symbol": c.symbol, "decimals": c.decimals, "token": c.token, "notes": c.notes}
             )
             coins.append(coin)
@@ -69,6 +71,12 @@ class CoinService(AppService):
         # TODO: remove from cache
         return self.db.coin.delete(id)
 
-
-def remove_empty_keys(d: dict[str, object]) -> dict[str, object]:
-    return {k: v for k, v in d.items() if v}
+    def calc_oldest_checked_time(self) -> dict[str, datetime | None]:
+        res: dict[str, datetime | None] = {}
+        for coin in self.get_coins():
+            res[coin.id] = None
+            if not self.db.account_balance.exists({"coin": coin.id, "checked_at": None}):
+                balance = self.db.account_balance.find_one({"coin": coin.id}, "checked_at")
+                if balance:
+                    res[coin.id] = balance.checked_at
+        return res

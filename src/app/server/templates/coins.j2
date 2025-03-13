@@ -2,7 +2,7 @@
 {% block content %}
   <nav>
     <ul>
-      <li><h3>coins</h3></li>
+      <li><h3>coins / {{ coins | length }}</h3></li>
       <li><a data-target="modal-import" onclick="toggleModal(event)">import</a></li>
       <li><a href="/coins/export">export</a></li>
     </ul>
@@ -26,6 +26,7 @@
       <th>symbol</th>
       <th>token</th>
       <th>decimals</th>
+      <th>oldest checked time</th>
       <th>actions</th>
     </tr>
     {% for c in coins %}
@@ -37,7 +38,7 @@
           {{ c.notes }}
         </td>
         <td>{{ c.decimals }}</td>
-
+        <td>{{ oldest_checked_time[c.id] | dt }}</td>
         <td>
           <details class="dropdown">
             <summary>actions</summary>

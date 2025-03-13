@@ -15,6 +15,9 @@ class DConfigSettings(DConfigModel):
     round_ndigits = DC(5, "round ndigits")
     max_workers_networks = DC(10, "How many networks process in parallel")
     max_workers_coins = DC(5, "How many coins process in parallel in one network")
+    max_workers_namings = DC(5, "How many namings process in parallel in one network")
+    check_balance_interval = DC(15, "Check balance interval in minutes")
+    check_naming_interval = DC(15, "Check naming interval in minutes")
 
 
 class DValueSettings(DValueModel):

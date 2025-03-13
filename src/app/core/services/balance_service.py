@@ -21,22 +21,28 @@ class BalanceService(AppService):
     def check_next(self) -> None:
         if not self.dvalue.check_balances:
             return
-        tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_networks)
+        tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_networks, thread_name_prefix="check_next_balances")
         for network in self.network_service.get_networks():
             tasks.add_task(f"check_next_network_balances_{network.id}", self.check_next_network_balances, args=(network.id,))
         tasks.execute()
 
     def check_next_network_balances(self, network: str) -> None:
         # self.logger.debug("check_next_network_balances called: %s", network)
+
+        # first check accounts that were never checked
         need_to_check = self.db.account_balance.find(
-            {"network": network, "$or": [{"checked_at": None}, {"checked_at": {"$lt": utc_delta(minutes=-5)}}]},
-            "checked_at",
-            self.dconfig.max_workers_coins,
+            {"network": network, "checked_at": None}, limit=self.dconfig.max_workers_coins
         )
+        # next check accounts that were checked more than 5 minutes ago
+        if len(need_to_check) < self.dconfig.max_workers_coins:
+            need_to_check += self.db.account_balance.find(
+                {"network": network, "checked_at": {"$lt": utc_delta(minutes=-1 * self.dconfig.check_balance_interval)}},
+                limit=self.dconfig.max_workers_coins - len(need_to_check),
+            )
         if not need_to_check:
             return
 
-        tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_coins)
+        tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_coins, thread_name_prefix="check_balances__" + network)
         for ab in need_to_check:
             tasks.add_task(f"check_account_balance_{ab.id}", self.check_account_balance, args=(ab.id,))
         tasks.execute()

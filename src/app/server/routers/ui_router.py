@@ -38,7 +38,8 @@ def namings_page(render: RenderDep) -> HTMLResponse:
 
 @router.get("/coins")
 def coins_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
-    return render.html("coins.j2", coins=core.coin_service.get_coins())
+    oldest_checked_time = core.coin_service.calc_oldest_checked_time()
+    return render.html("coins.j2", coins=core.coin_service.get_coins(), oldest_checked_time=oldest_checked_time)
 
 
 @router.get("/groups")
@@ -81,6 +82,12 @@ def account_namings_page(render: RenderDep, core: CoreDep, group_id: ObjectId) -
 def balance_problems_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
     problems = core.db.balance_problem.find({}, "-created_at", 1000)
     return render.html("balance_problems.j2", problems=problems)
+
+
+@router.get("/naming-problems")
+def naming_problems_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
+    problems = core.db.naming_problem.find({}, "-created_at", 1000)
+    return render.html("naming_problems.j2", problems=problems)
 
 
 # ACTIONS

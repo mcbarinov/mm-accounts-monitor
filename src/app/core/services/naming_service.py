@@ -3,6 +3,7 @@ from mm_std import ConcurrentTasks, Err, Result, synchronized, utc_delta, utc_no
 
 from app.core.blockchains import aptos, evm, starknet
 from app.core.constants import Naming
+from app.core.db import NamingProblem
 from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
 
@@ -17,24 +18,27 @@ class NamingService(AppService):
         if not self.dvalue.check_namings:
             return
 
-        tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_networks)
+        tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_networks, thread_name_prefix="check_next_namings")
         for naming in list(Naming):
             tasks.add_task(f"check_next_naming_{naming}", self.check_next_naming, args=(naming,))
         tasks.execute()
 
     def check_next_naming(self, naming: Naming) -> None:
         # self.logger.debug("check_next_naming called: %s", naming)
-        max_workers = 10
 
+        # first check accounts that were never checked
         need_to_check = self.db.account_naming.find(
-            {"naming": naming, "$or": [{"checked_at": None}, {"checked_at": {"$lt": utc_delta(minutes=-5)}}]},
-            "checked_at",
-            max_workers,
+            {"naming": naming, "checked_at": None}, limit=self.dconfig.max_workers_namings
         )
+        if len(need_to_check) < self.dconfig.max_workers_namings:
+            need_to_check += self.db.account_naming.find(
+                {"naming": naming, "checked_at": {"$lt": utc_delta(minutes=-1 * self.dconfig.check_naming_interval)}},
+                limit=self.dconfig.max_workers_namings - len(need_to_check),
+            )
         if not need_to_check:
             return
 
-        tasks = ConcurrentTasks(max_workers=max_workers)
+        tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_namings, thread_name_prefix="check_namings__" + naming)
         for an in need_to_check:
             tasks.add_task(f"check_account_naming_{an.id}", self.check_account_naming, args=(an.id,))
         tasks.execute()
@@ -57,6 +61,15 @@ class NamingService(AppService):
 
         if isinstance(res, Err):
             self.logger.debug("check_account_naming: %s", res.err)
+            self.db.naming_problem.insert_one(
+                NamingProblem(
+                    id=ObjectId(),
+                    network=network.id,
+                    naming=account_naming.naming,
+                    account=account_naming.account,
+                    message=res.err,
+                )
+            )
             return res
 
         name = res.ok or ""
