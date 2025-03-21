@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from fastapi import APIRouter
-from mm_base5 import DC, DV, CoreConfig, DConfigModel, DValueModel, ServerConfig
+from mm_base6 import DC, DV, CoreConfig, DConfigModel, DValueModel, ServerConfig
 
 core_config = CoreConfig()
 
@@ -35,6 +35,7 @@ def get_router() -> APIRouter:
         coin_router,
         group_router,
         network_router,
+    rpc_monitoring_router,
         ui_router,
     )
 
@@ -42,8 +43,10 @@ def get_router() -> APIRouter:
     router.include_router(ui_router.router)
     router.include_router(bot_router.router)
     router.include_router(network_router.router)
-    router.include_router(group_router.router)
-    router.include_router(account_balance_router.router)
-    router.include_router(account_naming_router.router)
     router.include_router(coin_router.router)
+    router.include_router(group_router.router)
+    router.include_router(account_naming_router.router)
+    router.include_router(account_balance_router.router)
+    router.include_router(rpc_monitoring_router.router)
+
     return router

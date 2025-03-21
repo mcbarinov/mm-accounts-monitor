@@ -1,17 +1,17 @@
 from markupsafe import Markup
-from mm_base5 import CustomJinja
+from mm_base6 import CustomJinja
 
 from app.core.core import Core
 
 
-def header_info(_core: Core) -> Markup:
-    info = "<span style='color: red'></span>"
-    return Markup(info)  # nosec: B704
-
-
-def footer_info(_core: Core) -> Markup:
+async def header_info(_core: Core) -> Markup:
     info = ""
-    return Markup(info)  # nosec: B704
+    return Markup(info)  # noqa: S704 # nosec
+
+
+async def footer_info(_core: Core) -> Markup:
+    info = ""
+    return Markup(info)  # noqa: S704 # nosec
 
 
 def network_from_coin_id(coin: str) -> str:

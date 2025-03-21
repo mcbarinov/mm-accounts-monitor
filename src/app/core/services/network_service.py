@@ -27,10 +27,10 @@ class NetworkService(AppService):
     def __init__(self, base_params: AppServiceParams) -> None:
         super().__init__(base_params)
 
-    def export_as_toml(self) -> str:
+    async def export_as_toml(self) -> str:
         doc = tomlkit.document()
         networks = tomlkit.aot()
-        for n in self.db.network.find({}, "_id"):
+        for n in await self.db.network.find({}, "_id"):
             network = tomlkit.table()
             network.add("id", n.id)
             network.add("type", n.type)
@@ -41,22 +41,22 @@ class NetworkService(AppService):
         doc.add("networks", networks)
         return tomlkit.dumps(doc)
 
-    def import_from_toml(self, toml_str: str) -> Result[int]:
+    async def import_from_toml(self, toml_str: str) -> Result[int]:
         try:
             networks = [ImportNetworkItem(**n) for n in tomlkit.loads(toml_str)["networks"]]  # type:ignore[arg-type,union-attr]
             count = 0
             for n in networks:
-                if not self.db.network.exists({"_id": n.id}):
-                    self.db.network.insert_one(n.to_db())
+                if not await self.db.network.exists({"_id": n.id}):
+                    await self.db.network.insert_one(n.to_db())
                     count += 1
             return Ok(count)
         except Exception as e:
             return Err(e)
 
-    def get_networks(self) -> list[Network]:
+    async def get_networks(self) -> list[Network]:
         # TODO: cache it
-        return self.db.network.find({}, "_id")
+        return await self.db.network.find({}, "_id")
 
-    def get_network(self, id: str) -> Network:
+    async def get_network(self, id: str) -> Network:
         # TODO: cache it
-        return self.db.network.get(id)
+        return await self.db.network.get(id)

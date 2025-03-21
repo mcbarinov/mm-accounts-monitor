@@ -4,8 +4,8 @@ from mm_starknet import domain
 from mm_std import Result
 
 
-def get_balance(rpc_urls: list[str], account: str, token: str, proxies: Proxies = None) -> Result[int]:
-    return mm_starknet.balance.get_balance_with_retries(5, rpc_urls, account, token, proxies=proxies)
+def get_balance(rpc_url: str, account: str, token: str, proxy: str | None = None) -> Result[int]:
+    return mm_starknet.balance.get_balance(rpc_url, account, token, proxy=proxy)
 
 
 def get_starknet_id(account: str, proxies: Proxies = None) -> Result[str | None]:

@@ -9,10 +9,10 @@ router = APIRouter(prefix="/api/account-balances", tags=["account-balance"])
 
 
 @router.get("/{id}")
-def get_account_balance(core: CoreDep, id: ObjectId) -> AccountBalance:
-    return core.db.account_balance.get(id)
+async def get_account_balance(core: CoreDep, id: ObjectId) -> AccountBalance:
+    return await core.db.account_balance.get(id)
 
 
 @router.post("/{id}/check")
-def check_account_balance(core: CoreDep, id: ObjectId) -> Result[int]:
-    return core.balance_service.check_account_balance(id)
+async def check_account_balance(core: CoreDep, id: ObjectId) -> Result[int]:
+    return await core.balance_service.check_account_balance(id)
