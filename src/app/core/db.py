@@ -97,17 +97,6 @@ class GroupNamings(MongoModel[ObjectId]):
     __indexes__ = ["!group_id,naming", "group_id"]
 
 
-class BalanceProblem(MongoModel[ObjectId]):
-    network: str
-    coin: str
-    account: str
-    message: str
-    created_at: datetime = Field(default_factory=utc_now)
-
-    __collection__: str = "balance_problems"
-    __indexes__ = ["network", "coin", "account", "created_at"]
-
-
 class NamingProblem(MongoModel[ObjectId]):
     network: str
     naming: Naming
@@ -119,6 +108,22 @@ class NamingProblem(MongoModel[ObjectId]):
     __indexes__ = ["network", "naming", "account", "created_at"]
 
 
+class RpcMonitoring(MongoModel[ObjectId]):
+    network: str
+    rpc_url: str
+    success: bool
+    account: str
+    response_time: float
+    coin: str | None = None
+    proxy: str | None = None
+    error: str | None = None
+    data: object | None = None
+    created_at: datetime = Field(default_factory=utc_now)
+
+    __collection__: str = "rpc_monitoring"
+    __indexes__ = ["network", "rpc_url", "account", "coin", "proxy", "success", "created_at"]
+
+
 class Db(BaseDb):
     network: MongoCollection[str, Network]
     coin: MongoCollection[str, Coin]
@@ -127,5 +132,5 @@ class Db(BaseDb):
     account_naming: MongoCollection[ObjectId, AccountNaming]
     group_balances: MongoCollection[ObjectId, GroupBalances]
     group_namings: MongoCollection[ObjectId, GroupNamings]
-    balance_problem: MongoCollection[ObjectId, BalanceProblem]
     naming_problem: MongoCollection[ObjectId, NamingProblem]
+    rpc_monitoring: MongoCollection[ObjectId, RpcMonitoring]

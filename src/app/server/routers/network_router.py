@@ -20,3 +20,8 @@ def get_network(core: CoreDep, id: str) -> Network:
 def delete_network(core: CoreDep, id: str) -> None:
     # TODO: delete all coins associated with this network
     core.db.network.delete(id)
+
+
+@router.post("/{id}/check-next-network-balances")
+def check_next_network_balances(core: CoreDep, id: str) -> int:
+    return core.balance_service.check_next_network_balances(id)

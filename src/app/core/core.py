@@ -20,8 +20,8 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
         self.balance_service: BalanceService = BalanceService(self.base_service_params, self.network_service, self.coin_service)
         self.naming_service: NamingService = NamingService(self.base_service_params, self.network_service)
 
-        self.scheduler.add_job(self.balance_service.check_next, interval=5)
-        self.scheduler.add_job(self.naming_service.check_next, interval=5)
+        self.scheduler.add_job(self.balance_service.check_next, interval=2)
+        self.scheduler.add_job(self.naming_service.check_next, interval=2)
 
     def start(self) -> None:
         pass

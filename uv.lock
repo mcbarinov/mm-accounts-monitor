@@ -134,9 +134,9 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "mm-aptos", specifier = "~=0.2.2" },
-    { name = "mm-base5", specifier = "~=0.0.7" },
+    { name = "mm-base5", specifier = "~=0.0.8" },
     { name = "mm-eth", specifier = "~=0.5.6" },
-    { name = "mm-sol", specifier = "~=0.5.3" },
+    { name = "mm-sol", specifier = "~=0.5.4" },
     { name = "mm-starknet", specifier = "~=0.2.1" },
 ]
 
@@ -783,34 +783,12 @@ wheels = [
 ]
 
 [[package]]
-name = "h2"
-version = "4.2.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "hpack" },
-    { name = "hyperframe" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/1b/38/d7f80fd13e6582fb8e0df8c9a653dcc02b03ca34f4d72f34869298c5baf8/h2-4.2.0.tar.gz", hash = "sha256:c8a52129695e88b1a0578d8d2cc6842bbd79128ac685463b887ee278126ad01f", size = 2150682 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/d0/9e/984486f2d0a0bd2b024bf4bc1c62688fcafa9e61991f041fb0e2def4a982/h2-4.2.0-py3-none-any.whl", hash = "sha256:479a53ad425bb29af087f3458a61d30780bc818e4ebcf01f0b536ba916462ed0", size = 60957 },
-]
-
-[[package]]
 name = "hexbytes"
 version = "1.3.0"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/83/71/1a3f2439cf138b555c182fffeffbf67c090837e4570370af85ee8e57013f/hexbytes-1.3.0.tar.gz", hash = "sha256:4a61840c24b0909a6534350e2d28ee50159ca1c9e89ce275fd31c110312cf684", size = 8200 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/02/96/035871b535a728700d3cc5b94cf883706f345c5a088253f26f0bee0b7939/hexbytes-1.3.0-py3-none-any.whl", hash = "sha256:83720b529c6e15ed21627962938dc2dec9bb1010f17bbbd66bf1e6a8287d522c", size = 4902 },
-]
-
-[[package]]
-name = "hpack"
-version = "4.1.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/2c/48/71de9ed269fdae9c8057e5a4c0aa7402e8bb16f2c6e90b3aa53327b113f8/hpack-4.1.0.tar.gz", hash = "sha256:ec5eca154f7056aa06f196a557655c5b009b382873ac8d1e66e79e87535f1dca", size = 51276 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/07/c6/80c95b1b2b94682a72cbdbfb85b81ae2daffa4291fbfa1b1464502ede10d/hpack-4.1.0-py3-none-any.whl", hash = "sha256:157ac792668d995c657d93111f46b4535ed114f0c9c8d672271bbec7eae1b496", size = 34357 },
 ]
 
 [[package]]
@@ -861,23 +839,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517 },
-]
-
-[package.optional-dependencies]
-http2 = [
-    { name = "h2" },
-]
-socks = [
-    { name = "socksio" },
-]
-
-[[package]]
-name = "hyperframe"
-version = "6.1.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/02/e7/94f8232d4a74cc99514c13a9f995811485a6903d48e5d952771ef6322e30/hyperframe-6.1.0.tar.gz", hash = "sha256:f630908a00854a7adeabd6382b43923a4c4cd4b821fcb527e6ab9e15382a3b08", size = 26566 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/48/30/47d0bf6072f7252e6521f3447ccfa40b421b6824517f82854703d0f5a98b/hyperframe-6.1.0-py3-none-any.whl", hash = "sha256:b03380493a519fce58ea5af42e4a42317bf9bd425596f7a0835ffce80f1a42e5", size = 13007 },
 ]
 
 [[package]]
@@ -1073,7 +1034,7 @@ wheels = [
 
 [[package]]
 name = "mm-base5"
-version = "0.0.7"
+version = "0.0.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },
@@ -1084,19 +1045,19 @@ dependencies = [
     { name = "pydantic-settings" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d4/cb/ff2e33a46621c9ac430bd7aeee978ec0c26acb3b17a399c842cb239100f3/mm_base5-0.0.7-py3-none-any.whl", hash = "sha256:71ad1ec7702d0ad3bf05dd84f0ca52a5edf44b1286aae1b6470d0a3749be6c81", size = 40248 },
+    { url = "https://files.pythonhosted.org/packages/25/07/e89e389a326d7f03fc49ca510efda20171f7b70c31775459dc896d3df1b2/mm_base5-0.0.8-py3-none-any.whl", hash = "sha256:9770444b819f0d723dac2c843a9dc4d616cd473dac1f677070d465a531b7f980", size = 40248 },
 ]
 
 [[package]]
 name = "mm-crypto-utils"
-version = "0.2.7"
+version = "0.2.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "loguru" },
     { name = "mm-std" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b3/36/b48802615ee39c85784798398d1e8c8a7be9572a51c9209b308bd2ec34bf/mm_crypto_utils-0.2.7-py3-none-any.whl", hash = "sha256:467acba70a0709a5709e48fb122833588b3e8c0621ea46e55cef3ec52a6ba2a0", size = 8273 },
+    { url = "https://files.pythonhosted.org/packages/c2/1c/0c6ad62e4671970eb643524742573cf3ee0dd8b2e1f58c6a7458efe8ae5e/mm_crypto_utils-0.2.8-py3-none-any.whl", hash = "sha256:04be8b12968e66973c916390737e31d55682cb5ce746cef73261e7d0381b2f7b", size = 8273 },
 ]
 
 [[package]]
@@ -1128,32 +1089,32 @@ wheels = [
 
 [[package]]
 name = "mm-mongo"
-version = "0.3.5"
+version = "0.3.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "mm-std" },
     { name = "pymongo" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/44/f7/b84cbbffe120342748c57942cc236ca2fdca883f940662b63a07fe2ec824/mm_mongo-0.3.5-py3-none-any.whl", hash = "sha256:b1fd6c6387198c3d694fe7eeae0475ee57a5aa4016efd97cbbef577620d67f4e", size = 6841 },
+    { url = "https://files.pythonhosted.org/packages/27/56/df740d1123215cb66dea824f1d57c05bd34c350fd96f31ebba6d01544908/mm_mongo-0.3.6-py3-none-any.whl", hash = "sha256:3a73ff0cb145399c9c73061b0a1ab4bfe749debf93c6b30585ca89c234e630b2", size = 6841 },
 ]
 
 [[package]]
 name = "mm-sol"
-version = "0.5.3"
+version = "0.5.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "base58" },
     { name = "jinja2" },
     { name = "mm-crypto-utils" },
     { name = "mnemonic" },
+    { name = "socksio" },
     { name = "solana" },
-    { name = "solders" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fd/7f/a0998a781e8a0d10a42c80b561ea29d72f4ddcb68a3d36b9ff074d2dc6c6/mm_sol-0.5.3.tar.gz", hash = "sha256:51828136b8bccf85c4a6527bdaf2dcdb363352b3507ac544c7c161ca13d7b2ad", size = 57111 }
+sdist = { url = "https://files.pythonhosted.org/packages/1f/13/168bbaa37e31a50263d0f966ee303d8d2ff94fc9ebce7b33fda8891df37a/mm_sol-0.5.4.tar.gz", hash = "sha256:01cb55816f7b28644ad03bb407c7f0b34c608331d5a839a36c12c541b9831709", size = 56853 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/87/74/4371fd6158dc3af384d5d5fdfe75a34022d080a497ca42f83759eea0b1ea/mm_sol-0.5.3-py3-none-any.whl", hash = "sha256:792764aa44e60f33615550aeeb42b545dfb3179d546e1e75d287e32d40f08127", size = 24155 },
+    { url = "https://files.pythonhosted.org/packages/83/4a/c4af21de745f3c892003e09fd5a5e8da9eb346e1f06468c2edb38a5867e8/mm_sol-0.5.4-py3-none-any.whl", hash = "sha256:76e21ea7142de8debf49406b5bedc759270e5f9c74359dded3f32f3705e3d6e4", size = 24154 },
 ]
 
 [[package]]
@@ -1173,19 +1134,19 @@ wheels = [
 
 [[package]]
 name = "mm-std"
-version = "0.3.7"
+version = "0.3.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
-    { name = "httpx", extra = ["http2", "socks"] },
     { name = "pydantic" },
     { name = "pydash" },
     { name = "python-dotenv" },
+    { name = "requests", extra = ["socks"] },
     { name = "rich" },
     { name = "tomlkit" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/20/a6/d66ae863a81083e70883dc67c3c51295bd94023c9c9ce3a7e6cc1201681b/mm_std-0.3.7-py3-none-any.whl", hash = "sha256:e8af2601cc656fc65873748a08a703e39aef8bd9d4f7d59dbccf9711e7efcbc2", size = 15883 },
+    { url = "https://files.pythonhosted.org/packages/c7/74/072e33a54a0cdbd7699a17f32950f8fd57e766ce74b768ccb4128cc5da24/mm_std-0.3.9-py3-none-any.whl", hash = "sha256:3ad5ee2fe720e939169a23aa7c9a5f3c7cee25232a184bb3415720ef740ddd04", size = 15581 },
 ]
 
 [[package]]

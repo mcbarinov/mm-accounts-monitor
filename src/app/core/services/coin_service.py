@@ -22,6 +22,14 @@ class ImportCoinItem(BaseModel):
         return Coin(id=f"{self.network}__{self.symbol}", decimals=self.decimals, token=self.token, notes=self.notes)
 
 
+class OldestCheckedTimeStats(BaseModel):
+    class Stats(BaseModel):
+        oldest_checked_time: datetime | None
+        never_checked_count: int  # how many accounts have never been checked
+
+    coins: dict[str, Stats]  # coin_id -> Stats
+
+
 class CoinService(AppService):
     def __init__(self, base_params: AppServiceParams, network_service: NetworkService) -> None:
         super().__init__(base_params)
@@ -71,12 +79,17 @@ class CoinService(AppService):
         # TODO: remove from cache
         return self.db.coin.delete(id)
 
-    def calc_oldest_checked_time(self) -> dict[str, datetime | None]:
-        res: dict[str, datetime | None] = {}
+    def calc_oldest_checked_time(self) -> OldestCheckedTimeStats:
+        result = OldestCheckedTimeStats(coins={})
         for coin in self.get_coins():
-            res[coin.id] = None
-            if not self.db.account_balance.exists({"coin": coin.id, "checked_at": None}):
+            oldest_checked_time = None
+            never_checked_count = self.db.account_balance.count({"coin": coin.id, "checked_at": None})
+            if never_checked_count == 0:
                 balance = self.db.account_balance.find_one({"coin": coin.id}, "checked_at")
                 if balance:
-                    res[coin.id] = balance.checked_at
-        return res
+                    oldest_checked_time = balance.checked_at
+            result.coins[coin.id] = OldestCheckedTimeStats.Stats(
+                oldest_checked_time=oldest_checked_time, never_checked_count=never_checked_count
+            )
+
+        return result

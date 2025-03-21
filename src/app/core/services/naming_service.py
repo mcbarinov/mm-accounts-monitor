@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from bson import ObjectId
 from mm_std import ConcurrentTasks, Err, Result, synchronized, utc_delta, utc_now
 
@@ -79,4 +81,14 @@ class NamingService(AppService):
         )
         self.db.account_naming.set(id, {"name": name, "checked_at": utc_now()})
 
+        return res
+
+    def calc_oldest_checked_time(self) -> dict[Naming, datetime | None]:
+        res: dict[Naming, datetime | None] = {}
+        for naming in list(Naming):
+            res[naming] = None
+            if not self.db.account_naming.exists({"naming": naming, "checked_at": None}):
+                name = self.db.account_naming.find_one({"naming": naming}, "checked_at")
+                if name:
+                    res[naming] = name.checked_at
         return res

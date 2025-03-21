@@ -3,7 +3,7 @@
 
   <nav>
     <ul>
-      <li><h3>networks</h3></li>
+      <li><h3>networks / {{ networks | length }}</h3></li>
       <li><a data-target="modal-import" onclick="toggleModal(event)">import</a></li>
       <li><a href="/networks/export">export</a></li>
     </ul>
@@ -48,6 +48,7 @@
               <li><a data-target="modal-delete-rpc-{{ n.id }}" onclick="toggleModal(event)">delete rpc url</a></li>
               <li><a data-target="modal-explorer-{{ n.id }}" onclick="toggleModal(event)">update explorer url</a></li>
               <li><a href="/api-delete/networks/{{ n.id }}" {{ confirm }}>delete</a></li>
+              <li><a href="/api-post/networks/{{ n.id }}/check-next-network-balances" >check-next-network-balances</a></li>
               <li><a href="/api/networks/{{ n.id }}">view</a></li>
             </ul>
           </details>

@@ -8,11 +8,13 @@
     <tr>
       <th>naming</th>
       <th>network</th>
+      <th>oldest checked time</th>
     </tr>
     {% for n in namings %}
       <tr>
-      <td>{{ n.value }}</td>
-      <td>{{ n.network }}</td>
+        <td>{{ n.value }}</td>
+        <td>{{ n.network }}</td>
+        <td>{{ oldest_checked_time[n] | dt }}</td>
       </tr>
     {% endfor %}
   </table>

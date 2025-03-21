@@ -5,6 +5,7 @@
       <li><h3>coins / {{ coins | length }}</h3></li>
       <li><a data-target="modal-import" onclick="toggleModal(event)">import</a></li>
       <li><a href="/coins/export">export</a></li>
+      <li><a href="/coins/oldest-checked-time">oldest checked time</a></li>
     </ul>
   </nav>
 
@@ -26,7 +27,6 @@
       <th>symbol</th>
       <th>token</th>
       <th>decimals</th>
-      <th>oldest checked time</th>
       <th>actions</th>
     </tr>
     {% for c in coins %}
@@ -34,11 +34,10 @@
         <td nowrap="nowrap">{{ c.network }}</td>
         <td>{{ c.symbol }}</td>
         <td>
-          {{ c.token | empty }}
+          {{ c.token | empty | truncate(20) }}<br>
           {{ c.notes }}
         </td>
         <td>{{ c.decimals }}</td>
-        <td>{{ oldest_checked_time[c.id] | dt }}</td>
         <td>
           <details class="dropdown">
             <summary>actions</summary>

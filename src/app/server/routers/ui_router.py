@@ -1,8 +1,9 @@
+from collections.abc import Callable
 from typing import Annotated
 
 import pydash
 from bson import ObjectId
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, Depends, Form, HTTPException, Query
 from mm_base5 import RenderDep, redirect
 from mm_std import Err, str_to_list
 from pydantic import BaseModel, Field
@@ -32,14 +33,21 @@ def networks_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
 
 
 @router.get("/namings")
-def namings_page(render: RenderDep) -> HTMLResponse:
-    return render.html("namings.j2", namings=list(Naming))
+def namings_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
+    oldest_checked_time = core.naming_service.calc_oldest_checked_time()
+    return render.html("namings.j2", namings=list(Naming), oldest_checked_time=oldest_checked_time)
 
 
 @router.get("/coins")
 def coins_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
     oldest_checked_time = core.coin_service.calc_oldest_checked_time()
     return render.html("coins.j2", coins=core.coin_service.get_coins(), oldest_checked_time=oldest_checked_time)
+
+
+@router.get("/coins/oldest-checked-time")
+def get_coins_oldest_checked_time_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
+    stats = core.coin_service.calc_oldest_checked_time()
+    return render.html("coins_oldest_checked_time.j2", stats=stats)
 
 
 @router.get("/groups")
@@ -78,16 +86,44 @@ def account_namings_page(render: RenderDep, core: CoreDep, group_id: ObjectId) -
     return render.html("account_namings.j2", group=group, account_namings=account_namings)
 
 
-@router.get("/balance-problems")
-def balance_problems_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
-    problems = core.db.balance_problem.find({}, "-created_at", 1000)
-    return render.html("balance_problems.j2", problems=problems)
-
-
 @router.get("/naming-problems")
 def naming_problems_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
     problems = core.db.naming_problem.find({}, "-created_at", 1000)
     return render.html("naming_problems.j2", problems=problems)
+
+
+def optional_bool(param_name: str) -> Callable[[str | None], bool | None]:
+    def func(value: str | None = Query(None, alias=param_name)) -> bool | None:
+        # Treat empty string as None
+        if value == "" or value is None:
+            return None
+        # Convert common representations of booleans
+        if value.lower() in ("true", "1", "yes"):
+            return True
+        if value.lower() in ("false", "0", "no"):
+            return False
+        raise HTTPException(status_code=400, detail="Invalid boolean value")
+
+    return func
+
+
+@router.get("/rpc-monitoring")
+def rpc_monitoring_page(
+    render: RenderDep,
+    core: CoreDep,
+    network: str | None = None,
+    success: Annotated[bool | None, Depends(optional_bool("success"))] = None,
+    limit: int = 1000,
+) -> HTMLResponse:
+    form = {"network": network, "success": success, "limit": limit}
+    query: dict[str, object] = {}
+    if network:
+        query["network"] = network
+    if success is not None:
+        query["success"] = success
+    monitoring = core.db.rpc_monitoring.find(query, "-created_at", limit)
+    networks = [n.id for n in core.network_service.get_networks()]
+    return render.html("rpc_monitoring.j2", monitoring=monitoring, networks=networks, form=form)
 
 
 # ACTIONS

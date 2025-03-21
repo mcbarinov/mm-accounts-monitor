@@ -3,10 +3,10 @@ from mm_eth import ens, erc20, rpc
 from mm_std import Result
 
 
-def get_balance(rpc_urls: list[str], account: str, token: str | None = None, proxies: Proxies = None) -> Result[int]:
+def get_balance(node: str, account: str, token: str | None = None, proxy: str | None = None, timeout: float = 7) -> Result[int]:
     if token:
-        return erc20.get_balance(rpc_urls, token_address=token, user_address=account, proxies=proxies, attempts=5)
-    return rpc.eth_get_balance(rpc_urls, account, proxies=proxies, attempts=5)
+        return erc20.get_balance(node, token_address=token, user_address=account, proxies=proxy, attempts=1, timeout=int(timeout))
+    return rpc.eth_get_balance(node, account, proxies=proxy, attempts=1, timeout=int(timeout))
 
 
 def get_ens_name(rpc_urls: list[str], account: str, proxies: Proxies = None) -> Result[str | None]:

@@ -4,9 +4,9 @@ version = "0.0.1"
 description = ""
 requires-python = ">=3.12"
 dependencies = [
-    "mm-base5~=0.0.7",
+    "mm-base5~=0.0.8",
     "mm-eth~=0.5.6",
-    "mm-sol~=0.5.3",
+    "mm-sol~=0.5.4",
     "mm-aptos~=0.2.2",
     "mm-starknet~=0.2.1",
 ]
