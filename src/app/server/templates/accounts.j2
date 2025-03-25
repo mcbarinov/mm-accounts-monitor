@@ -1,6 +1,8 @@
 {% extends "inc/base.j2" %}
 {% block content %}
 
+
+
   <nav>
     <ul>
       <li><h3>accounts / {{ group.name }}</h3></li>
@@ -19,8 +21,8 @@
       {% endfor %}
       {% for coin in group.coins %}
         <th>
-          {{ coin | network_from_coin_id }}<br>
-          {{ coin | symbol_from_coin_id }}
+          {{ info.coins_map[coin].network }}<br>
+          {{ info.coins_map[coin].symbol }}
         </th>
       {% endfor %}
     </tr>
@@ -44,7 +46,9 @@
           <td>{{ info.get_name(naming, account) }}</td>
         {% endfor %}
         {% for coin in group.coins %}
-          <td>{{ info.get_balance(coin, account) }}</td>
+          <td>
+            <a href="{{ info.explorer_address(coin, account) }}">{{ info.get_balance(coin, account) }}</a>
+          </td>
         {% endfor %}
       </tr>
     {% endfor %}

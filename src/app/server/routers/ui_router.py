@@ -40,8 +40,8 @@ async def namings_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
 
 @router.get("/coins")
 async def coins_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
-    oldest_checked_time = await core.coin_service.calc_oldest_checked_time()
-    return await render.html("coins.j2", coins=await core.coin_service.get_coins(), oldest_checked_time=oldest_checked_time)
+    explorer_token_map = await core.coin_service.explorer_token_map()
+    return await render.html("coins.j2", coins=await core.coin_service.get_coins(), explorer_token_map=explorer_token_map)
 
 
 @router.get("/coins/oldest-checked-time")
@@ -133,11 +133,18 @@ class AddNetworkForm(BaseModel):
     id: str
     type: NetworkType
     rpc_urls: str
-    explorer_url: str
+    explorer_address: str
+    explorer_token: str
 
     def to_db(self) -> Network:
         rpc_urls = [line.strip() for line in self.rpc_urls.split("\n") if line.strip()]
-        return Network(id=self.id, type=self.type, rpc_urls=pydash.uniq(rpc_urls), explorer_url=self.explorer_url)
+        return Network(
+            id=self.id,
+            type=self.type,
+            rpc_urls=pydash.uniq(rpc_urls),
+            explorer_address=self.explorer_address,
+            explorer_token=self.explorer_token,
+        )
 
 
 @router.post("/networks")

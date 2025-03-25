@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pydash
 import tomlkit
 from mm_mongo import MongoDeleteResult
 from mm_std import Err, Ok, Result, replace_empty_dict_values, toml_dumps
@@ -65,6 +66,27 @@ class CoinService(AppService):
     async def get_coins(self) -> list[Coin]:
         # TODO: cache it
         return await self.db.coin.find({}, "_id")
+
+    async def get_coins_map(self) -> dict[str, Coin]:
+        # TODO: cache it
+        coins = await self.get_coins()
+        return {c.id: c for c in coins}
+
+    async def explorer_token_map(self) -> dict[str, str]:  # coin_id -> explorer_token
+        result: dict[str, str] = {}
+        networks = await self.network_service.get_networks()
+        for coin in await self.get_coins():
+            network = pydash.find(networks, lambda n: n.id == coin.network)  # noqa: B023
+            if network is None:
+                raise RuntimeError(f"Network not found for coin {coin.id}")
+            explorer_token = network.explorer_token
+            if coin.token is not None:
+                explorer_token += coin.token
+            else:
+                explorer_token = explorer_token.removesuffix("token/")
+            result[coin.id] = explorer_token
+
+        return result
 
     async def get_coins_by_network_type(self) -> dict[NetworkType, list[Coin]]:
         coins = await self.get_coins()

@@ -9,7 +9,7 @@ from mm_std import async_synchronized
 from pydantic import BaseModel
 
 from app.core.constants import Naming, NetworkType
-from app.core.db import AccountBalance, AccountNaming, Group, GroupBalance, GroupNaming
+from app.core.db import AccountBalance, AccountNaming, Coin, Group, GroupBalance, GroupNaming, Network
 from app.core.services.coin_service import CoinService
 from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
@@ -30,6 +30,8 @@ class ProcessAccountNamingsResult:
 
 
 class GroupAccountsInfo(BaseModel):
+    networks: list[Network]
+    coins_map: dict[str, Coin]  # coin_id -> Coin
     coins_sum: dict[str, Decimal]  # coin -> sum(balance)
     balances: dict[str, dict[str, Decimal]]  # coin -> account -> balance
     namings: dict[Naming, dict[str, str]]  # naming -> account -> name
@@ -39,6 +41,13 @@ class GroupAccountsInfo(BaseModel):
 
     def get_name(self, naming: Naming, account: str) -> str | None:
         return self.namings.get(naming, {}).get(account, None)
+
+    def explorer_address(self, coin: str, account: str) -> str:
+        network_id = coin.split("__")[0]
+        network = next(n for n in self.networks if n.id == network_id)
+        if not network:
+            return "__network_not_found__"
+        return network.explorer_address + account
 
 
 class GroupService(AppService):
@@ -61,7 +70,13 @@ class GroupService(AppService):
         for gn in await self.db.group_naming.find({"group_id": group_id}):
             namings[gn.naming] = gn.names
 
-        return GroupAccountsInfo(coins_sum=coins_sum, balances=balances, namings=namings)
+        return GroupAccountsInfo(
+            coins_sum=coins_sum,
+            balances=balances,
+            namings=namings,
+            coins_map=await self.coin_service.get_coins_map(),
+            networks=await self.network_service.get_networks(),
+        )
 
     async def create_group(
         self, name: str, network_type: NetworkType, notes: str, namings: list[Naming], coin_ids: list[str]

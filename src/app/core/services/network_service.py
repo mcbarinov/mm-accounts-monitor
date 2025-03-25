@@ -13,14 +13,21 @@ class ImportNetworkItem(BaseModel):
     id: str
     type: NetworkType
     rpc_urls: str
-    explorer_url: str
+    explorer_address: str
+    explorer_token: str
 
     @property
     def rpc_urls_list(self) -> list[str]:
         return [u.strip() for u in self.rpc_urls.splitlines() if u.strip()]
 
     def to_db(self) -> Network:
-        return Network(id=self.id, type=self.type, rpc_urls=self.rpc_urls_list, explorer_url=self.explorer_url)
+        return Network(
+            id=self.id,
+            type=self.type,
+            rpc_urls=self.rpc_urls_list,
+            explorer_address=self.explorer_address,
+            explorer_token=self.explorer_token,
+        )
 
 
 class NetworkService(AppService):
@@ -35,7 +42,8 @@ class NetworkService(AppService):
             network.add("id", n.id)
             network.add("type", n.type)
             network.add("rpc_urls", tomlkit.string("\n".join(n.rpc_urls), multiline=True))
-            network.add("explorer_url", n.explorer_url)
+            network.add("explorer_address", n.explorer_address)
+            network.add("explorer_token", n.explorer_token)
             networks.append(network)
 
         doc.add("networks", networks)
@@ -44,12 +52,9 @@ class NetworkService(AppService):
     async def import_from_toml(self, toml_str: str) -> Result[int]:
         try:
             networks = [ImportNetworkItem(**n) for n in tomlkit.loads(toml_str)["networks"]]  # type:ignore[arg-type,union-attr]
-            count = 0
             for n in networks:
-                if not await self.db.network.exists({"_id": n.id}):
-                    await self.db.network.insert_one(n.to_db())
-                    count += 1
-            return Ok(count)
+                await self.db.network.set(n.id, n.to_db().model_dump(), upsert=True)
+            return Ok(len(networks))
         except Exception as e:
             return Err(e)
 

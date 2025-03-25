@@ -14,7 +14,8 @@ from app.core.constants import Naming, NetworkType
 class Network(MongoModel[str]):
     type: NetworkType
     rpc_urls: list[str] = Field(default_factory=list)
-    explorer_url: str
+    explorer_address: str
+    explorer_token: str
 
     __collection__: str = "network"
 
