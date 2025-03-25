@@ -31,7 +31,7 @@ class NamingService(AppService):
         # tasks.execute()
 
     async def check_next_naming(self, naming: Naming) -> None:
-        self.logger.debug("check_next_naming called: %s", naming)
+        # self.logger.debug("check_next_naming called: %s", naming)
 
         # first check accounts that were never checked
         need_to_check = await self.db.account_naming.find(
@@ -59,7 +59,7 @@ class NamingService(AppService):
         account_naming = await self.db.account_naming.get(id)
         network = await self.network_service.get_network(account_naming.network)
 
-        self.logger.debug("check_account_naming called: %s / %s", account_naming.naming, account_naming.account)
+        # self.logger.debug("check_account_naming called: %s / %s", account_naming.naming, account_naming.account)
 
         match account_naming.naming:
             case Naming.ENS:

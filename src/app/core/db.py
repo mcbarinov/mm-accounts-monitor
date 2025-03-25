@@ -71,7 +71,7 @@ class AccountBalance(MongoModel[ObjectId]):
     checked_at: datetime | None = None
 
     __collection__: str = "account_balance"
-    __indexes__ = ["group_id", "account", "coin", "network", "checked_at"]
+    __indexes__ = ["!group_id,account,coin", "group_id", "account", "coin", "network", "checked_at"]
 
 
 class AccountNaming(MongoModel[ObjectId]):

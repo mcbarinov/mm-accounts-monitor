@@ -9,7 +9,7 @@ from mm_std import async_synchronized
 from pydantic import BaseModel
 
 from app.core.constants import Naming, NetworkType
-from app.core.db import AccountBalance, AccountNaming, Coin, Group, GroupBalance, GroupNaming, Network
+from app.core.db import AccountBalance, AccountNaming, Coin, Group, GroupNaming, Network
 from app.core.services.coin_service import CoinService
 from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
@@ -152,18 +152,17 @@ class GroupService(AppService):
         And delete balances for coins and accounts that are not in the group."""
         group = await self.db.group.get(id)
         inserted = 0
-        for coin in group.coins:
-            if not await self.db.group_balance.exists({"group_id": id, "coin": coin}):
-                await self.db.group_balance.insert_one(GroupBalance(id=ObjectId(), group_id=id, coin=coin))
-            for account in group.accounts:
-                if await self.db.account_balance.exists({"group_id": id, "coin": coin, "account": account}):
-                    continue
-                network = coin.split("__")[0]
-                await self.db.account_balance.insert_one(
-                    AccountBalance(id=ObjectId(), group_id=id, network=network, coin=coin, account=account)
-                )
-                inserted += 1
 
+        for coin in group.coins:
+            known_accounts = [a["account"] async for a in self.db.account_balance.collection.find({"group_id": id, "coin": coin}, {"_id": False, "account": True})]
+            new_accounts = [account for account in group.accounts if account not in known_accounts]
+            if len(new_accounts) > 0:
+                insert_many = [
+                    AccountBalance(id=ObjectId(), group_id=id, network=coin.split("__")[0], coin=coin, account=account)
+                    for account in new_accounts
+                ]
+                await self.db.account_balance.insert_many(insert_many)
+                inserted += len(new_accounts)
         deleted_by_coin = (
             await self.db.account_balance.delete_many({"group_id": id, "coin": {"$nin": group.coins}})
         ).deleted_count

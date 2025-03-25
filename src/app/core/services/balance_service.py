@@ -103,7 +103,7 @@ class BalanceService(AppService):
         coin = await self.coin_service.get_coin(account_balance.coin)
         network = await self.network_service.get_network(coin.network)
 
-        self.logger.debug("check_account_balance: %s / %s / %s", network.id, coin.symbol, account_balance.account)
+        # self.logger.debug("check_account_balance: %s / %s / %s", network.id, coin.symbol, account_balance.account)
 
         res = await self._request_balance(network, coin, account_balance.account)
         if isinstance(res, Err):
