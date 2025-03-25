@@ -35,7 +35,7 @@ def get_router() -> APIRouter:
         coin_router,
         group_router,
         network_router,
-    rpc_monitoring_router,
+        rpc_monitoring_router,
         ui_router,
     )
 

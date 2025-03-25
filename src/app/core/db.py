@@ -6,7 +6,7 @@ from bson import ObjectId
 from mm_base6 import BaseDb
 from mm_mongo import AsyncMongoCollection, MongoModel
 from mm_std import utc_now
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from app.core.constants import Naming, NetworkType
 
@@ -18,21 +18,27 @@ class Network(MongoModel[str]):
 
     __collection__: str = "network"
 
+    @field_validator("id", mode="before")
+    def ensure_lowercase_id(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
-class Coin(MongoModel[str]):  # id = {network}__{symbol}
+
+class Coin(MongoModel[str]):  # id = {network}__{symbol}, lowercased
+    network: str  # network.id
+    symbol: str  # symbol is not lowercase
     token: str | None = None  # if None, then it's a native coin
     decimals: int
     notes: str = ""
 
-    @property
-    def network(self) -> str:
-        return self.id.split("__")[0]
-
-    @property
-    def symbol(self) -> str:
-        return self.id.split("__")[1]
-
     __collection__: str = "coin"
+
+    @field_validator("id", mode="before")
+    def ensure_lowercase_id(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 
 class Group(MongoModel[ObjectId]):

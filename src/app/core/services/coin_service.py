@@ -18,8 +18,14 @@ class ImportCoinItem(BaseModel):
     token: str | None = None
     notes: str = ""
 
+    @property
+    def id(self) -> str:
+        return f"{self.network}__{self.symbol}".lower()
+
     def to_db(self) -> Coin:
-        return Coin(id=f"{self.network}__{self.symbol}", decimals=self.decimals, token=self.token, notes=self.notes)
+        return Coin(
+            id=self.id, network=self.network, symbol=self.symbol, decimals=self.decimals, token=self.token, notes=self.notes
+        )
 
 
 class OldestCheckedTimeStats(BaseModel):
@@ -40,7 +46,7 @@ class CoinService(AppService):
             count = 0
             coins = [ImportCoinItem(**n) for n in tomlkit.loads(toml_str)["coins"]]  # type:ignore[arg-type,union-attr]
             for c in coins:
-                if not await self.db.coin.exists({"_id": f"{c.network}__{c.symbol}"}):
+                if not await self.db.coin.exists({"_id": c.id}):
                     await self.db.coin.insert_one(c.to_db())
                     count += 1
             return Ok(count)
