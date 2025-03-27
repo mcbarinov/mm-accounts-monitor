@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 import tomlkit
 from mm_std import Err, Ok, Result
 from pydantic import BaseModel
@@ -28,6 +30,14 @@ class ImportNetworkItem(BaseModel):
             explorer_address=self.explorer_address,
             explorer_token=self.explorer_token,
         )
+
+
+class OldestCheckedTimeStats(BaseModel):
+    class Stats(BaseModel):
+        oldest_checked_time: datetime | None
+        never_checked_count: int  # how many accounts have never been checked
+
+    networks: dict[str, Stats]  # network_id -> Stats
 
 
 class NetworkService(AppService):
@@ -65,3 +75,17 @@ class NetworkService(AppService):
     async def get_network(self, id: str) -> Network:
         # TODO: cache it
         return await self.db.network.get(id)
+
+    async def calc_oldest_checked_time(self) -> OldestCheckedTimeStats:
+        result = OldestCheckedTimeStats(networks={})
+        for network in await self.get_networks():
+            oldest_checked_time = None
+            never_checked_count = await self.db.account_balance.count({"network": network.id, "checked_at": None})
+            if never_checked_count == 0:
+                account_balance = await self.db.account_balance.find_one({"network": network.id}, "checked_at")
+                if account_balance:
+                    oldest_checked_time = account_balance.checked_at
+            result.networks[network.id] = OldestCheckedTimeStats.Stats(
+                oldest_checked_time=oldest_checked_time, never_checked_count=never_checked_count
+            )
+        return result

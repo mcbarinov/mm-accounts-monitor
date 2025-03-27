@@ -113,9 +113,9 @@ class CoinService(AppService):
             oldest_checked_time = None
             never_checked_count = await self.db.account_balance.count({"coin": coin.id, "checked_at": None})
             if never_checked_count == 0:
-                balance = await self.db.account_balance.find_one({"coin": coin.id}, "checked_at")
-                if balance:
-                    oldest_checked_time = balance.checked_at
+                account_balance = await self.db.account_balance.find_one({"coin": coin.id}, "checked_at")
+                if account_balance:
+                    oldest_checked_time = account_balance.checked_at
             result.coins[coin.id] = OldestCheckedTimeStats.Stats(
                 oldest_checked_time=oldest_checked_time, never_checked_count=never_checked_count
             )

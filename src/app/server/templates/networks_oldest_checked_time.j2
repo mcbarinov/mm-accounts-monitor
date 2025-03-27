@@ -1,0 +1,24 @@
+{% extends "inc/base.j2" %}
+{% block content %}
+  <h3>networks / oldest checked time</h3>
+
+  <table class="sortable">
+    <thead>
+    <tr>
+      <th>network</th>
+      <th>oldest time</th>
+      <th>never count</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for key, value in stats.networks.items() %}
+      <tr>
+        <td>{{ key }}</td>
+        <td>{{ value.oldest_checked_time | dt }}</td>
+        <td>{{ value.never_checked_count }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

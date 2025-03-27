@@ -32,6 +32,12 @@ async def networks_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
     return await render.html("networks.j2", networks=networks, network_types=[t.value for t in NetworkType])
 
 
+@router.get("/networks/oldest-checked-time")
+async def get_networks_oldest_checked_time_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
+    stats = await core.network_service.calc_oldest_checked_time()
+    return await render.html("networks_oldest_checked_time.j2", stats=stats)
+
+
 @router.get("/namings")
 async def namings_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
     oldest_checked_time = await core.naming_service.calc_oldest_checked_time()
