@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from bson import ObjectId
-from mm_std import AsyncTaskRunner, Err, Result, async_synchronized, utc_delta, utc_now
+from mm_std import AsyncTaskRunner, Err, Result, async_synchronized_parameter, utc_delta, utc_now
 
 from app.core.blockchains import aptos, evm, starknet
 from app.core.constants import Naming
@@ -15,23 +15,9 @@ class NamingService(AppService):
         super().__init__(base_params)
         self.network_service = network_service
 
-    @async_synchronized
-    async def check_next(self) -> None:
-        if not self.dvalue.check_namings:
-            return
-
-        runner = AsyncTaskRunner(self.dconfig.max_workers_networks)
-        for naming in list(Naming):
-            runner.add_task(f"check_next_naming_{naming}", self.check_next_naming, naming)
-        await runner.run()
-
-        # tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_networks, thread_name_prefix="check_next_namings")
-        # for naming in list(Naming):
-        #     tasks.add_task(f"check_next_naming_{naming}", self.check_next_naming, args=(naming,))
-        # tasks.execute()
-
+    @async_synchronized_parameter(arg_index=1)
     async def check_next_naming(self, naming: Naming) -> None:
-        # self.logger.debug("check_next_naming called: %s", naming)
+        self.logger.debug("check_next_naming called: %s", naming)
 
         # first check accounts that were never checked
         need_to_check = await self.db.account_naming.find(
@@ -47,13 +33,8 @@ class NamingService(AppService):
 
         runner = AsyncTaskRunner(self.dconfig.max_workers_namings)
         for an in need_to_check:
-            runner.add_task(f"check_account_naming_{an.id}", self.check_account_naming, an.id)
+            runner.add_task(f"check_account_naming_{an.id}", self.check_account_naming(an.id))
         await runner.run()
-
-        # tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_namings, thread_name_prefix="check_namings__" + naming)
-        # for an in need_to_check:
-        #     tasks.add_task(f"check_account_naming_{an.id}", self.check_account_naming, args=(an.id,))
-        # tasks.execute()
 
     async def check_account_naming(self, id: ObjectId) -> Result[str | None]:
         account_naming = await self.db.account_naming.get(id)

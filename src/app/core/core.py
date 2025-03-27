@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import cast
+from typing import Self
 
 from mm_base6 import BaseCore, CoreConfig
 
+from app.core.constants import Naming
 from app.core.db import Db
 from app.core.services.balance_service import BalanceService
 from app.core.services.bot_service import BotService
@@ -23,17 +24,29 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
     balance_service: BalanceService
 
     @classmethod
-    async def init(cls, core_config: CoreConfig) -> Core:
-        res = cast(Core, await super().base_init(core_config, DConfigSettings, DValueSettings, Db))
+    async def init(cls, core_config: CoreConfig) -> Self:
+        res = await super().base_init(core_config, DConfigSettings, DValueSettings, Db)
         res.bot_service = BotService(res.base_service_params)
         res.network_service = NetworkService(res.base_service_params)
         res.coin_service = CoinService(res.base_service_params, res.network_service)
         res.naming_service = NamingService(res.base_service_params, res.network_service)
         res.group_service = GroupService(res.base_service_params, res.network_service, res.coin_service)
         res.balance_service = BalanceService(res.base_service_params, res.network_service, res.coin_service)
-
-        # res.scheduler.add_task("data_service:generate_one", 60, res.data_service.generate_one)
-        res.scheduler.add_task("naming:check_next", 2, res.naming_service.check_next)
-        res.scheduler.add_task("balance:check_next", 2, res.balance_service.check_next)
-
         return res
+
+    async def configure_scheduler(self) -> None:
+        # check balances
+        for network in await self.network_service.get_networks():
+            task_id = "balances_on_" + network.id
+            self.scheduler.add_task(task_id, 2, self.balance_service.check_next_network, args=(network.id,))
+
+        # check namings
+        for naming in list(Naming):
+            task_id = "naming_on_" + naming
+            self.scheduler.add_task(task_id, 2, self.naming_service.check_next_naming, args=(naming,))
+
+    async def start(self) -> None:
+        pass
+
+    async def stop(self) -> None:
+        pass

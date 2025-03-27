@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from bson import ObjectId
 from mm_crypto_utils import random_node, random_proxy
-from mm_std import AsyncTaskRunner, Err, Result, utc_delta, utc_now
+from mm_std import AsyncTaskRunner, Err, Result, async_synchronized_parameter, utc_delta, utc_now
 
 from app.core.blockchains import aptos, evm, solana, starknet
 from app.core.constants import NetworkType
@@ -19,18 +19,9 @@ class BalanceService(AppService):
         self.network_service = network_service
         self.coin_service = coin_service
 
-    # @synchronized
-    async def check_next(self) -> None:
-        if not self.dvalue.check_balances:
-            return
-        self.logger.debug("Checking balances...")
-        runner = AsyncTaskRunner(self.dconfig.max_workers_networks)
-        for network in await self.network_service.get_networks():
-            runner.add_task(f"check_next_network_balances_{network.id}", self.check_next_network_balances, network.id)
-        await runner.run()
-
-    async def check_next_network_balances(self, network: str) -> int:
-        # self.logger.debug("check_next_network_balances called: %s", network)
+    @async_synchronized_parameter(arg_index=1)
+    async def check_next_network(self, network: str) -> int:
+        self.logger.debug("check_next_network_balances called: %s", network)
 
         # first check accounts that were never checked
         need_to_check = await self.db.account_balance.find(
@@ -45,14 +36,9 @@ class BalanceService(AppService):
         if not need_to_check:
             return 0
 
-        # tasks = ConcurrentTasks(max_workers=self.dconfig.max_workers_coins, thread_name_prefix="check_balances__" + network)
-        # for ab in need_to_check:
-        #     tasks.add_task(f"check_account_balance_{ab.id}", self.check_account_balance, args=(ab.id,))
-        # tasks.execute()
-
         runner = AsyncTaskRunner(self.dconfig.max_workers_coins)
         for ab in need_to_check:
-            runner.add_task(f"check_account_balance_{ab.id}", self.check_account_balance, ab.id)
+            runner.add_task(f"check_account_balance_{ab.id}", self.check_account_balance(ab.id))
         await runner.run()
 
         return len(need_to_check)

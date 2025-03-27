@@ -23,5 +23,5 @@ async def delete_network(core: CoreDep, id: str) -> None:
 
 
 @router.post("/{id}/check-next-network-balances")
-async def check_next_network_balances(core: CoreDep, id: str) -> int:
-    return await core.balance_service.check_next_network_balances(id)
+async def check_next_network_balances(core: CoreDep, id: str) -> int | None:
+    return await core.balance_service.check_next_network(id)

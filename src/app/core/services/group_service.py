@@ -9,7 +9,7 @@ from mm_std import async_synchronized
 from pydantic import BaseModel
 
 from app.core.constants import Naming, NetworkType
-from app.core.db import AccountBalance, AccountNaming, Coin, Group, GroupNaming, Network
+from app.core.db import AccountBalance, AccountNaming, Coin, Group, GroupBalance, GroupNaming, Network
 from app.core.services.coin_service import CoinService
 from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
@@ -129,15 +129,21 @@ class GroupService(AppService):
         for naming in group.namings:
             if not await self.db.group_naming.exists({"group_id": id, "naming": naming}):
                 await self.db.group_naming.insert_one(GroupNaming(id=ObjectId(), group_id=id, naming=naming))
-            for account in group.accounts:
-                if await self.db.account_naming.exists({"group_id": id, "naming": naming, "account": account}):
-                    continue
-                network = naming.network
-                await self.db.account_naming.insert_one(
-                    AccountNaming(id=ObjectId(), group_id=id, network=network, naming=naming, account=account)
-                )
-                inserted += 1
 
+            known_accounts = [
+                a["account"]
+                async for a in self.db.account_naming.collection.find(
+                    {"group_id": id, "naming": naming}, {"_id": False, "account": True}
+                )
+            ]
+            new_accounts = [account for account in group.accounts if account not in known_accounts]
+            if len(new_accounts) > 0:
+                insert_many = [
+                    AccountNaming(id=ObjectId(), group_id=id, network=naming.network, naming=naming, account=account)
+                    for account in new_accounts
+                ]
+                await self.db.account_naming.insert_many(insert_many)
+                inserted += len(new_accounts)
         deleted_by_naming = (
             await self.db.account_naming.delete_many({"group_id": id, "naming": {"$nin": group.namings}})
         ).deleted_count
@@ -152,9 +158,15 @@ class GroupService(AppService):
         And delete balances for coins and accounts that are not in the group."""
         group = await self.db.group.get(id)
         inserted = 0
-
         for coin in group.coins:
-            known_accounts = [a["account"] async for a in self.db.account_balance.collection.find({"group_id": id, "coin": coin}, {"_id": False, "account": True})]
+            if not await self.db.group_balance.exists({"group_id": id, "coin": coin}):
+                await self.db.group_balance.insert_one(GroupBalance(id=ObjectId(), group_id=id, coin=coin))
+            known_accounts = [
+                a["account"]
+                async for a in self.db.account_balance.collection.find(
+                    {"group_id": id, "coin": coin}, {"_id": False, "account": True}
+                )
+            ]
             new_accounts = [account for account in group.accounts if account not in known_accounts]
             if len(new_accounts) > 0:
                 insert_many = [
