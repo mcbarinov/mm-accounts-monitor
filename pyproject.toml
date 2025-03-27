@@ -7,7 +7,7 @@ dependencies = [
     "mm-base6==0.0.10",
     "mm-eth~=0.5.11",
     "mm-sol~=0.5.7",
-    "mm-aptos~=0.2.2",
+    "mm-aptos~=0.2.3",
     "mm-starknet~=0.2.1",
 ]
 

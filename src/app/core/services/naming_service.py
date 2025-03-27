@@ -46,7 +46,7 @@ class NamingService(AppService):
             case Naming.ENS:
                 res = await evm.get_ens_name(network.rpc_urls, account_naming.account, proxies=self.dvalue.proxies)
             case Naming.ANS:
-                res = aptos.get_ans_name(account_naming.account, proxies=self.dvalue.proxies)
+                res = await aptos.get_ans_name(account_naming.account, proxies=self.dvalue.proxies)
             case Naming.STARKNET_ID:
                 res = starknet.get_starknet_id(account_naming.account, proxies=self.dvalue.proxies)
             case _:

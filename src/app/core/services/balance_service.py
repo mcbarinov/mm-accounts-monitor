@@ -57,7 +57,7 @@ class BalanceService(AppService):
                 case NetworkType.SOLANA:
                     res = await solana.get_balance(rpc_url, account, coin.token, proxy)
                 case NetworkType.APTOS:
-                    res = aptos.get_balance(rpc_url, account, coin.token, proxy)
+                    res = await aptos.get_balance(rpc_url, account, coin.token, proxy)
                 case NetworkType.STARKNET:
                     if coin.token is None:
                         raise ValueError("can't get balance for coin on StarkNet without token address")

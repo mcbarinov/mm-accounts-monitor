@@ -134,7 +134,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "mm-aptos", specifier = "~=0.2.2" },
+    { name = "mm-aptos", specifier = "~=0.2.3" },
     { name = "mm-base6", specifier = "==0.0.10" },
     { name = "mm-eth", specifier = "~=0.5.11" },
     { name = "mm-sol", specifier = "~=0.5.7" },
@@ -1024,14 +1024,14 @@ wheels = [
 
 [[package]]
 name = "mm-aptos"
-version = "0.2.2"
+version = "0.2.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "mm-crypto-utils" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0b/44/7d5fc0eb0a9b8430837c69f7445c8a8136ff91377271e2e52aad6ef31cbc/mm_aptos-0.2.2.tar.gz", hash = "sha256:f1edea64b6bc6a3a10cc3770577f2183328bb32422d1ff3b118edf195ddfdad6", size = 33139 }
+sdist = { url = "https://files.pythonhosted.org/packages/ed/48/436d23a7063c94268efccc2dca55f27fc4444633ce1c5ae1ce5d519391b7/mm_aptos-0.2.3.tar.gz", hash = "sha256:f6d066059d52ba56aad2144f2f20d60adfc485b6657a0cc9d729beba56fe9065", size = 51847 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/33/92/4e819b84c3f57375dd160a1f2ff7a47068f83e3bb6da1d53088e4e85ac9b/mm_aptos-0.2.2-py3-none-any.whl", hash = "sha256:ccc26bdbacfd7b951afb8873ca95420689006bc233accc009ed7471f44138638", size = 2825 },
+    { url = "https://files.pythonhosted.org/packages/9e/0c/36f33a7d39bc4caeac5853806cd3752ef6038edb81167907324813fb078d/mm_aptos-0.2.3-py3-none-any.whl", hash = "sha256:d950e6b8aa8cc1898ccf58befa7445204a42fab940775a88b0665855a600caa5", size = 2914 },
 ]
 
 [[package]]
