@@ -48,7 +48,7 @@ class NamingService(AppService):
             case Naming.ANS:
                 res = await aptos.get_ans_name(account_naming.account, proxies=self.dvalue.proxies)
             case Naming.STARKNET_ID:
-                res = starknet.get_starknet_id(account_naming.account, proxies=self.dvalue.proxies)
+                res = await starknet.get_starknet_id(account_naming.account, proxies=self.dvalue.proxies)
             case _:
                 return Err("Not implemented")
 

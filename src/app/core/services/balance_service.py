@@ -61,7 +61,7 @@ class BalanceService(AppService):
                 case NetworkType.STARKNET:
                     if coin.token is None:
                         raise ValueError("can't get balance for coin on StarkNet without token address")
-                    res = starknet.get_balance(rpc_url, account, coin.token, proxy)
+                    res = await starknet.get_balance(rpc_url, account, coin.token, proxy)
                 case _:
                     return Err("check_balance: unknown network")
 
