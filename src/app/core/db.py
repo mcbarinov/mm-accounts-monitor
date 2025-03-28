@@ -7,6 +7,7 @@ from mm_base6 import BaseDb
 from mm_mongo import AsyncMongoCollection, MongoModel
 from mm_std import utc_now
 from pydantic import Field, field_validator
+from pymongo import IndexModel
 
 from app.core.constants import Naming, NetworkType
 
@@ -128,7 +129,15 @@ class RpcMonitoring(MongoModel[ObjectId]):
     created_at: datetime = Field(default_factory=utc_now)
 
     __collection__: str = "rpc_monitoring"
-    __indexes__ = ["network", "rpc_url", "account", "coin", "proxy", "success", "created_at"]
+    __indexes__ = [
+        "network",
+        "rpc_url",
+        "account",
+        "coin",
+        "proxy",
+        "success",
+        IndexModel([("created_at", -1)], expireAfterSeconds=3 * 60 * 60),
+    ]
 
 
 class History(MongoModel[ObjectId]):
