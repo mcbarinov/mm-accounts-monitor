@@ -2,6 +2,7 @@
 {% block content %}
   <div>
     <h3>history / {{ history.group.name }} / {{ history.created_at | dt }}</h3>
+    <a href="/history/{{ history.id }}/diff">diff</a>
   </div>
 
   <table class="sortable">

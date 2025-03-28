@@ -1,9 +1,8 @@
-from collections.abc import Callable
 from typing import Annotated
 
 import pydash
 from bson import ObjectId
-from fastapi import APIRouter, Depends, Form, HTTPException, Query
+from fastapi import APIRouter, Depends, Form
 from mm_base6 import RenderDep, redirect
 from mm_std import Err, str_to_list
 from pydantic import BaseModel, Field
@@ -11,6 +10,7 @@ from starlette.responses import HTMLResponse, PlainTextResponse, RedirectRespons
 
 from app.core.constants import Naming, NetworkType
 from app.core.db import Network
+from app.server import utils
 from app.server.deps import CoreDep
 
 router = APIRouter(include_in_schema=False)
@@ -98,27 +98,12 @@ async def naming_problems_page(render: RenderDep, core: CoreDep) -> HTMLResponse
     return await render.html("naming_problems.j2", problems=problems)
 
 
-def optional_bool(param_name: str) -> Callable[[str | None], bool | None]:
-    def func(value: str | None = Query(None, alias=param_name)) -> bool | None:
-        # Treat empty string as None
-        if value == "" or value is None:
-            return None
-        # Convert common representations of booleans
-        if value.lower() in ("true", "1", "yes"):
-            return True
-        if value.lower() in ("false", "0", "no"):
-            return False
-        raise HTTPException(status_code=400, detail="Invalid boolean value")
-
-    return func
-
-
 @router.get("/rpc-monitoring")
 async def rpc_monitoring_page(
     render: RenderDep,
     core: CoreDep,
     network: str | None = None,
-    success: Annotated[bool | None, Depends(optional_bool("success"))] = None,
+    success: Annotated[bool | None, Depends(utils.optional_bool("success"))] = None,
     limit: int = 1000,
 ) -> HTMLResponse:
     form = {"network": network, "success": success, "limit": limit}
@@ -139,10 +124,18 @@ async def history_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
 
 
 @router.get("/history/{id}")
-async def history_accounts(render: RenderDep, core: CoreDep, id: ObjectId) -> HTMLResponse:
+async def history_accounts_page(render: RenderDep, core: CoreDep, id: ObjectId) -> HTMLResponse:
     history = await core.db.history.get(id)
     info = await core.history_service.get_history_group_accounts_info(id)
     return await render.html("history_accounts.j2", history=history, info=info)
+
+
+@router.get("/history/{id}/diff")
+async def get_history_diff_page(render: RenderDep, core: CoreDep, id: ObjectId) -> HTMLResponse:
+    history = await core.db.history.get(id)
+    coins_map = await core.coin_service.get_coins_map()
+    diff = await core.history_service.get_balances_diff(id)
+    return await render.html("history_diff.j2", history=history, diff=diff, coins_map=coins_map)
 
 
 # actions

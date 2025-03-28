@@ -1,0 +1,28 @@
+{% extends "inc/base.j2" %}
+{% block content %}
+  <div>
+    <h3>history diff / {{ history.group.name }} / {{ history.created_at | dt }}</h3>
+  </div>
+
+  {% for coin, address_balances in diff.balance_changed.items() %}
+    <section>
+      <b>{{ coins_map[coin].network }} / {{ coins_map[coin].symbol }}</b>
+      <table>
+        <tr>
+          <th>address</th>
+          <th>history value</th>
+          <th>current value</th>
+          <th>diff</th>
+        </tr>
+        {% for address, balances in address_balances.items() %}
+          <tr>
+          <td>{{ address }}</td>
+          <td>{{ balances.0 }}</td>
+          <td>{{ balances.1 }}</td>
+          <td>{{ balances.1 - balances.0 }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </section><br>
+  {% endfor %}
+{% endblock %}

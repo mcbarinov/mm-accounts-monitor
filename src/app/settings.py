@@ -13,11 +13,10 @@ server_config.main_menu = {"/bot": "bot", "/groups": "groups", "/history": "hist
 class DConfigSettings(DConfigModel):
     proxies_url = DC("http://localhost:8000", "proxies url, each proxy on new line")
     round_ndigits = DC(5, "round ndigits")
-    max_workers_networks = DC(10, "How many networks process in parallel")
-    max_workers_coins = DC(5, "How many coins process in parallel in one network")
-    max_workers_namings = DC(5, "How many namings process in parallel in one network")
+    limit_network_workers = DC(20, "How many requests to one network in parallel")
+    limit_naming_workers = DC(20, "How many requests to one naming in parallel")
     check_balance_interval = DC(15, "Check balance interval in minutes")
-    check_naming_interval = DC(15, "Check naming interval in minutes")
+    check_name_interval = DC(15, "Check name interval in minutes")
 
 
 class DValueSettings(DValueModel):

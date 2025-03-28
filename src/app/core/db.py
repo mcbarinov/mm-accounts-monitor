@@ -68,7 +68,7 @@ class AccountBalance(MongoModel[ObjectId]):
     network: str  # network_id
     coin: str
     balance: Decimal | None = None
-    balance_raw: int | None = None
+    balance_raw: str | None = None  # mongo can't store very large integers
     checked_at: datetime | None = None
 
     __collection__: str = "account_balance"

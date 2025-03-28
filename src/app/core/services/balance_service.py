@@ -21,26 +21,23 @@ class BalanceService(AppService):
 
     @async_synchronized_parameter(arg_index=1)
     async def check_next_network(self, network: str) -> int:
-        self.logger.debug("check_next_network_balances called: %s", network)
-
         # first check accounts that were never checked
         need_to_check = await self.db.account_balance.find(
-            {"network": network, "checked_at": None}, limit=self.dconfig.max_workers_coins
+            {"network": network, "checked_at": None}, limit=self.dconfig.limit_network_workers
         )
         # next check accounts that were checked more than 5 minutes ago
-        if len(need_to_check) < self.dconfig.max_workers_coins:
+        if len(need_to_check) < self.dconfig.limit_network_workers:
             need_to_check += await self.db.account_balance.find(
                 {"network": network, "checked_at": {"$lt": utc_delta(minutes=-1 * self.dconfig.check_balance_interval)}},
-                limit=self.dconfig.max_workers_coins - len(need_to_check),
+                limit=self.dconfig.limit_network_workers - len(need_to_check),
             )
         if not need_to_check:
             return 0
 
-        runner = AsyncTaskRunner(self.dconfig.max_workers_coins, name="check_balances")
+        runner = AsyncTaskRunner(self.dconfig.limit_network_workers, name="check_balances", logger=self.logger)
         for ab in need_to_check:
             runner.add_task(str(ab.id), self.check_account_balance(ab.id))
         await runner.run()
-
         return len(need_to_check)
 
     async def _request_balance(self, network: Network, coin: Coin, account: str) -> Result[int]:
@@ -106,6 +103,6 @@ class BalanceService(AppService):
             {"group_id": account_balance.group_id, "coin": account_balance.coin},
             {"$set": {f"balances.{account_balance.account}": balance}},
         )
-        await self.db.account_balance.set(id, {"balance_raw": balance_raw, "balance": balance, "checked_at": utc_now()})
+        await self.db.account_balance.set(id, {"balance_raw": str(balance_raw), "balance": balance, "checked_at": utc_now()})
 
         return res

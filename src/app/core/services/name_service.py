@@ -17,21 +17,21 @@ class NameService(AppService):
 
     @async_synchronized_parameter(arg_index=1)
     async def check_next_naming(self, naming: Naming) -> None:
-        self.logger.debug("check_next_naming called: %s", naming)
+        # self.logger.debug("check_next_naming called: %s", naming)
 
         # first check accounts that were never checked
         need_to_check = await self.db.account_name.find(
-            {"naming": naming, "checked_at": None}, limit=self.dconfig.max_workers_namings
+            {"naming": naming, "checked_at": None}, limit=self.dconfig.limit_naming_workers
         )
-        if len(need_to_check) < self.dconfig.max_workers_namings:
+        if len(need_to_check) < self.dconfig.limit_naming_workers:
             need_to_check += await self.db.account_name.find(
-                {"naming": naming, "checked_at": {"$lt": utc_delta(minutes=-1 * self.dconfig.check_naming_interval)}},
-                limit=self.dconfig.max_workers_namings - len(need_to_check),
+                {"naming": naming, "checked_at": {"$lt": utc_delta(minutes=-1 * self.dconfig.check_name_interval)}},
+                limit=self.dconfig.limit_naming_workers - len(need_to_check),
             )
         if not need_to_check:
             return
 
-        runner = AsyncTaskRunner(self.dconfig.max_workers_namings, name="check_names")
+        runner = AsyncTaskRunner(self.dconfig.limit_naming_workers, name="check_names", logger=self.logger)
         for an in need_to_check:
             runner.add_task(str(an.id), self.check_account_name(an.id))
         await runner.run()

@@ -241,3 +241,9 @@ class GroupService(AppService):
         return ProcessAccountBalancesResult(
             inserted=inserted, deleted_by_coin=deleted_by_coin, deleted_by_account=deleted_by_account
         )
+
+    async def reset_group_balances(self, id: ObjectId) -> None:
+        await self.db.group_balance.update_many({"group_id": id}, {"$set": {"balances": {}}})
+        await self.db.account_balance.update_many(
+            {"group_id": id}, {"$set": {"balance": None, "balance_raw": None, "checked_at": None}}
+        )

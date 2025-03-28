@@ -43,3 +43,8 @@ async def process_account_balances(core: CoreDep, id: ObjectId) -> ProcessAccoun
 @router.post("/{id}/process-account-names")
 async def process_account_names(core: CoreDep, id: ObjectId) -> ProcessAccountNamingsResult:
     return await core.group_service.process_account_names(ObjectId(id))
+
+
+@router.post("/{id}/reset-group-balances")
+async def reset_group_balances(core: CoreDep, id: ObjectId) -> None:
+    await core.group_service.reset_group_balances(ObjectId(id))

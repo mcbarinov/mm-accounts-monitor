@@ -1,7 +1,9 @@
+import re
 from decimal import Decimal
 from typing import cast
 
 from bson import ObjectId
+from deepdiff import DeepDiff
 from mm_mongo import MongoInsertOneResult
 from pydantic import BaseModel
 
@@ -12,8 +14,14 @@ from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
 
 
-class HistoryAccountsInfo(BaseModel):
-    pass
+class Diff(BaseModel):
+    balance_changed: dict[str, dict[str, tuple[Decimal, Decimal]]]  # coin -> address -> (old_value, new_value)
+
+
+# Helper to extract keys from DeepDiff paths.
+def extract_keys(path: str) -> list[str]:
+    # DeepDiff paths look like "root['network']['ticker']['address']"
+    return re.findall(r"\['([^']+)'\]", path)
 
 
 class HistoryService(AppService):
@@ -29,6 +37,31 @@ class HistoryService(AppService):
         group_namings = await self.db.group_name.find({"group_id": group_id})
         names = {n.naming: n.names for n in group_namings}
         return await self.db.history.insert_one(History(id=ObjectId(), group=group, balances=balances, names=names))
+
+    async def get_balances_diff(self, history_id: ObjectId) -> Diff:
+        history = await self.db.history.get(history_id)
+        group = await self.db.group.get(history.group.id)
+
+        group_balances: dict[str, dict[str, Decimal]] = {}
+        for gb in await self.db.group_balance.find({"group_id": group.id}):
+            group_balances[gb.coin] = gb.balances
+
+        history_balances = history.balances
+        dd = DeepDiff(history_balances, group_balances, ignore_order=True)
+        balances_changed: dict[str, dict[str, tuple[Decimal, Decimal]]] = {}
+
+        # Process values_changed for balance differences.
+        for path, change in dd.get("values_changed", {}).items():
+            keys = extract_keys(path)
+            if len(keys) != 2:
+                continue
+            coin, address = keys
+            balances_changed.setdefault(coin, {})[address] = (
+                Decimal(change["old_value"]),
+                Decimal(change["new_value"]),
+            )
+
+        return Diff(balance_changed=balances_changed)
 
     async def get_history_group_accounts_info(self, history_id: ObjectId) -> GroupAccountsInfo:
         history = await self.db.history.get(history_id)
