@@ -40,7 +40,7 @@ async def get_networks_oldest_checked_time_page(render: RenderDep, core: CoreDep
 
 @router.get("/namings")
 async def namings_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
-    oldest_checked_time = await core.naming_service.calc_oldest_checked_time()
+    oldest_checked_time = await core.name_service.calc_oldest_checked_time()
     return await render.html("namings.j2", namings=list(Naming), oldest_checked_time=oldest_checked_time)
 
 
@@ -85,11 +85,11 @@ async def account_balances_page(render: RenderDep, core: CoreDep, group_id: Obje
     return await render.html("account_balances.j2", group=group, account_balances=account_balances)
 
 
-@router.get("/accounts/{group_id}/namings")
-async def account_namings_page(render: RenderDep, core: CoreDep, group_id: ObjectId) -> HTMLResponse:
+@router.get("/accounts/{group_id}/names")
+async def account_names_page(render: RenderDep, core: CoreDep, group_id: ObjectId) -> HTMLResponse:
     group = await core.db.group.get(ObjectId(group_id))
-    account_namings = await core.db.account_naming.find({"group_id": ObjectId(group_id)}, "account,naming")
-    return await render.html("account_namings.j2", group=group, account_namings=account_namings)
+    account_names = await core.db.account_name.find({"group_id": ObjectId(group_id)}, "account,naming")
+    return await render.html("account_names.j2", group=group, account_names=account_names)
 
 
 @router.get("/naming-problems")

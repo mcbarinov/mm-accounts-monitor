@@ -26,7 +26,7 @@ class HistoryService(AppService):
         group = await self.db.group.get(group_id)
         group_balances = await self.db.group_balance.find({"group_id": group_id})
         balances = {b.coin: b.balances for b in group_balances}
-        group_namings = await self.db.group_naming.find({"group_id": group_id})
+        group_namings = await self.db.group_name.find({"group_id": group_id})
         names = {n.naming: n.names for n in group_namings}
         return await self.db.history.insert_one(History(id=ObjectId(), group=group, balances=balances, names=names))
 
@@ -43,7 +43,7 @@ class HistoryService(AppService):
         return GroupAccountsInfo(
             coins_sum=coins_sum,
             balances=balances,
-            namings=history.names,
+            names=history.names,
             coins_map=await self.coin_service.get_coins_map(),
             networks=await self.network_service.get_networks(),
         )

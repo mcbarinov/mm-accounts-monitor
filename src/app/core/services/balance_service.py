@@ -36,9 +36,9 @@ class BalanceService(AppService):
         if not need_to_check:
             return 0
 
-        runner = AsyncTaskRunner(self.dconfig.max_workers_coins)
+        runner = AsyncTaskRunner(self.dconfig.max_workers_coins, name="check_balances")
         for ab in need_to_check:
-            runner.add_task(f"check_account_balance_{ab.id}", self.check_account_balance(ab.id))
+            runner.add_task(str(ab.id), self.check_account_balance(ab.id))
         await runner.run()
 
         return len(need_to_check)

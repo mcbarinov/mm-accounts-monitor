@@ -74,7 +74,7 @@ class AccountBalance(MongoModel[ObjectId]):
     __indexes__ = ["!group_id,account,coin", "group_id", "account", "coin", "network", "checked_at"]
 
 
-class AccountNaming(MongoModel[ObjectId]):
+class AccountName(MongoModel[ObjectId]):
     group_id: ObjectId
     account: str
     network: str  # network_id
@@ -82,7 +82,7 @@ class AccountNaming(MongoModel[ObjectId]):
     name: str | None = None  # domains, ids, etc..
     checked_at: datetime | None = None
 
-    __collection__: str = "account_naming"
+    __collection__: str = "account_name"
     __indexes__ = ["group_id", "account", "network", "naming", "checked_at"]
 
 
@@ -95,12 +95,12 @@ class GroupBalance(MongoModel[ObjectId]):
     __indexes__ = ["!group_id,coin", "group_id"]
 
 
-class GroupNaming(MongoModel[ObjectId]):
+class GroupName(MongoModel[ObjectId]):
     group_id: ObjectId
     naming: Naming
     names: dict[str, str] = Field(default_factory=dict)  # account -> name, name can be empty string
 
-    __collection__: str = "group_naming"
+    __collection__: str = "group_name"
     __indexes__ = ["!group_id,naming", "group_id"]
 
 
@@ -146,9 +146,9 @@ class Db(BaseDb):
     coin: AsyncMongoCollection[str, Coin]
     group: AsyncMongoCollection[ObjectId, Group]
     account_balance: AsyncMongoCollection[ObjectId, AccountBalance]
-    account_naming: AsyncMongoCollection[ObjectId, AccountNaming]
+    account_name: AsyncMongoCollection[ObjectId, AccountName]
     group_balance: AsyncMongoCollection[ObjectId, GroupBalance]
-    group_naming: AsyncMongoCollection[ObjectId, GroupNaming]
+    group_name: AsyncMongoCollection[ObjectId, GroupName]
     naming_problem: AsyncMongoCollection[ObjectId, NamingProblem]
     rpc_monitoring: AsyncMongoCollection[ObjectId, RpcMonitoring]
     history: AsyncMongoCollection[ObjectId, History]

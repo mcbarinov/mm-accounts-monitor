@@ -11,7 +11,7 @@ from app.core.services.bot_service import BotService
 from app.core.services.coin_service import CoinService
 from app.core.services.group_service import GroupService
 from app.core.services.history_service import HistoryService
-from app.core.services.naming_service import NamingService
+from app.core.services.name_service import NameService
 from app.core.services.network_service import NetworkService
 from app.settings import DConfigSettings, DValueSettings
 
@@ -20,7 +20,7 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
     bot_service: BotService
     network_service: NetworkService
     coin_service: CoinService
-    naming_service: NamingService
+    name_service: NameService
     group_service: GroupService
     balance_service: BalanceService
     history_service: HistoryService
@@ -31,7 +31,7 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
         res.bot_service = BotService(res.base_service_params)
         res.network_service = NetworkService(res.base_service_params)
         res.coin_service = CoinService(res.base_service_params, res.network_service)
-        res.naming_service = NamingService(res.base_service_params, res.network_service)
+        res.name_service = NameService(res.base_service_params, res.network_service)
         res.group_service = GroupService(res.base_service_params, res.network_service, res.coin_service)
         res.balance_service = BalanceService(res.base_service_params, res.network_service, res.coin_service)
         res.history_service = HistoryService(res.base_service_params, res.network_service, res.coin_service)
@@ -45,8 +45,8 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
 
         # check namings
         for naming in list(Naming):
-            task_id = "naming_on_" + naming
-            self.scheduler.add_task(task_id, 2, self.naming_service.check_next_naming, args=(naming,))
+            task_id = "names_on_" + naming
+            self.scheduler.add_task(task_id, 2, self.name_service.check_next_naming, args=(naming,))
 
     async def start(self) -> None:
         pass

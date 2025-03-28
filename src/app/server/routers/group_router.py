@@ -14,6 +14,12 @@ async def get_all_groups(core: CoreDep) -> list[Group]:
     return await core.db.group.find({}, "_id")
 
 
+@router.delete("/")
+async def delete_all_groups(core: CoreDep) -> None:
+    for group in await core.db.group.find({}, "_id"):
+        await core.group_service.delete_group(group.id)
+
+
 @router.get("/export", response_class=PlainTextResponse)
 async def export_groups(core: CoreDep) -> str:
     return await core.group_service.export_as_toml()
@@ -34,6 +40,6 @@ async def process_account_balances(core: CoreDep, id: ObjectId) -> ProcessAccoun
     return await core.group_service.process_account_balances(ObjectId(id))
 
 
-@router.post("/{id}/process-account-namings")
-async def process_account_namings(core: CoreDep, id: ObjectId) -> ProcessAccountNamingsResult:
-    return await core.group_service.process_account_namings(ObjectId(id))
+@router.post("/{id}/process-account-names")
+async def process_account_names(core: CoreDep, id: ObjectId) -> ProcessAccountNamingsResult:
+    return await core.group_service.process_account_names(ObjectId(id))

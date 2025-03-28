@@ -6,7 +6,7 @@ from mm_base6 import DC, DV, CoreConfig, DConfigModel, DValueModel, ServerConfig
 core_config = CoreConfig()
 
 server_config = ServerConfig()
-server_config.tags = ["bot", "network", "coin"]
+server_config.tags = ["bot", "network", "coin", "group"]
 server_config.main_menu = {"/bot": "bot", "/groups": "groups", "/history": "history"}
 
 
@@ -30,7 +30,7 @@ class DValueSettings(DValueModel):
 def get_router() -> APIRouter:
     from app.server.routers import (
         account_balance_router,
-        account_naming_router,
+        account_name_router,
         bot_router,
         coin_router,
         group_router,
@@ -46,7 +46,7 @@ def get_router() -> APIRouter:
     router.include_router(network_router.router)
     router.include_router(coin_router.router)
     router.include_router(group_router.router)
-    router.include_router(account_naming_router.router)
+    router.include_router(account_name_router.router)
     router.include_router(account_balance_router.router)
     router.include_router(rpc_monitoring_router.router)
     router.include_router(history_router.router)

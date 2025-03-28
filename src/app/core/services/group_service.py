@@ -11,7 +11,7 @@ from mm_std import async_synchronized, toml_dumps, toml_loads
 from pydantic import BaseModel
 
 from app.core.constants import Naming, NetworkType
-from app.core.db import AccountBalance, AccountNaming, Coin, Group, GroupBalance, GroupNaming, Network
+from app.core.db import AccountBalance, AccountName, Coin, Group, GroupBalance, GroupName, Network
 from app.core.services.coin_service import CoinService
 from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
@@ -45,13 +45,13 @@ class GroupAccountsInfo(BaseModel):
     coins_map: dict[str, Coin]  # coin_id -> Coin
     coins_sum: dict[str, Decimal]  # coin -> sum(balance)
     balances: dict[str, dict[str, Decimal]]  # coin -> account -> balance
-    namings: dict[Naming, dict[str, str]]  # naming -> account -> name
+    names: dict[Naming, dict[str, str]]  # naming -> account -> name
 
     def get_balance(self, coin: str, account: str) -> Decimal | None:
         return self.balances.get(coin, {}).get(account, None)
 
     def get_name(self, naming: Naming, account: str) -> str | None:
-        return self.namings.get(naming, {}).get(account, None)
+        return self.names.get(naming, {}).get(account, None)
 
     def explorer_address(self, coin: str, account: str) -> str:
         network_id = coin.split("__")[0]
@@ -78,13 +78,13 @@ class GroupService(AppService):
                 coins_sum[coin] = cast(Decimal, sum(coin_balances.values()))
 
         namings: dict[Naming, dict[str, str]] = {}
-        for gn in await self.db.group_naming.find({"group_id": group_id}):
+        for gn in await self.db.group_name.find({"group_id": group_id}):
             namings[gn.naming] = gn.names
 
         return GroupAccountsInfo(
             coins_sum=coins_sum,
             balances=balances,
-            namings=namings,
+            names=namings,
             coins_map=await self.coin_service.get_coins_map(),
             networks=await self.network_service.get_networks(),
         )
@@ -104,7 +104,7 @@ class GroupService(AppService):
                 raise UserError(f"Coin {coin_id} is not consistent with the network type {network_type.value}")
         new_group = Group(id=ObjectId(), name=name, network_type=network_type, notes=notes, coins=coin_ids, namings=namings)
         await self.db.group.insert_one(new_group)
-        await self.process_account_namings(new_group.id)
+        await self.process_account_names(new_group.id)
         await self.process_account_balances(new_group.id)
         return new_group
 
@@ -145,15 +145,15 @@ class GroupService(AppService):
                     accounts=accounts,
                 )
                 await self.db.group.insert_one(new_group)
-                await self.process_account_namings(new_group.id)
+                await self.process_account_names(new_group.id)
                 await self.process_account_balances(new_group.id)
                 count += 1
         return count
 
     async def delete_group(self, id: ObjectId) -> MongoDeleteResult:
         await self.db.account_balance.delete_many({"group_id": id})
-        await self.db.account_naming.delete_many({"group_id": id})
-        await self.db.group_naming.delete_many({"group_id": id})
+        await self.db.account_name.delete_many({"group_id": id})
+        await self.db.group_name.delete_many({"group_id": id})
         await self.db.group_balance.delete_many({"group_id": id})
         return await self.db.group.delete(id)
 
@@ -163,7 +163,7 @@ class GroupService(AppService):
             accounts = [a.lower() for a in accounts]
         await self.db.group.set(id, {"accounts": accounts})
         await self.process_account_balances(id)
-        await self.process_account_namings(id)
+        await self.process_account_names(id)
 
     async def update_coins(self, id: ObjectId, coin_ids: list[str]) -> None:
         group = await self.db.group.get(id)
@@ -177,34 +177,34 @@ class GroupService(AppService):
         await self.process_account_balances(id)
 
     @async_synchronized
-    async def process_account_namings(self, id: ObjectId) -> ProcessAccountNamingsResult:
-        """Create account namings for all namings and accounts in the group.
+    async def process_account_names(self, id: ObjectId) -> ProcessAccountNamingsResult:
+        """Create account names for all namings and accounts in the group.
         And delete docs for namings and accounts that are not in the group."""
         group = await self.db.group.get(id)
         inserted = 0
         for naming in group.namings:
-            if not await self.db.group_naming.exists({"group_id": id, "naming": naming}):
-                await self.db.group_naming.insert_one(GroupNaming(id=ObjectId(), group_id=id, naming=naming))
+            if not await self.db.group_name.exists({"group_id": id, "naming": naming}):
+                await self.db.group_name.insert_one(GroupName(id=ObjectId(), group_id=id, naming=naming))
 
             known_accounts = [
                 a["account"]
-                async for a in self.db.account_naming.collection.find(
+                async for a in self.db.account_name.collection.find(
                     {"group_id": id, "naming": naming}, {"_id": False, "account": True}
                 )
             ]
             new_accounts = [account for account in group.accounts if account not in known_accounts]
             if len(new_accounts) > 0:
                 insert_many = [
-                    AccountNaming(id=ObjectId(), group_id=id, network=naming.network, naming=naming, account=account)
+                    AccountName(id=ObjectId(), group_id=id, network=naming.network, naming=naming, account=account)
                     for account in new_accounts
                 ]
-                await self.db.account_naming.insert_many(insert_many)
+                await self.db.account_name.insert_many(insert_many)
                 inserted += len(new_accounts)
         deleted_by_naming = (
-            await self.db.account_naming.delete_many({"group_id": id, "naming": {"$nin": group.namings}})
+            await self.db.account_name.delete_many({"group_id": id, "naming": {"$nin": group.namings}})
         ).deleted_count
         deleted_by_account = (
-            await self.db.account_naming.delete_many({"group_id": id, "account": {"$nin": group.accounts}})
+            await self.db.account_name.delete_many({"group_id": id, "account": {"$nin": group.accounts}})
         ).deleted_count
         return ProcessAccountNamingsResult(inserted, deleted_by_naming, deleted_by_account)
 

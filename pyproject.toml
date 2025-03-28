@@ -9,6 +9,7 @@ dependencies = [
     "mm-sol~=0.5.7",
     "mm-aptos~=0.2.3",
     "mm-starknet~=0.2.2",
+    "mm-std~=0.3.19"
 ]
 
 [build-system]
