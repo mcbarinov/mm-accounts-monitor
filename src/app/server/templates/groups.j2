@@ -3,8 +3,10 @@
 
   <nav>
     <ul>
-      <li><h3>groups</h3></li>
+      <li><h3>groups / {{ groups | length }}</h3></li>
       <li><a data-target="modal-add" onclick="toggleModal(event)">add</a></li>
+      <li><a href="/api/groups/export">export</a></li>
+      <li><a data-target="modal-import" onclick="toggleModal(event)">import</a></li>
     </ul>
   </nav>
 
@@ -35,6 +37,17 @@
           {% endfor %}
         </select>
         <input type="submit" value="add">
+      </form>
+    </article>
+  </dialog>
+
+
+  <dialog id="modal-import">
+    <article>
+      <header>Import groups as toml</header>
+      <form action="/groups/import" method="post">
+        <textarea name="toml" rows="10"></textarea>
+        <input type="submit" value="import">
       </form>
     </article>
   </dialog>

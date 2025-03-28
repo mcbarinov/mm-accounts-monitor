@@ -10,6 +10,18 @@ class NetworkType(str, Enum):
     APTOS = "aptos"
     STARKNET = "starknet"
 
+    def lowercase_address(self) -> bool:
+        match self:
+            case NetworkType.EVM:
+                return True
+            case NetworkType.SOLANA:
+                return False
+            case NetworkType.APTOS:
+                return True
+            case NetworkType.STARKNET:
+                return True
+        raise ValueError("no network found")
+
 
 @unique
 class Naming(str, Enum):

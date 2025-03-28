@@ -238,6 +238,13 @@ async def create_group(render: RenderDep, core: CoreDep, data: Annotated[CreateG
     return redirect("/groups")
 
 
+@router.post("/groups/import")
+async def import_groups(render: RenderDep, core: CoreDep, toml: Annotated[str, Form()]) -> RedirectResponse:
+    count = await core.group_service.import_from_toml(toml)
+    render.flash(f"groups imported successfully: {count}")
+    return redirect("/groups")
+
+
 @router.post("/groups/{id}/accounts")
 async def update_accounts(render: RenderDep, core: CoreDep, id: ObjectId, value: Annotated[str, Form()]) -> RedirectResponse:
     await core.group_service.update_accounts(id, str_to_list(value, unique=True))

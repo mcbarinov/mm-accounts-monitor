@@ -1,5 +1,6 @@
 from bson import ObjectId
 from fastapi import APIRouter
+from starlette.responses import PlainTextResponse
 
 from app.core.db import Group
 from app.core.services.group_service import ProcessAccountBalancesResult, ProcessAccountNamingsResult
@@ -11,6 +12,11 @@ router = APIRouter(prefix="/api/groups", tags=["group"])
 @router.get("/")
 async def get_all_groups(core: CoreDep) -> list[Group]:
     return await core.db.group.find({}, "_id")
+
+
+@router.get("/export", response_class=PlainTextResponse)
+async def export_groups(core: CoreDep) -> str:
+    return await core.group_service.export_as_toml()
 
 
 @router.get("/{id}")

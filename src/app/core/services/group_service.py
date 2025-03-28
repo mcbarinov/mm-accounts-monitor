@@ -2,10 +2,12 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import cast
 
+import pydash
+import tomlkit
 from bson import ObjectId
 from mm_base6 import UserError
 from mm_mongo import MongoDeleteResult
-from mm_std import async_synchronized
+from mm_std import async_synchronized, toml_dumps, toml_loads
 from pydantic import BaseModel
 
 from app.core.constants import Naming, NetworkType
@@ -27,6 +29,15 @@ class ProcessAccountNamingsResult:
     inserted: int
     deleted_by_coin: int
     deleted_by_account: int
+
+
+class ImportGroupItem(BaseModel):
+    name: str
+    network_type: NetworkType
+    notes: str
+    coins: str
+    namings: str
+    accounts: str
 
 
 class GroupAccountsInfo(BaseModel):
@@ -97,6 +108,48 @@ class GroupService(AppService):
         await self.process_account_balances(new_group.id)
         return new_group
 
+    async def export_as_toml(self) -> str:
+        groups = []
+        for group in await self.db.group.find({}):
+            obj = group.model_dump()
+            obj = pydash.omit(obj, "_id")
+            obj["coins"] = tomlkit.string("\n".join(obj["coins"]), multiline=True)
+            obj["namings"] = tomlkit.string("\n".join(obj["namings"]), multiline=True)
+            obj["accounts"] = tomlkit.string("\n".join(obj["accounts"]), multiline=True)
+            groups.append(obj)
+
+        return toml_dumps({"groups": groups})
+
+    @async_synchronized
+    async def import_from_toml(self, toml: str) -> int:
+        known_coins = [c.id for c in await self.coin_service.get_coins()]
+        count = 0
+        for data in toml_loads(toml)["groups"]:  # type:ignore[union-attr]
+            group = ImportGroupItem(**cast(dict[str, object], data))
+            if not await self.db.group.exists({"name": group.name}):
+                coin_ids = [c.strip() for c in group.coins.split("\n") if c.strip()]
+                unknown_coins = [c for c in coin_ids if c not in known_coins]
+                if unknown_coins:
+                    raise ValueError(f"unknown coins: {unknown_coins}")
+                namings = [Naming(n.strip()) for n in group.namings.split("\n") if n.strip()]
+                accounts = [a.strip() for a in group.accounts.split("\n") if a.strip()]
+                if group.network_type.lowercase_address():
+                    accounts = [a.lower() for a in accounts]
+                new_group = Group(
+                    id=ObjectId(),
+                    name=group.name,
+                    network_type=group.network_type,
+                    notes=group.notes,
+                    coins=coin_ids,
+                    namings=namings,
+                    accounts=accounts,
+                )
+                await self.db.group.insert_one(new_group)
+                await self.process_account_namings(new_group.id)
+                await self.process_account_balances(new_group.id)
+                count += 1
+        return count
+
     async def delete_group(self, id: ObjectId) -> MongoDeleteResult:
         await self.db.account_balance.delete_many({"group_id": id})
         await self.db.account_naming.delete_many({"group_id": id})
@@ -105,6 +158,9 @@ class GroupService(AppService):
         return await self.db.group.delete(id)
 
     async def update_accounts(self, id: ObjectId, accounts: list[str]) -> None:
+        group = await self.db.group.get(id)
+        if group.network_type.lowercase_address():
+            accounts = [a.lower() for a in accounts]
         await self.db.group.set(id, {"accounts": accounts})
         await self.process_account_balances(id)
         await self.process_account_namings(id)
