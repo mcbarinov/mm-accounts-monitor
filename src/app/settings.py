@@ -7,7 +7,7 @@ core_config = CoreConfig()
 
 server_config = ServerConfig()
 server_config.tags = ["bot", "network", "coin"]
-server_config.main_menu = {"/bot": "bot", "/groups": "groups"}
+server_config.main_menu = {"/bot": "bot", "/groups": "groups", "/history": "history"}
 
 
 class DConfigSettings(DConfigModel):
@@ -34,6 +34,7 @@ def get_router() -> APIRouter:
         bot_router,
         coin_router,
         group_router,
+        history_router,
         network_router,
         rpc_monitoring_router,
         ui_router,
@@ -48,5 +49,6 @@ def get_router() -> APIRouter:
     router.include_router(account_naming_router.router)
     router.include_router(account_balance_router.router)
     router.include_router(rpc_monitoring_router.router)
+    router.include_router(history_router.router)
 
     return router

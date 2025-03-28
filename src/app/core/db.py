@@ -131,6 +131,16 @@ class RpcMonitoring(MongoModel[ObjectId]):
     __indexes__ = ["network", "rpc_url", "account", "coin", "proxy", "success", "created_at"]
 
 
+class History(MongoModel[ObjectId]):
+    group: Group
+    notes: str = ""
+    balances: dict[str, dict[str, Decimal]]  # coin -> account -> balance
+    names: dict[Naming, dict[str, str]]  # naming -> account -> name
+    created_at: datetime = Field(default_factory=utc_now)
+
+    __collection__: str = "history"
+
+
 class Db(BaseDb):
     network: AsyncMongoCollection[str, Network]
     coin: AsyncMongoCollection[str, Coin]
@@ -141,3 +151,4 @@ class Db(BaseDb):
     group_naming: AsyncMongoCollection[ObjectId, GroupNaming]
     naming_problem: AsyncMongoCollection[ObjectId, NamingProblem]
     rpc_monitoring: AsyncMongoCollection[ObjectId, RpcMonitoring]
+    history: AsyncMongoCollection[ObjectId, History]

@@ -132,6 +132,19 @@ async def rpc_monitoring_page(
     return await render.html("rpc_monitoring.j2", monitoring=monitoring, networks=networks, form=form)
 
 
+@router.get("/history")
+async def history_page(render: RenderDep, core: CoreDep) -> HTMLResponse:
+    history = await core.db.history.find({}, "-created_at", 100)
+    return await render.html("history.j2", history=history)
+
+
+@router.get("/history/{id}")
+async def history_accounts(render: RenderDep, core: CoreDep, id: ObjectId) -> HTMLResponse:
+    history = await core.db.history.get(id)
+    info = await core.history_service.get_history_group_accounts_info(id)
+    return await render.html("history_accounts.j2", history=history, info=info)
+
+
 # actions
 
 

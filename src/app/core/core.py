@@ -10,6 +10,7 @@ from app.core.services.balance_service import BalanceService
 from app.core.services.bot_service import BotService
 from app.core.services.coin_service import CoinService
 from app.core.services.group_service import GroupService
+from app.core.services.history_service import HistoryService
 from app.core.services.naming_service import NamingService
 from app.core.services.network_service import NetworkService
 from app.settings import DConfigSettings, DValueSettings
@@ -22,6 +23,7 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
     naming_service: NamingService
     group_service: GroupService
     balance_service: BalanceService
+    history_service: HistoryService
 
     @classmethod
     async def init(cls, core_config: CoreConfig) -> Self:
@@ -32,6 +34,7 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
         res.naming_service = NamingService(res.base_service_params, res.network_service)
         res.group_service = GroupService(res.base_service_params, res.network_service, res.coin_service)
         res.balance_service = BalanceService(res.base_service_params, res.network_service, res.coin_service)
+        res.history_service = HistoryService(res.base_service_params, res.network_service, res.coin_service)
         return res
 
     async def configure_scheduler(self) -> None:
