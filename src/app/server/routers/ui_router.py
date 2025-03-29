@@ -19,42 +19,42 @@ router = APIRouter(include_in_schema=False)
 @cbv(router)
 class CBV(View):
     @router.get("/")
-    async def index_page(self) -> HTMLResponse:
+    async def index(self) -> HTMLResponse:
         return await self.render.html("index.j2")
 
     @router.get("/bot")
-    async def bot_page(self) -> HTMLResponse:
+    async def bot(self) -> HTMLResponse:
         return await self.render.html("bot.j2")
 
     @router.get("/networks")
-    async def networks_page(self) -> HTMLResponse:
+    async def networks(self) -> HTMLResponse:
         networks = await self.core.network_service.get_networks()
         return await self.render.html("networks.j2", networks=networks, network_types=[t.value for t in NetworkType])
 
     @router.get("/networks/oldest-checked-time")
-    async def get_networks_oldest_checked_time_page(self) -> HTMLResponse:
+    async def networks_oldest_checked_time(self) -> HTMLResponse:
         stats = await self.core.network_service.calc_oldest_checked_time()
         return await self.render.html("networks_oldest_checked_time.j2", stats=stats)
 
     @router.get("/namings")
-    async def namings_page(self) -> HTMLResponse:
+    async def namings(self) -> HTMLResponse:
         oldest_checked_time = await self.core.name_service.calc_oldest_checked_time()
         return await self.render.html("namings.j2", namings=list(Naming), oldest_checked_time=oldest_checked_time)
 
     @router.get("/coins")
-    async def coins_page(self) -> HTMLResponse:
+    async def coins(self) -> HTMLResponse:
         explorer_token_map = await self.core.coin_service.explorer_token_map()
         return await self.render.html(
             "coins.j2", coins=await self.core.coin_service.get_coins(), explorer_token_map=explorer_token_map
         )
 
     @router.get("/coins/oldest-checked-time")
-    async def get_coins_oldest_checked_time_page(self) -> HTMLResponse:
+    async def coins_oldest_checked_time(self) -> HTMLResponse:
         stats = await self.core.coin_service.calc_oldest_checked_time()
         return await self.render.html("coins_oldest_checked_time.j2", stats=stats)
 
     @router.get("/groups")
-    async def groups_page(self) -> HTMLResponse:
+    async def groups(self) -> HTMLResponse:
         groups = await self.core.db.group.find({}, "name")
         coins = await self.core.coin_service.get_coins()
         coins_by_network_type = await self.core.coin_service.get_coins_by_network_type()
@@ -67,11 +67,11 @@ class CBV(View):
             coins_by_network_type=coins_by_network_type,
         )
 
-    @router.get("/accounts/{group_id}")
-    async def accounts(self, group_id: ObjectId) -> HTMLResponse:
+    @router.get("/groups/{group_id}")
+    async def group(self, group_id: ObjectId) -> HTMLResponse:
         group = await self.core.db.group.get(group_id)
         info = await self.core.group_service.get_group_accounts_info(group_id)
-        return await self.render.html("accounts.j2", group=group, info=info)
+        return await self.render.html("group.j2", group=group, info=info)
 
     @router.get("/accounts/{group_id}/balances")
     async def account_balances_page(self, group_id: ObjectId) -> HTMLResponse:
@@ -237,3 +237,11 @@ class ActionCBV(View):
         await self.core.group_service.update_coins(id, value)
         self.render.flash("coins updated successfully")
         return redirect("/groups")
+
+    @router.post("/groups/{id}/update-account-notes")
+    async def update_account_notes(
+        self, id: ObjectId, account: Annotated[str, Form()], notes: Annotated[str, Form()]
+    ) -> RedirectResponse:
+        await self.core.db.group.set(id, {f"account_notes.{account}": notes})
+        self.render.flash("account notes updated successfully")
+        return redirect("/groups/" + str(id))

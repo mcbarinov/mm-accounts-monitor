@@ -50,6 +50,7 @@ class Group(MongoModel[ObjectId]):
     coins: list[str]  # Coin.id
     namings: list[Naming] = Field(default_factory=list)
     accounts: list[str] = Field(default_factory=list)
+    account_notes: dict[str, str] = Field(default_factory=dict)  # account -> note
 
     __collection__: str = "group"
 

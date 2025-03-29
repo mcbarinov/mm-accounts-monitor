@@ -5,7 +5,7 @@
 
   <nav>
     <ul>
-      <li><h3>accounts / {{ group.name }}</h3></li>
+      <li><h3>group / {{ group.name }}</h3></li>
       <li><a href="/accounts/{{ group.id }}/names">names</a></li>
       <li><a href="/accounts/{{ group.id }}/balances">balances</a></li>
       <li><a href="/api-post/history?group_id={{ group.id }}" {{ confirm }}>create history</a></li>
@@ -17,6 +17,7 @@
     <tr>
       <th>n</th>
       <th>account</th>
+      <th>note</th>
       {% for naming in group.namings %}
         <th>{{ naming.value }}</th>
       {% endfor %}
@@ -30,6 +31,7 @@
     <tr>
       <td></td>
       <td></td>
+      <th></th>
       {% for naming in group.namings %}
         <td></td>
       {% endfor %}
@@ -43,6 +45,23 @@
       <tr>
         <td>{{ loop.index }}</td>
         <td>{{ account }}</td>
+        <td>
+          {{ group.account_notes[account] }}
+          <a data-target="modal-update-account-notes-{{ account }}" onclick="toggleModal(event)">[e]</a>
+          <dialog id="modal-update-account-notes-{{ account }}">
+            <article>
+              <header>
+                <h3>update notes for {{ account }}</h3>
+              </header>
+              <form method="post" action="/groups/{{ group.id }}/update-account-notes">
+                <input type="hidden" name="account" value="{{ account }}">
+                <input type="text" name="notes" value="{{ group.account_notes[account] }}">
+                <input type="submit" value="save">
+              </form>
+            </article>
+          </dialog>
+
+        </td>
         {% for naming in group.namings %}
           <td>{{ info.get_name(naming, account) }}</td>
         {% endfor %}
