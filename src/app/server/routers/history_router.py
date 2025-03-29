@@ -1,17 +1,19 @@
 from bson import ObjectId
 from fastapi import APIRouter
+from mm_base6 import cbv
 from mm_mongo import MongoDeleteResult
 
-from app.server.deps import CoreDep
+from app.server.deps import View
 
 router = APIRouter(prefix="/api/history", tags=["history"])
 
 
-@router.post("/")
-async def create_history(core: CoreDep, group_id: ObjectId) -> None:
-    await core.history_service.create(group_id)
+@cbv(router)
+class CBV(View):
+    @router.post("/")
+    async def create_history(self, group_id: ObjectId) -> None:
+        await self.core.history_service.create(group_id)
 
-
-@router.delete("/{id}")
-async def delete_history(core: CoreDep, id: ObjectId) -> MongoDeleteResult:
-    return await core.db.history.delete(id)
+    @router.delete("/{id}")
+    async def delete_history(self, id: ObjectId) -> MongoDeleteResult:
+        return await self.core.db.history.delete(id)
