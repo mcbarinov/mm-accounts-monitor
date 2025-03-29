@@ -91,6 +91,7 @@ class GroupBalance(MongoModel[ObjectId]):
     group_id: ObjectId
     coin: str
     balances: dict[str, Decimal] = Field(default_factory=dict)  # account -> balance
+    checked_at: dict[str, datetime] = Field(default_factory=dict)  # account -> checked_at
 
     __collection__: str = "group_balance"
     __indexes__ = ["!group_id,coin", "group_id"]
@@ -100,6 +101,7 @@ class GroupName(MongoModel[ObjectId]):
     group_id: ObjectId
     naming: Naming
     names: dict[str, str] = Field(default_factory=dict)  # account -> name, name can be empty string
+    checked_at: dict[str, datetime] = Field(default_factory=dict)  # account -> checked_at
 
     __collection__: str = "group_name"
     __indexes__ = ["!group_id,naming", "group_id"]
@@ -144,7 +146,9 @@ class History(MongoModel[ObjectId]):
     group: Group
     notes: str = ""
     balances: dict[str, dict[str, Decimal]]  # coin -> account -> balance
+    balances_checked_at: dict[str, dict[str, datetime]]  # coin -> account -> checked_at
     names: dict[Naming, dict[str, str]]  # naming -> account -> name
+    names_checked_at: dict[str, dict[str, datetime]]  # naming -> account -> checked_at
     created_at: datetime = Field(default_factory=utc_now)
 
     __collection__: str = "history"

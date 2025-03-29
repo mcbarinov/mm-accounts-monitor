@@ -68,7 +68,7 @@ class NameService(AppService):
         name = res.ok or ""
         await self.db.group_name.update_one(
             {"group_id": account_name.group_id, "naming": account_name.naming},
-            {"$set": {f"names.{account_name.account}": name}},
+            {"$set": {f"names.{account_name.account}": name, f"checked_at.{account_name.account}": utc_now()}},
         )
         await self.db.account_name.set(id, {"name": name, "checked_at": utc_now()})
 

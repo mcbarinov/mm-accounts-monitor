@@ -101,7 +101,7 @@ class BalanceService(AppService):
         )
         await self.db.group_balance.update_one(
             {"group_id": account_balance.group_id, "coin": account_balance.coin},
-            {"$set": {f"balances.{account_balance.account}": balance}},
+            {"$set": {f"balances.{account_balance.account}": balance, f"checked_at.{account_balance.account}": utc_now()}},
         )
         await self.db.account_balance.set(id, {"balance_raw": str(balance_raw), "balance": balance, "checked_at": utc_now()})
 
