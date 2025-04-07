@@ -110,7 +110,7 @@ wheels = [
 
 [[package]]
 name = "app"
-version = "0.0.1"
+version = "0.0.2"
 source = { editable = "." }
 dependencies = [
     { name = "deepdiff" },
@@ -138,7 +138,7 @@ requires-dist = [
     { name = "deepdiff", specifier = "==8.4.2" },
     { name = "mm-aptos", specifier = "~=0.2.3" },
     { name = "mm-base6", specifier = "==0.0.12" },
-    { name = "mm-eth", specifier = "~=0.5.11" },
+    { name = "mm-eth", specifier = "~=0.5.12" },
     { name = "mm-sol", specifier = "~=0.5.7" },
     { name = "mm-starknet", specifier = "~=0.2.2" },
 ]
@@ -1080,17 +1080,18 @@ wheels = [
 
 [[package]]
 name = "mm-eth"
-version = "0.5.11"
+version = "0.5.12"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp-socks" },
     { name = "mm-crypto-utils" },
+    { name = "mm-std" },
     { name = "typer" },
     { name = "web3" },
     { name = "websocket-client" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f1/a5/764f0692844e2fe5336cce62c083cd57a08252f122b3dca583cba9131394/mm_eth-0.5.11-py3-none-any.whl", hash = "sha256:45767eeaee3502c4d19b7a7f09bd5c90b4596dee643c5aa550fd30ba055c0d72", size = 39294 },
+    { url = "https://files.pythonhosted.org/packages/9d/36/d68a084bc8b751aec036fab89d7481c3c5c62a03fa00efc9c3a3341fa5b2/mm_eth-0.5.12-py3-none-any.whl", hash = "sha256:b79a5c516a96c43dee781d152b7c5493594312a12714b846433dba5182cf68f0", size = 40005 },
 ]
 
 [[package]]
@@ -2287,7 +2288,7 @@ wheels = [
 
 [[package]]
 name = "web3"
-version = "7.9.0"
+version = "7.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -2305,9 +2306,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5d/d7/f67b4947d89ab6a0c7a2079452e804368ebb4c36e47bfb12cf7641d93c60/web3-7.9.0.tar.gz", hash = "sha256:3c4487a7ac57e0a187bd7ee03db455d94f354d15cca45f097f15f7281ad1a01f", size = 2193782 }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/19/c1e213dd87ead2ace55ff1dd179df6050bcf5d9006440c9153969c7d6863/web3-7.10.0.tar.gz", hash = "sha256:0cace05ea14f800a4497649ecd99332ca4e85c8a90ea577e05ae909cb08902b9", size = 2193725 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/df/7ca4a880772a3eea99c994d40d142c96cb679e625dd4bce3cd79901e58d8/web3-7.9.0-py3-none-any.whl", hash = "sha256:7818267675283e9cae4487d2805fc34b899aa26f41b0000c798c79b1684899eb", size = 1365826 },
+    { url = "https://files.pythonhosted.org/packages/4c/c5/a8e25e3ff51c7cd6d2bdecf75da2afb2923b29eba28e5dfe4fde72ad2322/web3-7.10.0-py3-none-any.whl", hash = "sha256:06fcab920554450e9f7d108da5e6b9d29c0d1a981a59a5551cc82d2cb2233b34", size = 1365880 },
 ]
 
 [[package]]

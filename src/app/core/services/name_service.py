@@ -20,6 +20,8 @@ class NameService(AppService):
 
     @async_synchronized_parameter(arg_index=1)
     async def check_next_naming(self, naming: Naming) -> None:
+        if not self.dvalue.check_namings:
+            return
         # self.logger.debug("check_next_naming called: %s", naming)
 
         # first check accounts that were never checked

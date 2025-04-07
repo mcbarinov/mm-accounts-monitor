@@ -53,7 +53,6 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
         libraries = ["urllib3.connectionpool", "httpcore", "httpx", "web3"]
         for lib in libraries:
             logging.getLogger(lib).setLevel(logging.WARNING)
-        
 
     async def stop(self) -> None:
         pass

@@ -14,4 +14,4 @@ async def get_balance(
 
 
 async def get_ens_name(rpc_urls: list[str], account: str, proxies: Proxies = None) -> Result[str | None]:
-    return await ens.async_get_name_with_retries(rpc_urls, account, retries=5, proxies=proxies)
+    return await ens.get_name_with_retries_async(rpc_urls, account, retries=5, proxies=proxies)

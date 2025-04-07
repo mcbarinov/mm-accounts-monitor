@@ -66,7 +66,7 @@ class CBV(View):
             network_types=list(NetworkType),
             namings=list(Naming),
             coins_by_network_type=coins_by_network_type,
-            form={"network_type": network_type}
+            form={"network_type": network_type},
         )
 
     @router.get("/groups/{group_id}")

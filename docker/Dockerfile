@@ -8,6 +8,14 @@ FROM python:${python_version} AS builder
 SHELL ["/bin/sh", "-exc"]
 WORKDIR /project
 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        cmake \
+        make \
+        clang \
+        g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 # Setup uv
 COPY --from=uv_builder /uv /usr/local/bin/
 ENV UV_LINK_MODE=copy \
