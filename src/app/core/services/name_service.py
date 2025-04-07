@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from bson import ObjectId
@@ -8,6 +9,8 @@ from app.core.constants import Naming
 from app.core.db import NamingProblem
 from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
+
+logger = logging.getLogger(__name__)
 
 
 class NameService(AppService):
@@ -31,7 +34,7 @@ class NameService(AppService):
         if not need_to_check:
             return
 
-        runner = AsyncTaskRunner(self.dconfig.limit_naming_workers, name="check_names", logger=self.logger)
+        runner = AsyncTaskRunner(self.dconfig.limit_naming_workers, name="check_names")
         for an in need_to_check:
             runner.add_task(str(an.id), self.check_account_name(an.id))
         await runner.run()
@@ -53,7 +56,7 @@ class NameService(AppService):
                 return Err("Not implemented")
 
         if isinstance(res, Err):
-            self.logger.debug("check_account_name: %s", res.err)
+            logger.debug("check_account_name: %s", res.err)
             await self.db.naming_problem.insert_one(
                 NamingProblem(
                     id=ObjectId(),

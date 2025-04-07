@@ -2,7 +2,7 @@ from typing import Annotated
 
 import pydash
 from bson import ObjectId
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Depends, Form, Query
 from mm_base6 import cbv, redirect
 from mm_std import Err, str_to_list
 from pydantic import BaseModel, Field
@@ -54,8 +54,9 @@ class CBV(View):
         return await self.render.html("coins_oldest_checked_time.j2", stats=stats)
 
     @router.get("/groups")
-    async def groups(self) -> HTMLResponse:
-        groups = await self.core.db.group.find({}, "name")
+    async def groups(self, network_type: Annotated[NetworkType | None, Query()] = None) -> HTMLResponse:
+        query = {"network_type": network_type} if network_type else {}
+        groups = await self.core.db.group.find(query, "name")
         coins = await self.core.coin_service.get_coins()
         coins_by_network_type = await self.core.coin_service.get_coins_by_network_type()
         return await self.render.html(
@@ -65,6 +66,7 @@ class CBV(View):
             network_types=list(NetworkType),
             namings=list(Naming),
             coins_by_network_type=coins_by_network_type,
+            form={"network_type": network_type}
         )
 
     @router.get("/groups/{group_id}")

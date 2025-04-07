@@ -1,14 +1,30 @@
 {% extends "inc/base.j2" %}
 {% block content %}
 
-
-
   <nav>
     <ul>
       <li><h3>group / {{ group.name }}</h3></li>
       <li><a href="/accounts/{{ group.id }}/names">names</a></li>
       <li><a href="/accounts/{{ group.id }}/balances">balances</a></li>
       <li><a href="/api-post/history?group_id={{ group.id }}" {{ confirm }}>create history</a></li>
+
+      <li>
+        <details class="dropdown">
+          <summary>actions</summary>
+          <ul>
+            <li><a data-target="modal-update-accounts-{{ group.id }}" onclick="toggleModal(event)">update accounts</a>
+            </li>
+            <li><a data-target="modal-update-coins-{{ group.id }}" onclick="toggleModal(event)">update coins</a></li>
+            <li><a href="/api-post/history?group_id={{ group.id }}">create history</a></li>
+            <li><a href="/api-post/groups/{{ group.id }}/reset-group-balances" {{ confirm }}>reset group balances</a>
+            </li>
+            <li><a href="/api-post/groups/{{ group.id }}/process-account-names">process account names</a></li>
+            <li><a href="/api-post/groups/{{ group.id }}/process-account-balances">process account balances</a></li>
+            <li><a href="/api-delete/groups/{{ group.id }}" {{ confirm }}>delete</a></li>
+            <li><a href="/api/groups/{{ group.id }}">view</a></li>
+          </ul>
+        </details>
+      </li>
     </ul>
   </nav>
 

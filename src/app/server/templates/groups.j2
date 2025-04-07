@@ -10,6 +10,19 @@
     </ul>
   </nav>
 
+  <form method="GET">
+    <fieldset role="group">
+      <select name="network_type">
+        <option value="">network type...</option>
+        {% for nt in network_types %}
+          <option
+            value="{{ nt.value }}" {{ "selected" if nt.value == form.network_type }}>{{ nt.value }}</option>
+        {% endfor %}
+      </select>
+      <input type="submit" value="filter" class="outline">
+    </fieldset>
+  </form>
+
   <dialog id="modal-add">
     <article>
       <header>Add a group</header>
@@ -64,7 +77,7 @@
     {% for g in groups %}
       <tr>
         <td>
-          {{ g.name }}<br>
+          <a href="/groups/{{ g.id }}">{{ g.name }}</a><br>
           {{ g.network_type.value }}
         </td>
         <td>{{ g.notes }}</td>
@@ -76,7 +89,7 @@
             <br>
           {% endfor %}
         </td>
-        <td><a href="/groups/{{ g.id }}">accounts</a> / {{ g.accounts | length }}</td>
+        <td>{{ g.accounts | length }}</td>
         <td>
           <details class="dropdown">
             <summary>actions</summary>

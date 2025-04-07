@@ -1,3 +1,4 @@
+import logging
 import time
 from decimal import Decimal
 
@@ -11,6 +12,8 @@ from app.core.db import Coin, Network, RpcMonitoring
 from app.core.services.coin_service import CoinService
 from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
+
+logger = logging.getLogger(__name__)
 
 
 class BalanceService(AppService):
@@ -34,7 +37,7 @@ class BalanceService(AppService):
         if not need_to_check:
             return 0
 
-        runner = AsyncTaskRunner(self.dconfig.limit_network_workers, name="check_balances", logger=self.logger)
+        runner = AsyncTaskRunner(self.dconfig.limit_network_workers, name="check_balances")
         for ab in need_to_check:
             runner.add_task(str(ab.id), self.check_account_balance(ab.id))
         await runner.run()
@@ -90,7 +93,7 @@ class BalanceService(AppService):
 
         res = await self._request_balance(network, coin, account_balance.account)
         if isinstance(res, Err):
-            self.logger.debug("check_account_balance: %s", res.err)
+            logger.debug("check_account_balance: %s", res.err)
             return res
 
         balance_raw = res.ok

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Self
 
 from mm_base6 import BaseCore, CoreConfig
@@ -49,7 +50,10 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
             self.scheduler.add_task(task_id, 2, self.name_service.check_next_naming, args=(naming,))
 
     async def start(self) -> None:
-        pass
+        libraries = ["urllib3.connectionpool", "httpcore", "httpx", "web3"]
+        for lib in libraries:
+            logging.getLogger(lib).setLevel(logging.WARNING)
+        
 
     async def stop(self) -> None:
         pass
