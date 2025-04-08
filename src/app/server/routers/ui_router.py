@@ -60,15 +60,16 @@ class CBV(View):
 
     @router.get("/groups")
     async def groups(self, network_type: Annotated[NetworkType | None, Query()] = None) -> HTMLResponse:
+
         start = time.perf_counter()
         query = {"network_type": network_type} if network_type else {}
         groups = await self.core.db.group.find(query, "name")
-        logger.info("s1", extra={"elapsed": (time.perf_counter() - start) * 1000})
+        logger.warning("s1", extra={"elapsed": (time.perf_counter() - start) * 1000})
 
         coins = await self.core.coin_service.get_coins()
-        logger.info("s2", extra={"elapsed": (time.perf_counter() - start) * 1000})
+        logger.warning("s2", extra={"elapsed": (time.perf_counter() - start) * 1000})
         coins_by_network_type = await self.core.coin_service.get_coins_by_network_type()
-        logger.info("s3", extra={"elapsed": (time.perf_counter() - start) * 1000})
+        logger.warning("s3", extra={"elapsed": (time.perf_counter() - start) * 1000})
         res = await self.render.html(
             "groups.j2",
             groups=groups,
@@ -78,7 +79,7 @@ class CBV(View):
             coins_by_network_type=coins_by_network_type,
             form={"network_type": network_type},
         )
-        logger.info("s4", extra={"elapsed": (time.perf_counter() - start) * 1000})
+        logger.warning("s4", extra={"elapsed": (time.perf_counter() - start) * 1000})
         return res
 
     @router.get("/groups/{group_id}")
