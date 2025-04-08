@@ -101,6 +101,6 @@ class HistoryService(AppService):
             coins_sum=coins_sum,
             balances=balances,
             names=history.names,
-            coins_map=await self.coin_service.get_coins_map(),
-            networks=await self.network_service.get_networks(),
+            coins_map=self.coin_service.get_coins_map(),
+            networks=self.network_service.get_networks(),
         )

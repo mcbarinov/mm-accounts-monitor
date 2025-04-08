@@ -33,7 +33,7 @@ class CBV(View):
 
     @router.get("/networks")
     async def networks(self) -> HTMLResponse:
-        networks = await self.core.network_service.get_networks()
+        networks = self.core.network_service.get_networks()
         return await self.render.html("networks.j2", networks=networks, network_types=[t.value for t in NetworkType])
 
     @router.get("/networks/oldest-checked-time")
@@ -48,10 +48,8 @@ class CBV(View):
 
     @router.get("/coins")
     async def coins(self) -> HTMLResponse:
-        explorer_token_map = await self.core.coin_service.explorer_token_map()
-        return await self.render.html(
-            "coins.j2", coins=await self.core.coin_service.get_coins(), explorer_token_map=explorer_token_map
-        )
+        explorer_token_map = self.core.coin_service.explorer_token_map()
+        return await self.render.html("coins.j2", coins=self.core.coin_service.get_coins(), explorer_token_map=explorer_token_map)
 
     @router.get("/coins/oldest-checked-time")
     async def coins_oldest_checked_time(self) -> HTMLResponse:
@@ -60,15 +58,14 @@ class CBV(View):
 
     @router.get("/groups")
     async def groups(self, network_type: Annotated[NetworkType | None, Query()] = None) -> HTMLResponse:
-
         start = time.perf_counter()
         query = {"network_type": network_type} if network_type else {}
         groups = await self.core.db.group.find(query, "name")
         logger.warning("s1", extra={"elapsed": (time.perf_counter() - start) * 1000})
 
-        coins = await self.core.coin_service.get_coins()
+        coins = self.core.coin_service.get_coins()
         logger.warning("s2", extra={"elapsed": (time.perf_counter() - start) * 1000})
-        coins_by_network_type = await self.core.coin_service.get_coins_by_network_type()
+        coins_by_network_type = self.core.coin_service.get_coins_by_network_type()
         logger.warning("s3", extra={"elapsed": (time.perf_counter() - start) * 1000})
         res = await self.render.html(
             "groups.j2",
@@ -119,7 +116,7 @@ class CBV(View):
         if success is not None:
             query["success"] = success
         monitoring = await self.core.db.rpc_monitoring.find(query, "-created_at", limit)
-        networks = [n.id for n in await self.core.network_service.get_networks()]
+        networks = [n.id for n in self.core.network_service.get_networks()]
         return await self.render.html("rpc_monitoring.j2", monitoring=monitoring, networks=networks, form=form)
 
     @router.get("/history")
@@ -136,7 +133,7 @@ class CBV(View):
     @router.get("/history/{id}/diff")
     async def get_history_diff_page(self, id: ObjectId) -> HTMLResponse:
         history = await self.core.db.history.get(id)
-        coins_map = await self.core.coin_service.get_coins_map()
+        coins_map = self.core.coin_service.get_coins_map()
         diff = await self.core.history_service.get_balances_diff(id)
         return await self.render.html("history_diff.j2", history=history, diff=diff, coins_map=coins_map)
 
@@ -162,7 +159,7 @@ class ActionCBV(View):
 
     @router.post("/networks")
     async def add_network(self, data: Annotated[AddNetworkForm, Form()]) -> RedirectResponse:
-        await self.core.db.network.insert_one(data.to_db())
+        await self.core.network_service.add_network(data.to_db())
         self.render.flash("network added successfully")
         return redirect("/networks")
 
@@ -177,29 +174,25 @@ class ActionCBV(View):
 
     @router.get("/networks/export", response_class=PlainTextResponse)
     async def export_networks(self) -> str:
-        return await self.core.network_service.export_as_toml()
-
-    @router.post("/networks/{id}/explorer")
-    async def update_explorer_url(self, id: str, value: Annotated[str, Form()]) -> RedirectResponse:
-        await self.core.db.network.update_one({"_id": id}, {"$set": {"explorer_url": value}})
-        self.render.flash("explorer url updated successfully")
-        return redirect("/networks")
+        return self.core.network_service.export_as_toml()
 
     @router.post("/networks/{id}/add-rpc")
     async def add_rpc_url(self, id: str, value: Annotated[str, Form()]) -> RedirectResponse:
         await self.core.db.network.update_one({"_id": id}, {"$push": {"rpc_urls": value}})
+        await self.core.network_service.load_networks_from_db()
         self.render.flash("rpc url added successfully")
         return redirect("/networks")
 
     @router.get("/networks/{id}/delete-rpc")
     async def delete_rpc_url(self, id: str, value: str) -> RedirectResponse:
         await self.core.db.network.update_one({"_id": id}, {"$pull": {"rpc_urls": value}})
+        await self.core.network_service.load_networks_from_db()
         self.render.flash("rpc url deleted successfully")
         return redirect("/networks")
 
     @router.get("/coins/export", response_class=PlainTextResponse)
     async def export_coins(self) -> str:
-        return await self.core.coin_service.export_as_toml()
+        return self.core.coin_service.export_as_toml()
 
     @router.post("/coins/import")
     async def import_coins(self, value: Annotated[str, Form()]) -> RedirectResponse:

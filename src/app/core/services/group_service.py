@@ -85,8 +85,8 @@ class GroupService(AppService):
             coins_sum=coins_sum,
             balances=balances,
             names=namings,
-            coins_map=await self.coin_service.get_coins_map(),
-            networks=await self.network_service.get_networks(),
+            coins_map=self.coin_service.get_coins_map(),
+            networks=self.network_service.get_networks(),
         )
 
     async def create_group(
@@ -98,8 +98,8 @@ class GroupService(AppService):
                 raise UserError(f"Naming {naming.name} is not consistent with the network type {network_type.value}")
         # Check if the coins are consistent with the network type
         for coin_id in coin_ids:
-            coin = await self.coin_service.get_coin(coin_id)
-            network = await self.network_service.get_network(coin.network)
+            coin = self.coin_service.get_coin(coin_id)
+            network = self.network_service.get_network(coin.network)
             if network.type != network_type:
                 raise UserError(f"Coin {coin_id} is not consistent with the network type {network_type.value}")
         new_group = Group(id=ObjectId(), name=name, network_type=network_type, notes=notes, coins=coin_ids, namings=namings)
@@ -122,7 +122,7 @@ class GroupService(AppService):
 
     @async_synchronized
     async def import_from_toml(self, toml: str) -> int:
-        known_coins = [c.id for c in await self.coin_service.get_coins()]
+        known_coins = [c.id for c in self.coin_service.get_coins()]
         count = 0
         for data in toml_loads(toml)["groups"]:  # type:ignore[union-attr]
             group = ImportGroupItem(**cast(dict[str, object], data))
@@ -169,8 +169,8 @@ class GroupService(AppService):
         group = await self.db.group.get(id)
         # Check if the coins are consistent with the network type
         for coin_id in coin_ids:
-            coin = await self.coin_service.get_coin(coin_id)
-            network = await self.network_service.get_network(coin.network)
+            coin = self.coin_service.get_coin(coin_id)
+            network = self.network_service.get_network(coin.network)
             if network.type != group.network_type:
                 raise UserError(f"Coin {coin_id} is not from the network {group.network_type.value}")
         await self.db.group.set(id, {"coins": coin_ids})

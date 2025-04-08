@@ -86,14 +86,14 @@ class BalanceService(AppService):
 
     async def check_account_balance(self, id: ObjectId) -> Result[int]:
         account_balance = await self.db.account_balance.get(id)
-        coin = await self.coin_service.get_coin(account_balance.coin)
-        network = await self.network_service.get_network(coin.network)
+        coin = self.coin_service.get_coin(account_balance.coin)
+        network = self.network_service.get_network(coin.network)
 
         # self.logger.debug("check_account_balance: %s / %s / %s", network.id, coin.symbol, account_balance.account)
 
         res = await self._request_balance(network, coin, account_balance.account)
         if isinstance(res, Err):
-            logger.debug("check_account_balance: %s", res.err)
+            # logger.debug("check_account_balance: %s", res.err)
             return res
 
         balance_raw = res.ok

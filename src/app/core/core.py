@@ -40,7 +40,8 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
 
     async def configure_scheduler(self) -> None:
         # check balances
-        for network in await self.network_service.get_networks():
+        await self.network_service.load_networks_from_db()
+        for network in self.network_service.get_networks():
             task_id = "balances_on_" + network.id
             self.scheduler.add_task(task_id, 2, self.balance_service.check_next_network, args=(network.id,))
 
@@ -50,9 +51,12 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
             self.scheduler.add_task(task_id, 2, self.name_service.check_next_naming, args=(naming,))
 
     async def start(self) -> None:
-        libraries = ["urllib3.connectionpool", "httpcore", "httpx", "web3"]
+        libraries = ["httpcore", "httpx", "web3"]
         for lib in libraries:
             logging.getLogger(lib).setLevel(logging.WARNING)
+
+        await self.network_service.load_networks_from_db()
+        await self.coin_service.load_coins_from_db()
 
     async def stop(self) -> None:
         pass

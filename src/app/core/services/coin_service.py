@@ -3,7 +3,7 @@ from datetime import datetime
 import pydash
 import tomlkit
 from mm_mongo import MongoDeleteResult
-from mm_std import Err, Ok, Result, replace_empty_dict_values, toml_dumps
+from mm_std import Err, Ok, Result, async_synchronized, replace_empty_dict_values, toml_dumps
 from pydantic import BaseModel
 
 from app.core.constants import NetworkType
@@ -41,7 +41,9 @@ class CoinService(AppService):
     def __init__(self, base_params: AppServiceParams, network_service: NetworkService) -> None:
         super().__init__(base_params)
         self.network_service = network_service
+        self.coins: list[Coin] = []
 
+    @async_synchronized
     async def import_from_toml(self, toml_str: str) -> Result[int]:
         try:
             count = 0
@@ -50,32 +52,34 @@ class CoinService(AppService):
                 if not await self.db.coin.exists({"_id": c.id}):
                     await self.db.coin.insert_one(c.to_db())
                     count += 1
+            await self.load_coins_from_db()
             return Ok(count)
         except Exception as e:
+            await self.load_coins_from_db()
             return Err(e)
 
-    async def export_as_toml(self) -> str:
+    def export_as_toml(self) -> str:
         coins = []
-        for c in await self.db.coin.find({}, "_id"):
+        for c in self.get_coins():
             coin = replace_empty_dict_values(
                 {"network": c.network, "symbol": c.symbol, "decimals": c.decimals, "token": c.token, "notes": c.notes}
             )
             coins.append(coin)
         return toml_dumps({"coins": coins})
 
-    async def get_coins(self) -> list[Coin]:
-        # TODO: cache it
-        return await self.db.coin.find({}, "_id")
+    async def load_coins_from_db(self) -> None:
+        self.coins = await self.db.coin.find({}, "_id")
 
-    async def get_coins_map(self) -> dict[str, Coin]:
-        # TODO: cache it
-        coins = await self.get_coins()
-        return {c.id: c for c in coins}
+    def get_coins(self) -> list[Coin]:
+        return self.coins
 
-    async def explorer_token_map(self) -> dict[str, str]:  # coin_id -> explorer_token
+    def get_coins_map(self) -> dict[str, Coin]:
+        return {c.id: c for c in self.get_coins()}
+
+    def explorer_token_map(self) -> dict[str, str]:  # coin_id -> explorer_token
         result: dict[str, str] = {}
-        networks = await self.network_service.get_networks()
-        for coin in await self.get_coins():
+        networks = self.network_service.get_networks()
+        for coin in self.get_coins():
             network = pydash.find(networks, lambda n: n.id == coin.network)  # noqa: B023
             if network is None:
                 raise RuntimeError(f"Network not found for coin {coin.id}")
@@ -88,28 +92,32 @@ class CoinService(AppService):
 
         return result
 
-    async def get_coins_by_network_type(self) -> dict[NetworkType, list[Coin]]:
-        coins = await self.get_coins()
+    def get_coins_by_network_type(self) -> dict[NetworkType, list[Coin]]:
+        coins = self.get_coins()
         coins_by_network_type: dict[NetworkType, list[Coin]] = {n: [] for n in NetworkType}
         for c in coins:
-            network_type = (await self.network_service.get_network(c.network)).type
+            network_type = (self.network_service.get_network(c.network)).type
             coins_by_network_type[network_type].append(c)
         return coins_by_network_type
 
-    async def get_coin(self, id: str) -> Coin:
-        # TODO: cache it
-        return await self.db.coin.get(id)
+    def get_coin(self, id: str) -> Coin:
+        res = pydash.find(self.coins, lambda c: c.id == id)
+        if res is None:
+            raise ValueError(f"Coin with id {id} not found")
+        return res
 
+    @async_synchronized
     async def delete(self, id: str) -> MongoDeleteResult:
         await self.db.group_balance.delete_many({"coin": id})
         await self.db.account_balance.delete_many({"coin": id})
         await self.db.group.update_many({"coins": id}, {"$pull": {"coins": id}})
-        # TODO: remove from cache
-        return await self.db.coin.delete(id)
+        res = await self.db.coin.delete(id)
+        await self.load_coins_from_db()
+        return res
 
     async def calc_oldest_checked_time(self) -> OldestCheckedTimeStats:
         result = OldestCheckedTimeStats(coins={})
-        for coin in await self.get_coins():
+        for coin in self.get_coins():
             oldest_checked_time = None
             never_checked_count = await self.db.account_balance.count({"coin": coin.id, "checked_at": None})
             if never_checked_count == 0:

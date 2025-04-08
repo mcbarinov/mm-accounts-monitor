@@ -43,7 +43,7 @@ class NameService(AppService):
 
     async def check_account_name(self, id: ObjectId) -> Result[str | None]:
         account_name = await self.db.account_name.get(id)
-        network = await self.network_service.get_network(account_name.network)
+        network = self.network_service.get_network(account_name.network)
 
         # self.logger.debug("check_account_name called: %s / %s", account_naming.naming, account_naming.account)
 
@@ -58,7 +58,7 @@ class NameService(AppService):
                 return Err("Not implemented")
 
         if isinstance(res, Err):
-            logger.debug("check_account_name: %s", res.err)
+            # logger.debug("check_account_name: %s", res.err)
             await self.db.naming_problem.insert_one(
                 NamingProblem(
                     id=ObjectId(),

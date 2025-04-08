@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime
 
+import pydash
 import tomlkit
-from mm_std import Err, Ok, Result
+from mm_std import Err, Ok, Result, async_synchronized
 from pydantic import BaseModel
 
 from app.core.constants import NetworkType
@@ -43,11 +44,12 @@ class OldestCheckedTimeStats(BaseModel):
 class NetworkService(AppService):
     def __init__(self, base_params: AppServiceParams) -> None:
         super().__init__(base_params)
+        self.networks: list[Network] = []  # load on core.start
 
-    async def export_as_toml(self) -> str:
+    def export_as_toml(self) -> str:
         doc = tomlkit.document()
         networks = tomlkit.aot()
-        for n in await self.db.network.find({}, "_id"):
+        for n in self.networks:
             network = tomlkit.table()
             network.add("id", n.id)
             network.add("type", n.type)
@@ -64,21 +66,36 @@ class NetworkService(AppService):
             networks = [ImportNetworkItem(**n) for n in tomlkit.loads(toml_str)["networks"]]  # type:ignore[arg-type,union-attr]
             for n in networks:
                 await self.db.network.set(n.id, n.to_db().model_dump(), upsert=True)
+            await self.load_networks_from_db()
             return Ok(len(networks))
         except Exception as e:
+            await self.load_networks_from_db()
             return Err(e)
 
-    async def get_networks(self) -> list[Network]:
-        # TODO: cache it
-        return await self.db.network.find({}, "_id")
+    async def load_networks_from_db(self) -> None:
+        self.networks = await self.db.network.find({}, "_id")
 
-    async def get_network(self, id: str) -> Network:
-        # TODO: cache it
-        return await self.db.network.get(id)
+    def get_networks(self) -> list[Network]:
+        return self.networks
+
+    async def delete_network(self, id: str) -> None:
+        # TODO: delete all coins associated with this network
+        raise NotImplementedError
+
+    @async_synchronized
+    async def add_network(self, network: Network) -> None:
+        await self.db.network.insert_one(network)
+        await self.load_networks_from_db()
+
+    def get_network(self, id: str) -> Network:
+        res = pydash.find(self.networks, lambda n: n.id == id)
+        if res is None:
+            raise ValueError(f"Network {id} not found")
+        return res
 
     async def calc_oldest_checked_time(self) -> OldestCheckedTimeStats:
         result = OldestCheckedTimeStats(networks={})
-        for network in await self.get_networks():
+        for network in self.get_networks():
             oldest_checked_time = None
             never_checked_count = await self.db.account_balance.count({"network": network.id, "checked_at": None})
             if never_checked_count == 0:
