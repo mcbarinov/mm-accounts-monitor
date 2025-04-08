@@ -137,7 +137,7 @@ dev = [
 requires-dist = [
     { name = "deepdiff", specifier = "==8.4.2" },
     { name = "mm-aptos", specifier = "~=0.2.3" },
-    { name = "mm-base6", specifier = "==0.0.14" },
+    { name = "mm-base6", specifier = "==0.0.15" },
     { name = "mm-eth", specifier = "~=0.5.12" },
     { name = "mm-sol", specifier = "~=0.5.7" },
     { name = "mm-starknet", specifier = "~=0.2.2" },
@@ -1050,7 +1050,7 @@ wheels = [
 
 [[package]]
 name = "mm-base6"
-version = "0.0.14"
+version = "0.0.15"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },
@@ -1063,7 +1063,7 @@ dependencies = [
     { name = "uvloop" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e1/3e/fd69553afc45e483398c2e9bca1dbe56da108ad90fc197c58213f512ab30/mm_base6-0.0.14-py3-none-any.whl", hash = "sha256:d7d53cea2695371e21e26b64c8fcf947751a9571449bdfd0d9b7bf58a77bfa87", size = 50421 },
+    { url = "https://files.pythonhosted.org/packages/e9/b4/cbde5a0d4c8e27abf331e84ac7b9fdaf62b293c53a021bedd295d466007d/mm_base6-0.0.15-py3-none-any.whl", hash = "sha256:74dd2d7473885dae06cb556acdb8a42e10eb0dc3aad267501b605ade685b0fa3", size = 50483 },
 ]
 
 [[package]]
