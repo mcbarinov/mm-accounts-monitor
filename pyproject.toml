@@ -1,10 +1,10 @@
 [project]
 name = "app"
-version = "0.0.3"
+version = "0.0.4"
 description = ""
 requires-python = ">=3.12"
 dependencies = [
-    "mm-base6==0.0.13",
+    "mm-base6==0.0.14",
     "mm-eth~=0.5.12",
     "mm-sol~=0.5.7",
     "mm-aptos~=0.2.3",
