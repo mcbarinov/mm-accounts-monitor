@@ -33,10 +33,11 @@ class ImportNetworkItem(BaseModel):
         )
 
 
-class OldestCheckedTimeStats(BaseModel):
+class NetworkCheckStats(BaseModel):
     class Stats(BaseModel):
         oldest_checked_time: datetime | None
         never_checked_count: int  # how many accounts have never been checked
+        all_count: int  # how many accounts in this network
 
     networks: dict[str, Stats]  # network_id -> Stats
 
@@ -93,8 +94,8 @@ class NetworkService(AppService):
             raise ValueError(f"Network {id} not found")
         return res
 
-    async def calc_oldest_checked_time(self) -> OldestCheckedTimeStats:
-        result = OldestCheckedTimeStats(networks={})
+    async def calc_network_check_stats(self) -> NetworkCheckStats:
+        result = NetworkCheckStats(networks={})
         for network in self.get_networks():
             oldest_checked_time = None
             never_checked_count = await self.db.account_balance.count({"network": network.id, "checked_at": None})
@@ -102,7 +103,9 @@ class NetworkService(AppService):
                 account_balance = await self.db.account_balance.find_one({"network": network.id}, "checked_at")
                 if account_balance:
                     oldest_checked_time = account_balance.checked_at
-            result.networks[network.id] = OldestCheckedTimeStats.Stats(
-                oldest_checked_time=oldest_checked_time, never_checked_count=never_checked_count
+            result.networks[network.id] = NetworkCheckStats.Stats(
+                oldest_checked_time=oldest_checked_time,
+                never_checked_count=never_checked_count,
+                all_count=await self.db.account_balance.count({"network": network.id}),
             )
         return result
