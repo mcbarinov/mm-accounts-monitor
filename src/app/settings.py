@@ -11,6 +11,7 @@ server_config.main_menu = {"/bot": "bot", "/groups": "groups", "/history": "hist
 
 
 class DConfigSettings(DConfigModel):
+    mm_node_checker = DC("", "mm node checker url")
     proxies_url = DC("http://localhost:8000", "proxies url, each proxy on new line")
     round_ndigits = DC(5, "round ndigits")
     limit_network_workers = DC(20, "How many requests to one network in parallel")
@@ -24,6 +25,8 @@ class DValueSettings(DValueModel):
     check_namings: DV[bool] = DV(True)
     proxies: DV[list[str]] = DV([])
     proxies_updated_at: DV[datetime | None] = DV(None)
+    mm_node_checker: DV[dict[str, list[str]] | None] = DV(None)
+    mm_node_checker_updated_at: DV[datetime | None] = DV(None)
 
 
 def get_router() -> APIRouter:

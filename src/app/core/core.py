@@ -50,6 +50,9 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
             task_id = "names_on_" + naming
             self.scheduler.add_task(task_id, 2, self.name_service.check_next_naming, args=(naming,))
 
+        # mm-node-checker
+        self.scheduler.add_task("mm-node-checker", 30, self.network_service.update_mm_node_checker)
+
     async def start(self) -> None:
         libraries = ["httpcore", "httpx", "web3"]
         for lib in libraries:

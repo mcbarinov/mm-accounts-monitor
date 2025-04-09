@@ -2,6 +2,7 @@ import logging
 import time
 from decimal import Decimal
 
+import pydash
 from bson import ObjectId
 from mm_crypto_utils import random_node, random_proxy
 from mm_std import AsyncTaskRunner, Err, Result, async_synchronized_parameter, utc_delta, utc_now
@@ -32,6 +33,7 @@ class BalanceService(AppService):
         if len(need_to_check) < self.dconfig.limit_network_workers:
             need_to_check += await self.db.account_balance.find(
                 {"network": network, "checked_at": {"$lt": utc_delta(minutes=-1 * self.dconfig.check_balance_interval)}},
+                "checked_at",
                 limit=self.dconfig.limit_network_workers - len(need_to_check),
             )
         if not need_to_check:
@@ -48,7 +50,15 @@ class BalanceService(AppService):
 
         for _ in range(5):
             start_at = time.perf_counter()
-            rpc_url = random_node(network.rpc_urls)
+            rpc_urls = network.rpc_urls
+            if self.dvalue.mm_node_checker and self.dvalue.mm_node_checker.get(network.id):
+                rpc_urls += self.dvalue.mm_node_checker[network.id]
+                rpc_urls = pydash.uniq(rpc_urls)
+            if not rpc_urls:
+                return Err(f"rpc url not found for {network.id}")
+
+            # print("rpc_urls", rpc_urls)
+            rpc_url = random_node(rpc_urls)
             proxy = random_proxy(self.dvalue.proxies)
 
             match network.type:

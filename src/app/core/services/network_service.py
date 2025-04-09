@@ -4,7 +4,8 @@ from datetime import datetime
 
 import pydash
 import tomlkit
-from mm_std import Err, Ok, Result, async_synchronized
+from mm_mongo import MongoUpdateResult
+from mm_std import Err, Ok, Result, async_synchronized, hra, utc_now
 from pydantic import BaseModel
 
 from app.core.constants import NetworkType
@@ -33,10 +34,11 @@ class ImportNetworkItem(BaseModel):
         )
 
 
-class OldestCheckedTimeStats(BaseModel):
+class NetworkCheckStats(BaseModel):
     class Stats(BaseModel):
         oldest_checked_time: datetime | None
         never_checked_count: int  # how many accounts have never been checked
+        all_count: int  # how many accounts in this network
 
     networks: dict[str, Stats]  # network_id -> Stats
 
@@ -83,9 +85,29 @@ class NetworkService(AppService):
         raise NotImplementedError
 
     @async_synchronized
+    async def update_mm_node_checker(self) -> dict[str, list[str]] | None:
+        if not self.dconfig.mm_node_checker:
+            return None
+
+        res = await hra(self.dconfig.mm_node_checker)
+        if res.code == 200 and not res.is_error() and res.json:
+            for key in res.json:
+                if not isinstance(res.json[key], list):
+                    return None
+            self.dvalue.mm_node_checker = res.json
+            self.dvalue.mm_node_checker_updated_at = utc_now()
+            return res.json  # type:ignore[no-any-return]
+
+    @async_synchronized
     async def add_network(self, network: Network) -> None:
         await self.db.network.insert_one(network)
         await self.load_networks_from_db()
+
+    @async_synchronized
+    async def delete_all_rpc_urls(self) -> MongoUpdateResult:
+        res = await self.db.network.update_many({}, {"$set": {"rpc_urls": []}})
+        await self.load_networks_from_db()
+        return res
 
     def get_network(self, id: str) -> Network:
         res = pydash.find(self.networks, lambda n: n.id == id)
@@ -93,8 +115,8 @@ class NetworkService(AppService):
             raise ValueError(f"Network {id} not found")
         return res
 
-    async def calc_oldest_checked_time(self) -> OldestCheckedTimeStats:
-        result = OldestCheckedTimeStats(networks={})
+    async def calc_network_check_stats(self) -> NetworkCheckStats:
+        result = NetworkCheckStats(networks={})
         for network in self.get_networks():
             oldest_checked_time = None
             never_checked_count = await self.db.account_balance.count({"network": network.id, "checked_at": None})
@@ -102,7 +124,9 @@ class NetworkService(AppService):
                 account_balance = await self.db.account_balance.find_one({"network": network.id}, "checked_at")
                 if account_balance:
                     oldest_checked_time = account_balance.checked_at
-            result.networks[network.id] = OldestCheckedTimeStats.Stats(
-                oldest_checked_time=oldest_checked_time, never_checked_count=never_checked_count
+            result.networks[network.id] = NetworkCheckStats.Stats(
+                oldest_checked_time=oldest_checked_time,
+                never_checked_count=never_checked_count,
+                all_count=await self.db.account_balance.count({"network": network.id}),
             )
         return result

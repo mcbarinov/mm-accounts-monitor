@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from mm_base6 import cbv
+from mm_mongo import MongoUpdateResult
 
 from app.core.db import Network
 from app.server.deps import View
@@ -12,6 +13,14 @@ class CBV(View):
     @router.get("/")
     async def get_all_networks(self) -> list[Network]:
         return self.core.network_service.get_networks()
+
+    @router.post("/update-mm-node-checker")
+    async def update_node_checker(self) -> dict[str, list[str]] | None:
+        return await self.core.network_service.update_mm_node_checker()
+
+    @router.delete("/all-rpc-urls")
+    async def delete_all_rpc_urls(self) -> MongoUpdateResult:
+        return await self.core.network_service.delete_all_rpc_urls()
 
     @router.get("/{id}")
     async def get_network(self, id: str) -> Network:

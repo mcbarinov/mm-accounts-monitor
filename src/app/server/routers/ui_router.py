@@ -34,12 +34,15 @@ class CBV(View):
     @router.get("/networks")
     async def networks(self) -> HTMLResponse:
         networks = self.core.network_service.get_networks()
-        return await self.render.html("networks.j2", networks=networks, network_types=[t.value for t in NetworkType])
+        mm_node_checker = self.core.dvalue.mm_node_checker or {}
+        return await self.render.html(
+            "networks.j2", networks=networks, network_types=[t.value for t in NetworkType], mm_node_checker=mm_node_checker
+        )
 
-    @router.get("/networks/oldest-checked-time")
-    async def networks_oldest_checked_time(self) -> HTMLResponse:
-        stats = await self.core.network_service.calc_oldest_checked_time()
-        return await self.render.html("networks_oldest_checked_time.j2", stats=stats)
+    @router.get("/networks/check-stats")
+    async def networks_check_stats(self) -> HTMLResponse:
+        stats = await self.core.network_service.calc_network_check_stats()
+        return await self.render.html("networks_check_stats.j2", stats=stats)
 
     @router.get("/namings")
     async def namings(self) -> HTMLResponse:
@@ -51,10 +54,10 @@ class CBV(View):
         explorer_token_map = self.core.coin_service.explorer_token_map()
         return await self.render.html("coins.j2", coins=self.core.coin_service.get_coins(), explorer_token_map=explorer_token_map)
 
-    @router.get("/coins/oldest-checked-time")
-    async def coins_oldest_checked_time(self) -> HTMLResponse:
-        stats = await self.core.coin_service.calc_oldest_checked_time()
-        return await self.render.html("coins_oldest_checked_time.j2", stats=stats)
+    @router.get("/coins/check-stats")
+    async def coins_check_stats(self) -> HTMLResponse:
+        stats = await self.core.coin_service.calc_coin_check_stats()
+        return await self.render.html("coins_check_stats.j2", stats=stats)
 
     @router.get("/groups")
     async def groups(self, network_type: Annotated[NetworkType | None, Query()] = None) -> HTMLResponse:

@@ -29,10 +29,11 @@ class ImportCoinItem(BaseModel):
         )
 
 
-class OldestCheckedTimeStats(BaseModel):
+class CoinCheckStats(BaseModel):
     class Stats(BaseModel):
         oldest_checked_time: datetime | None
         never_checked_count: int  # how many accounts have never been checked
+        all_count: int  # how many accounts exist
 
     coins: dict[str, Stats]  # coin_id -> Stats
 
@@ -115,8 +116,8 @@ class CoinService(AppService):
         await self.load_coins_from_db()
         return res
 
-    async def calc_oldest_checked_time(self) -> OldestCheckedTimeStats:
-        result = OldestCheckedTimeStats(coins={})
+    async def calc_coin_check_stats(self) -> CoinCheckStats:
+        result = CoinCheckStats(coins={})
         for coin in self.get_coins():
             oldest_checked_time = None
             never_checked_count = await self.db.account_balance.count({"coin": coin.id, "checked_at": None})
@@ -124,8 +125,10 @@ class CoinService(AppService):
                 account_balance = await self.db.account_balance.find_one({"coin": coin.id}, "checked_at")
                 if account_balance:
                     oldest_checked_time = account_balance.checked_at
-            result.coins[coin.id] = OldestCheckedTimeStats.Stats(
-                oldest_checked_time=oldest_checked_time, never_checked_count=never_checked_count
+            result.coins[coin.id] = CoinCheckStats.Stats(
+                oldest_checked_time=oldest_checked_time,
+                never_checked_count=never_checked_count,
+                all_count=await self.db.account_balance.count({"coin": coin.id}),
             )
 
         return result

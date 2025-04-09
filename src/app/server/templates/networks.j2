@@ -6,7 +6,8 @@
       <li><h3>networks / {{ networks | length }}</h3></li>
       <li><a data-target="modal-import" onclick="toggleModal(event)">import</a></li>
       <li><a href="/networks/export">export</a></li>
-      <li><a href="/networks/oldest-checked-time">oldest checked time</a></li>
+      <li><a href="/networks/check-stats">check stats</a></li>
+      <li><a href="/api-post/networks/update-mm-node-checker">update mm-node-checker</a></li>
     </ul>
   </nav>
 
@@ -28,6 +29,7 @@
       <th>id</th>
       <th>type</th>
       <th>rpc</th>
+      <th>mm-node-checker</th>
       <th>explorer</th>
       <th>actions</th>
     </tr>
@@ -37,6 +39,11 @@
         <td>{{ n.type.value }}</td>
         <td>
           {% for u in n.rpc_urls %}
+            {{ u }}<br>
+          {% endfor %}
+        </td>
+      <td>
+          {% for u in mm_node_checker[n.  id] %}
             {{ u }}<br>
           {% endfor %}
         </td>

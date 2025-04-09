@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 
+import pydash
 from bson import ObjectId
 from mm_std import AsyncTaskRunner, Err, Result, async_synchronized_parameter, utc_delta, utc_now
 
@@ -31,6 +32,7 @@ class NameService(AppService):
         if len(need_to_check) < self.dconfig.limit_naming_workers:
             need_to_check += await self.db.account_name.find(
                 {"naming": naming, "checked_at": {"$lt": utc_delta(minutes=-1 * self.dconfig.check_name_interval)}},
+                "checked_at",
                 limit=self.dconfig.limit_naming_workers - len(need_to_check),
             )
         if not need_to_check:
@@ -49,7 +51,11 @@ class NameService(AppService):
 
         match account_name.naming:
             case Naming.ENS:
-                res = await evm.get_ens_name(network.rpc_urls, account_name.account, proxies=self.dvalue.proxies)
+                rpc_urls = network.rpc_urls
+                if self.dvalue.mm_node_checker and self.dvalue.mm_node_checker.get(network.id):
+                    rpc_urls += self.dvalue.mm_node_checker[network.id]
+                    rpc_urls = pydash.uniq(rpc_urls)
+                res = await evm.get_ens_name(rpc_urls, account_name.account, proxies=self.dvalue.proxies)
             case Naming.ANS:
                 res = await aptos.get_ans_name(account_name.account, proxies=self.dvalue.proxies)
             case Naming.STARKNET_ID:
