@@ -51,11 +51,10 @@ class NameService(AppService):
 
         match account_name.naming:
             case Naming.ENS:
-                rpc_urls = network.rpc_urls
+                urls = network.rpc_urls
                 if self.dvalue.mm_node_checker and self.dvalue.mm_node_checker.get(network.id):
-                    rpc_urls += self.dvalue.mm_node_checker[network.id]
-                    rpc_urls = pydash.uniq(rpc_urls)
-                res = await evm.get_ens_name(rpc_urls, account_name.account, proxies=self.dvalue.proxies)
+                    urls = pydash.uniq([*urls, *self.dvalue.mm_node_checker[network.id]])
+                res = await evm.get_ens_name(urls, account_name.account, proxies=self.dvalue.proxies)
             case Naming.ANS:
                 res = await aptos.get_ans_name(account_name.account, proxies=self.dvalue.proxies)
             case Naming.STARKNET_ID:

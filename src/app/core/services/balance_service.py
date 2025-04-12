@@ -25,6 +25,8 @@ class BalanceService(AppService):
 
     @async_synchronized_parameter(arg_index=1)
     async def check_next_network(self, network: str) -> int:
+        if not self.dvalue.check_balances:
+            return -1
         # first check accounts that were never checked
         need_to_check = await self.db.account_balance.find(
             {"network": network, "checked_at": None}, limit=self.dconfig.limit_network_workers
@@ -50,15 +52,14 @@ class BalanceService(AppService):
 
         for _ in range(5):
             start_at = time.perf_counter()
-            rpc_urls = network.rpc_urls
+            urls = network.rpc_urls
             if self.dvalue.mm_node_checker and self.dvalue.mm_node_checker.get(network.id):
-                rpc_urls += self.dvalue.mm_node_checker[network.id]
-                rpc_urls = pydash.uniq(rpc_urls)
-            if not rpc_urls:
+                urls = pydash.uniq([*urls, *self.dvalue.mm_node_checker[network.id]])
+            if not urls:
                 return Err(f"rpc url not found for {network.id}")
 
             # print("rpc_urls", rpc_urls)
-            rpc_url = random_node(rpc_urls)
+            rpc_url = random_node(urls)
             proxy = random_proxy(self.dvalue.proxies)
 
             match network.type:
