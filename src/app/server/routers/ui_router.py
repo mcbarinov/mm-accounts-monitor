@@ -80,17 +80,37 @@ class CBV(View):
         info = await self.core.group_service.get_group_accounts_info(group_id)
         return await self.render.html("group.j2", group=group, info=info)
 
-    @router.get("/accounts/{group_id}/balances")
-    async def account_balances_page(self, group_id: ObjectId) -> HTMLResponse:
-        group = await self.core.db.group.get(ObjectId(group_id))
-        account_balances = await self.core.db.account_balance.find({"group_id": ObjectId(group_id)}, "account,coin")
-        return await self.render.html("account_balances.j2", group=group, account_balances=account_balances)
+    @router.get("/balances")
+    async def balances(self, group: ObjectId | None = None, coin: str | None = None, limit: int = 1000) -> HTMLResponse:
+        query: dict[str, object] = {}
+        if group:
+            query["group_id"] = group
+        if coin:
+            query["coin"] = coin
+        balances = await self.core.db.account_balance.find(query, "account,coin", limit=limit)
+        groups = await self.core.db.group.find({}, "name")
+        coins = self.core.coin_service.get_coins()
+        form = {"group": group, "coin": coin, "limit": limit}
+        return await self.render.html("balances.j2", balances=balances, form=form, groups=groups, coins=coins)
 
-    @router.get("/accounts/{group_id}/names")
-    async def account_names_page(self, group_id: ObjectId) -> HTMLResponse:
-        group = await self.core.db.group.get(ObjectId(group_id))
-        account_names = await self.core.db.account_name.find({"group_id": ObjectId(group_id)}, "account,naming")
-        return await self.render.html("account_names.j2", group=group, account_names=account_names)
+    @router.get("/names")
+    async def names(
+        self,
+        group: ObjectId | None = None,
+        naming_str: Annotated[str | None, Query(alias="naming")] = None,
+        limit: int = 1000,
+    ) -> HTMLResponse:
+        naming = Naming(naming_str) if naming_str else None
+        query: dict[str, object] = {}
+        if group:
+            query["group_id"] = group
+        if naming:
+            query["naming"] = naming
+        names = await self.core.db.account_name.find(query, "account,naming", limit=limit)
+        namings = list(Naming)
+        groups = await self.core.db.group.find({}, "name")
+        form = {"group": group, "naming": naming, "limit": limit}
+        return await self.render.html("names.j2", names=names, namings=namings, groups=groups, form=form)
 
     @router.get("/naming-problems")
     async def naming_problems_page(self) -> HTMLResponse:
