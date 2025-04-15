@@ -1,7 +1,7 @@
 from bson import ObjectId
 from fastapi import APIRouter
 from mm_base6 import cbv
-from mm_std import Result
+from mm_std import DataResult
 
 from app.core.db import AccountBalance
 from app.server.deps import View
@@ -16,5 +16,5 @@ class CBV(View):
         return await self.core.db.account_balance.get(id)
 
     @router.post("/{id}/check")
-    async def check_account_balance(self, id: ObjectId) -> Result[int]:
+    async def check_account_balance(self, id: ObjectId) -> DataResult[int]:
         return await self.core.balance_service.check_account_balance(id)

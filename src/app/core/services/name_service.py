@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pydash
 from bson import ObjectId
-from mm_std import AsyncTaskRunner, Err, Result, async_synchronized_parameter, utc_delta, utc_now
+from mm_std import AsyncTaskRunner, DataResult, async_synchronized_parameter, utc_delta, utc_now
 
 from app.core.blockchains import aptos, evm, starknet
 from app.core.constants import Naming
@@ -43,7 +43,7 @@ class NameService(AppService):
             runner.add_task(str(an.id), self.check_account_name(an.id))
         await runner.run()
 
-    async def check_account_name(self, id: ObjectId) -> Result[str | None]:
+    async def check_account_name(self, id: ObjectId) -> DataResult[str | None]:
         account_name = await self.db.account_name.get(id)
         network = self.network_service.get_network(account_name.network)
 
@@ -60,9 +60,9 @@ class NameService(AppService):
             case Naming.STARKNET_ID:
                 res = await starknet.get_starknet_id(account_name.account, proxies=self.dvalue.proxies)
             case _:
-                return Err("Not implemented")
+                return DataResult.err("not_implemented")
 
-        if isinstance(res, Err):
+        if res.is_err():
             # logger.debug("check_account_name: %s", res.err)
             await self.db.naming_problem.insert_one(
                 NamingProblem(
@@ -70,12 +70,12 @@ class NameService(AppService):
                     network=network.id,
                     naming=account_name.naming,
                     account=account_name.account,
-                    message=res.err,
+                    message=res.unwrap_err(),
                 )
             )
             return res
 
-        name = res.ok or ""
+        name = res.unwrap() or ""
         await self.db.group_name.update_one(
             {"group_id": account_name.group_id, "naming": account_name.naming},
             {"$set": {f"names.{account_name.account}": name, f"checked_at.{account_name.account}": utc_now()}},

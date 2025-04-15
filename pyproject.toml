@@ -5,10 +5,10 @@ description = ""
 requires-python = ">=3.12"
 dependencies = [
     "mm-base6==0.0.17",
-    "mm-eth~=0.5.12",
-    "mm-sol~=0.5.7",
-    "mm-aptos~=0.2.3",
-    "mm-starknet~=0.2.3",
+    "mm-eth~=0.5.17",
+    "mm-sol~=0.5.9",
+    "mm-aptos~=0.2.6",
+    "mm-starknet~=0.2.6",
     "deepdiff==8.4.2",
 ]
 

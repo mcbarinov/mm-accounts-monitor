@@ -5,7 +5,7 @@ from decimal import Decimal
 import pydash
 from bson import ObjectId
 from mm_crypto_utils import random_node, random_proxy
-from mm_std import AsyncTaskRunner, Err, Result, async_synchronized_parameter, utc_delta, utc_now
+from mm_std import AsyncTaskRunner, DataResult, async_synchronized_parameter, utc_delta, utc_now
 
 from app.core.blockchains import aptos, evm, solana, starknet
 from app.core.constants import NetworkType
@@ -47,8 +47,8 @@ class BalanceService(AppService):
         await runner.run()
         return len(need_to_check)
 
-    async def _request_balance(self, network: Network, coin: Coin, account: str) -> Result[int]:
-        res: Result[int] = Err("not started yet")
+    async def _request_balance(self, network: Network, coin: Coin, account: str) -> DataResult[int]:
+        res: DataResult[int] = DataResult.err("not started yet")
 
         for _ in range(5):
             start_at = time.perf_counter()
@@ -56,7 +56,7 @@ class BalanceService(AppService):
             if self.dvalue.mm_node_checker and self.dvalue.mm_node_checker.get(network.id):
                 urls = pydash.uniq([*urls, *self.dvalue.mm_node_checker[network.id]])
             if not urls:
-                return Err(f"rpc url not found for {network.id}")
+                return DataResult.err(f"rpc url not found for {network.id}")
 
             # print("rpc_urls", rpc_urls)
             rpc_url = random_node(urls)
@@ -74,7 +74,7 @@ class BalanceService(AppService):
                         raise ValueError("can't get balance for coin on StarkNet without token address")
                     res = await starknet.get_balance(rpc_url, account, coin.token, proxy)
                 case _:
-                    return Err("check_balance: unknown network")
+                    return DataResult.err("check_balance: unknown network")
 
             rpc_monitoring = RpcMonitoring(
                 id=ObjectId(),
@@ -85,7 +85,7 @@ class BalanceService(AppService):
                 proxy=proxy,
                 success=res.is_ok(),
                 response_time=round(time.perf_counter() - start_at, ndigits=2),
-                error=res.err,
+                error=res.unwrap_err() if res.is_err() else None,
                 data=res.data,
             )
             await self.db.rpc_monitoring.insert_one(rpc_monitoring)
@@ -95,7 +95,7 @@ class BalanceService(AppService):
 
         return res
 
-    async def check_account_balance(self, id: ObjectId) -> Result[int]:
+    async def check_account_balance(self, id: ObjectId) -> DataResult[int]:
         account_balance = await self.db.account_balance.get(id)
         coin = self.coin_service.get_coin(account_balance.coin)
         network = self.network_service.get_network(coin.network)
@@ -103,11 +103,11 @@ class BalanceService(AppService):
         # self.logger.debug("check_account_balance: %s / %s / %s", network.id, coin.symbol, account_balance.account)
 
         res = await self._request_balance(network, coin, account_balance.account)
-        if isinstance(res, Err):
+        if res.is_err():
             # logger.debug("check_account_balance: %s", res.err)
             return res
 
-        balance_raw = res.ok
+        balance_raw = res.unwrap()
         balance = (
             Decimal(0)
             if balance_raw == 0

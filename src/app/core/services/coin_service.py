@@ -1,15 +1,18 @@
+import logging
 from datetime import datetime
 
 import pydash
 import tomlkit
 from mm_mongo import MongoDeleteResult
-from mm_std import Err, Ok, Result, async_synchronized, replace_empty_dict_values, toml_dumps
+from mm_std import async_synchronized, replace_empty_dict_values, toml_dumps
 from pydantic import BaseModel
 
 from app.core.constants import NetworkType
 from app.core.db import Coin
 from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
+
+logger = logging.getLogger(__name__)
 
 
 class ImportCoinItem(BaseModel):
@@ -45,7 +48,7 @@ class CoinService(AppService):
         self.coins: list[Coin] = []
 
     @async_synchronized
-    async def import_from_toml(self, toml_str: str) -> Result[int]:
+    async def import_from_toml(self, toml_str: str) -> int:
         try:
             count = 0
             coins = [ImportCoinItem(**n) for n in tomlkit.loads(toml_str)["coins"]]  # type:ignore[arg-type,union-attr]
@@ -53,11 +56,12 @@ class CoinService(AppService):
                 if not await self.db.coin.exists({"_id": c.id}):
                     await self.db.coin.insert_one(c.to_db())
                     count += 1
+            return count  # noqa: TRY300
+        except Exception:
+            logger.exception("Failed to import coins from TOML")
+            return -1
+        finally:
             await self.load_coins_from_db()
-            return Ok(count)
-        except Exception as e:
-            await self.load_coins_from_db()
-            return Err(e)
 
     def export_as_toml(self) -> str:
         coins = []

@@ -1,5 +1,4 @@
 import logging
-import time
 from typing import Annotated
 
 import pydash
@@ -61,16 +60,11 @@ class CBV(View):
 
     @router.get("/groups")
     async def groups(self, network_type: Annotated[NetworkType | None, Query()] = None) -> HTMLResponse:
-        start = time.perf_counter()
         query = {"network_type": network_type} if network_type else {}
         groups = await self.core.db.group.find(query, "name")
-        logger.warning("s1", extra={"elapsed": (time.perf_counter() - start) * 1000})
-
         coins = self.core.coin_service.get_coins()
-        logger.warning("s2", extra={"elapsed": (time.perf_counter() - start) * 1000})
         coins_by_network_type = self.core.coin_service.get_coins_by_network_type()
-        logger.warning("s3", extra={"elapsed": (time.perf_counter() - start) * 1000})
-        res = await self.render.html(
+        return await self.render.html(
             "groups.j2",
             groups=groups,
             coins=coins,
@@ -79,8 +73,6 @@ class CBV(View):
             coins_by_network_type=coins_by_network_type,
             form={"network_type": network_type},
         )
-        logger.warning("s4", extra={"elapsed": (time.perf_counter() - start) * 1000})
-        return res
 
     @router.get("/groups/{group_id}")
     async def group(self, group_id: ObjectId) -> HTMLResponse:
@@ -200,10 +192,10 @@ class ActionCBV(View):
     @router.post("/coins/import")
     async def import_coins(self, value: Annotated[str, Form()]) -> RedirectResponse:
         res = await self.core.coin_service.import_from_toml(value)
-        if isinstance(res, Err):
-            self.render.flash(f"can't import coins: {res.err}", is_error=True)
+        if res < 0:
+            self.render.flash("can't import coins", is_error=True)
         else:
-            self.render.flash(f"{res.ok} coins imported successfully")
+            self.render.flash(f"{res} coins imported successfully")
         return redirect("/coins")
 
     class CreateGroupForm(BaseModel):
