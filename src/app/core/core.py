@@ -4,6 +4,7 @@ import logging
 from typing import Self
 
 from mm_base6 import BaseCore, CoreConfig
+from mm_crypto_utils import Network
 
 from app.core.constants import Naming
 from app.core.db import Db
@@ -14,10 +15,10 @@ from app.core.services.group_service import GroupService
 from app.core.services.history_service import HistoryService
 from app.core.services.name_service import NameService
 from app.core.services.network_service import NetworkService
-from app.settings import DConfigSettings, DValueSettings
+from app.settings import DynamicConfigs, DynamicValues
 
 
-class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
+class Core(BaseCore[DynamicConfigs, DynamicValues, Db]):
     bot_service: BotService
     network_service: NetworkService
     coin_service: CoinService
@@ -28,7 +29,7 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
 
     @classmethod
     async def init(cls, core_config: CoreConfig) -> Self:
-        res = await super().base_init(core_config, DConfigSettings, DValueSettings, Db)
+        res = await super().base_init(core_config, DynamicConfigs, DynamicValues, Db)
         res.bot_service = BotService(res.base_service_params)
         res.network_service = NetworkService(res.base_service_params)
         res.coin_service = CoinService(res.base_service_params, res.network_service)
@@ -40,10 +41,9 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
 
     async def configure_scheduler(self) -> None:
         # check balances
-        await self.network_service.load_networks_from_db()
-        for network in self.network_service.get_networks():
-            task_id = "balances_on_" + network.id
-            self.scheduler.add_task(task_id, 2, self.balance_service.check_next_network, args=(network.id,))
+        for network in Network:
+            task_id = "balances_on_" + network.value
+            self.scheduler.add_task(task_id, 2, self.balance_service.check_next_network, args=(network,))
 
         # check namings
         for naming in list(Naming):
@@ -58,7 +58,7 @@ class Core(BaseCore[DConfigSettings, DValueSettings, Db]):
         for lib in libraries:
             logging.getLogger(lib).setLevel(logging.WARNING)
 
-        await self.network_service.load_networks_from_db()
+        await self.network_service.load_rpc_urls_from_db()
         await self.coin_service.load_coins_from_db()
 
     async def stop(self) -> None:

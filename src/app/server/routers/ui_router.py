@@ -1,16 +1,15 @@
 import logging
 from typing import Annotated
 
-import pydash
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Form, Query
 from mm_base6 import cbv, redirect
-from mm_std import Err, str_to_list
+from mm_crypto_utils import Network, NetworkType
+from mm_std import str_to_list
 from pydantic import BaseModel, Field
 from starlette.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 
-from app.core.constants import Naming, NetworkType
-from app.core.db import Network
+from app.core.constants import Naming
 from app.server import utils
 from app.server.deps import View
 
@@ -32,11 +31,8 @@ class CBV(View):
 
     @router.get("/networks")
     async def networks(self) -> HTMLResponse:
-        networks = self.core.network_service.get_networks()
-        mm_node_checker = self.core.dvalue.mm_node_checker or {}
-        return await self.render.html(
-            "networks.j2", networks=networks, network_types=[t.value for t in NetworkType], mm_node_checker=mm_node_checker
-        )
+        mm_node_checker = self.core.dynamic_values.mm_node_checker or {}
+        return await self.render.html("networks.j2", mm_node_checker=mm_node_checker, rpc_urls=self.core.network_service.rpc_urls)
 
     @router.get("/networks/check-stats")
     async def networks_check_stats(self) -> HTMLResponse:
@@ -84,7 +80,7 @@ class CBV(View):
     async def balances(self, group: ObjectId | None = None, coin: str | None = None, limit: int = 1000) -> HTMLResponse:
         query: dict[str, object] = {}
         if group:
-            query["group_id"] = group
+            query["group"] = group
         if coin:
             query["coin"] = coin
         balances = await self.core.db.account_balance.find(query, "account,coin", limit=limit)
@@ -103,7 +99,7 @@ class CBV(View):
         naming = Naming(naming_str) if naming_str else None
         query: dict[str, object] = {}
         if group:
-            query["group_id"] = group
+            query["group"] = group
         if naming:
             query["naming"] = naming
         names = await self.core.db.account_name.find(query, "account,naming", limit=limit)
@@ -131,8 +127,7 @@ class CBV(View):
         if success is not None:
             query["success"] = success
         monitoring = await self.core.db.rpc_monitoring.find(query, "-created_at", limit)
-        networks = [n.id for n in self.core.network_service.get_networks()]
-        return await self.render.html("rpc_monitoring.j2", monitoring=monitoring, networks=networks, form=form)
+        return await self.render.html("rpc_monitoring.j2", monitoring=monitoring, form=form)
 
     @router.get("/history")
     async def history_page(self) -> HTMLResponse:
@@ -155,54 +150,10 @@ class CBV(View):
 
 @cbv(router)
 class ActionCBV(View):
-    class AddNetworkForm(BaseModel):
-        id: str
-        type: NetworkType
-        rpc_urls: str
-        explorer_address: str
-        explorer_token: str
-
-        def to_db(self) -> Network:
-            rpc_urls = [line.strip() for line in self.rpc_urls.split("\n") if line.strip()]
-            return Network(
-                id=self.id,
-                type=self.type,
-                rpc_urls=pydash.uniq(rpc_urls),
-                explorer_address=self.explorer_address,
-                explorer_token=self.explorer_token,
-            )
-
-    @router.post("/networks")
-    async def add_network(self, data: Annotated[AddNetworkForm, Form()]) -> RedirectResponse:
-        await self.core.network_service.add_network(data.to_db())
-        self.render.flash("network added successfully")
-        return redirect("/networks")
-
-    @router.post("/networks/import")
-    async def import_networks(self, value: Annotated[str, Form()]) -> RedirectResponse:
-        res = await self.core.network_service.import_from_toml(value)
-        if isinstance(res, Err):
-            self.render.flash(f"can't import networks: {res.err}", is_error=True)
-        else:
-            self.render.flash(f"{res.ok} networks imported successfully")
-        return redirect("/networks")
-
-    @router.get("/networks/export", response_class=PlainTextResponse)
-    async def export_networks(self) -> str:
-        return self.core.network_service.export_as_toml()
-
-    @router.post("/networks/{id}/add-rpc")
-    async def add_rpc_url(self, id: str, value: Annotated[str, Form()]) -> RedirectResponse:
-        await self.core.db.network.update_one({"_id": id}, {"$push": {"rpc_urls": value}})
-        await self.core.network_service.load_networks_from_db()
+    @router.post("/networks/{network}/add-rpc-url")
+    async def add_rpc_url(self, network: Network, url: Annotated[str, Form()]) -> RedirectResponse:
+        await self.core.network_service.add_rpc_url(network, url)
         self.render.flash("rpc url added successfully")
-        return redirect("/networks")
-
-    @router.get("/networks/{id}/delete-rpc")
-    async def delete_rpc_url(self, id: str, value: str) -> RedirectResponse:
-        await self.core.db.network.update_one({"_id": id}, {"$pull": {"rpc_urls": value}})
-        await self.core.network_service.load_networks_from_db()
-        self.render.flash("rpc url deleted successfully")
         return redirect("/networks")
 
     @router.get("/coins/export", response_class=PlainTextResponse)

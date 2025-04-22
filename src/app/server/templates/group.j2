@@ -6,23 +6,22 @@
       <li><h3>group / {{ group.name }}</h3></li>
       <li><a href="/names?group={{ group.id }}">names</a></li>
       <li><a href="/balances?group={{ group.id }}">balances</a></li>
-      <li><a href="/api-post/history?group_id={{ group.id }}" {{ confirm }}>create history</a></li>
+      <li><a href="/api-post/history?group={{ group.id }}" {{ confirm }}>create history</a></li>
     </ul>
   </nav>
 
   <table class="sortable">
     <thead>
     <tr>
-      <th>n</th>
-      <th>account</th>
-      <th>note</th>
+      <th>n<br></th>
+      <th>account<br></th>
+      <th>note<br></th>
       {% for naming in group.namings %}
-        <th>{{ naming.value }}</th>
+        <th>{{ naming.value }}<br></th>
       {% endfor %}
       {% for coin in group.coins %}
-        <th>
-          {{ info.coins_map[coin].network }}<br>
-          {{ info.coins_map[coin].symbol }}
+        <th><p
+          style="white-space: nowrap;">{{ info.coins_map[coin].network.value }}</p>{{ info.coins_map[coin].symbol }}
         </th>
       {% endfor %}
     </tr>

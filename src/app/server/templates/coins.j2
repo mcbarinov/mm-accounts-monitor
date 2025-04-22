@@ -32,7 +32,7 @@
     </tr>
     {% for c in coins %}
       <tr>
-        <td nowrap="nowrap">{{ c.network }}</td>
+        <td nowrap="nowrap">{{ c.network.value }}</td>
         <td>
           <a href="{{ explorer_token_map[c.id] }}">{{ c.symbol }}</a></td>
         <td>

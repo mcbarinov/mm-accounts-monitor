@@ -3,11 +3,11 @@ from datetime import datetime
 
 import pydash
 import tomlkit
+from mm_crypto_utils import Network, NetworkType
 from mm_mongo import MongoDeleteResult
 from mm_std import async_synchronized, replace_empty_dict_values, toml_dumps
 from pydantic import BaseModel
 
-from app.core.constants import NetworkType
 from app.core.db import Coin
 from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class ImportCoinItem(BaseModel):
-    network: str
+    network: Network
     symbol: str
     decimals: int
     token: str | None = None
@@ -24,7 +24,7 @@ class ImportCoinItem(BaseModel):
 
     @property
     def id(self) -> str:
-        return f"{self.network}__{self.symbol}".lower()
+        return f"{self.network.value}__{self.symbol}".lower()
 
     def to_db(self) -> Coin:
         return Coin(
@@ -83,26 +83,22 @@ class CoinService(AppService):
 
     def explorer_token_map(self) -> dict[str, str]:  # coin_id -> explorer_token
         result: dict[str, str] = {}
-        networks = self.network_service.get_networks()
         for coin in self.get_coins():
-            network = pydash.find(networks, lambda n: n.id == coin.network)  # noqa: B023
-            if network is None:
-                raise RuntimeError(f"Network not found for coin {coin.id}")
-            explorer_token = network.explorer_token
             if coin.token is not None:
-                explorer_token += coin.token
+                result[coin.id] = coin.network.explorer_token(coin.token)
             else:
-                explorer_token = explorer_token.removesuffix("token/")
-            result[coin.id] = explorer_token
-
+                result[coin.id] = coin.network.explorer_token("")
+                if result[coin.id].endswith("token/"):
+                    result[coin.id] = result[coin.id].removesuffix("token/")
+                if result[coin.id].endswith("coin/"):
+                    result[coin.id] = result[coin.id].removesuffix("coin/")
         return result
 
     def get_coins_by_network_type(self) -> dict[NetworkType, list[Coin]]:
         coins = self.get_coins()
         coins_by_network_type: dict[NetworkType, list[Coin]] = {n: [] for n in NetworkType}
         for c in coins:
-            network_type = (self.network_service.get_network(c.network)).type
-            coins_by_network_type[network_type].append(c)
+            coins_by_network_type[c.network.network_type].append(c)
         return coins_by_network_type
 
     def get_coin(self, id: str) -> Coin:

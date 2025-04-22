@@ -4,8 +4,6 @@
   <nav>
     <ul>
       <li><h3>networks / {{ networks | length }}</h3></li>
-      <li><a data-target="modal-import" onclick="toggleModal(event)">import</a></li>
-      <li><a href="/networks/export">export</a></li>
       <li><a href="/networks/check-stats">check stats</a></li>
       <li><a href="/api-post/networks/update-mm-node-checker">update mm-node-checker</a></li>
     </ul>
@@ -25,103 +23,43 @@
 
   <table>
     <tr>
-      <th>id</th>
+      <th>network</th>
       <th>type</th>
-      <th>rpc</th>
-      <th>mm-node-checker</th>
-      <th>explorer</th>
-      <th>actions</th>
+      <th>rpc urls</th>
+      <th>mm-node-checker rpc urls</th>
     </tr>
     {% for n in networks %}
       <tr>
-        <td>{{ n.id }}</td>
-        <td>{{ n.type.value }}</td>
+        <td>{{ n.value }}</td>
+        <td>{{ n.network_type.value }}</td>
         <td>
-          {% for u in n.rpc_urls %}
-            {{ u }}<br>
+          {% for rpc_url in rpc_urls[n] %}
+            {{ rpc_url }}
+            <a href="/api-delete/networks/{{ n.value }}/delete-rpc-url?url={{ rpc_url | urlencode }}" title="delete" {{ confirm }}>[d]</a>
+            <br>
           {% endfor %}
-        </td>
-      <td>
-          {% for u in mm_node_checker[n.id] %}
-            {{ u }}<br>
-          {% endfor %}
-        </td>
-        <td>
-          {{ n.explorer_address }}<br>
-          {{ n.explorer_token }}
-        </td>
-        <td>
-          <details class="dropdown">
-            <summary>actions</summary>
-            <ul>
-              <li><a data-target="modal-add-rpc-{{ n.id }}" onclick="toggleModal(event)">add rpc url</a></li>
-              <li><a data-target="modal-delete-rpc-{{ n.id }}" onclick="toggleModal(event)">delete rpc url</a></li>
-              <li><a data-target="modal-explorer-{{ n.id }}" onclick="toggleModal(event)">update explorer url</a></li>
-              <li><a href="/api-delete/networks/{{ n.id }}" {{ confirm }}>delete</a></li>
-              <li><a href="/api-post/networks/{{ n.id }}/check-next-network-balances" >check-next-network-balances</a></li>
-              <li><a href="/api/networks/{{ n.id }}">view</a></li>
-            </ul>
-          </details>
 
-          <dialog id="modal-explorer-{{ n.id }}">
-            <article>
-              <header>
-                <h3>update explorer url</h3>
-              </header>
-              <form method="post" action="/networks/{{ n.id }}/explorer">
-                <input type="text" name="value" value="{{ n.explorer_url }}">
-                <input type="submit" value="save">
-              </form>
-            </article>
-          </dialog>
-
-          <dialog id="modal-add-rpc-{{ n.id }}">
+          <a data-target="modal-add-rpc-url-{{ n.value }}" onclick="toggleModal(event)">add</a>
+          <dialog id="modal-add-rpc-url-{{ n.value }}">
             <article>
               <header>
                 <h3>add rpc url</h3>
               </header>
-              <form method="post" action="/networks/{{ n.id }}/add-rpc">
-                <input type="text" name="value">
+              <form method="post" action="/networks/{{ n.value }}/add-rpc-url">
+                <input type="text" name="url">
                 <input type="submit" value="add">
               </form>
             </article>
           </dialog>
-
-          <dialog id="modal-delete-rpc-{{ n.id }}">
-            <article>
-              <header>
-                <h3>delete rpc url</h3>
-              </header>
-              <ul>
-                {% for u in n.rpc_urls %}
-                  <li>
-                    {{ u }}
-                    <a href="/networks/{{ n.id }}/delete-rpc?value={{ u }}" {{ confirm }}>delete</a>
-                  </li>
-                {% endfor %}
-              </ul>
-            </article>
-          </dialog>
-
+        </td>
+        <td>
+          {% for u in mm_node_checker[n.value] %}
+            {{ u }}<br>
+          {% endfor %}
         </td>
       </tr>
     {% endfor %}
   </table>
-
-  <details>
-    <summary role="button" class="outline">add network</summary>
-    <form action="/networks" method="post">
-      <input type="text" name="id" placeholder="id" required>
-      <select name="type">
-        {% for t in network_types %}
-          <option value="{{ t }}">{{ t }}</option>
-        {% endfor %}
-      </select>
-      <textarea name="rpc_urls" placeholder="rpc urls" required></textarea>
-      <input type="text" name="explorer_url" placeholder="explorer url">
-      <input type="submit" value="add">
-    </form>
-  </details>
 
 
 

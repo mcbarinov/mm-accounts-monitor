@@ -1,5 +1,6 @@
 from markupsafe import Markup
 from mm_base6 import JinjaConfig
+from mm_crypto_utils import Network, NetworkType
 
 from app.core.core import Core
 
@@ -18,4 +19,5 @@ jinja_config = JinjaConfig(
     header_info=header_info,
     header_info_new_line=False,
     footer_info=footer_info,
+    globals={"networks": list(Network), "network_types": list(NetworkType)},
 )

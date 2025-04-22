@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from fastapi import APIRouter
-from mm_base6 import DC, DV, CoreConfig, DConfigModel, DValueModel, ServerConfig
+from mm_base6 import DC, DV, CoreConfig, DynamicConfigsModel, DynamicValuesModel, ServerConfig
 
 core_config = CoreConfig()
 
@@ -10,7 +10,7 @@ server_config.tags = ["bot", "network", "coin", "group"]
 server_config.main_menu = {"/bot": "bot", "/groups": "groups", "/history": "history"}
 
 
-class DConfigSettings(DConfigModel):
+class DynamicConfigs(DynamicConfigsModel):
     mm_node_checker = DC("", "mm node checker url")
     proxies_url = DC("http://localhost:8000", "proxies url, each proxy on new line")
     round_ndigits = DC(5, "round ndigits")
@@ -20,7 +20,7 @@ class DConfigSettings(DConfigModel):
     check_name_interval = DC(15, "Check name interval in minutes")
 
 
-class DValueSettings(DValueModel):
+class DynamicValues(DynamicValuesModel):
     check_balances: DV[bool] = DV(True)
     check_namings: DV[bool] = DV(True)
     proxies: DV[list[str]] = DV([])

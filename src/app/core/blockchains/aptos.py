@@ -1,18 +1,13 @@
-from mm_aptos import ans_async, balance_async
-from mm_crypto_utils import Proxies, random_proxy
-from mm_std import DataResult
+from mm_apt import ans, balance
+from mm_crypto_utils import Proxies, retry
+from mm_std import Result
 
 
-async def get_balance(rpc_url: str, account: str, token: str | None = None, proxy: str | None = None) -> DataResult[int]:
+async def get_balance(rpc_url: str, account: str, token: str | None = None, proxy: str | None = None) -> Result[int]:
     if token is None:
         token = "0x1::aptos_coin::AptosCoin"  # nosec  # noqa: S105
-    return await balance_async.get_balance(rpc_url, account, coin_type=token, proxy=proxy, timeout=7.0)
+    return await balance.get_balance(rpc_url, account, coin_type=token, proxy=proxy, timeout=7.0)
 
 
-async def get_ans_name(account: str, proxies: Proxies = None) -> DataResult[str | None]:
-    res: DataResult[str | None] = DataResult.err("not_started")
-    for _ in range(5):
-        res = await ans_async.address_to_primary_name(account, proxy=random_proxy(proxies), timeout=5.0)
-        if res.is_ok():
-            return res
-    return res
+async def get_ans_name(account: str, proxies: Proxies = None) -> Result[str | None]:
+    return await retry.retry_with_proxy(5, proxies, lambda proxy: ans.address_to_primary_name(account, proxy=proxy, timeout=5.0))

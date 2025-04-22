@@ -1,26 +1,6 @@
-from __future__ import annotations
-
 from enum import Enum, unique
 
-
-@unique
-class NetworkType(str, Enum):
-    EVM = "evm"
-    SOLANA = "solana"
-    APTOS = "aptos"
-    STARKNET = "starknet"
-
-    def lowercase_address(self) -> bool:
-        match self:
-            case NetworkType.EVM:
-                return True
-            case NetworkType.SOLANA:
-                return False
-            case NetworkType.APTOS:
-                return True
-            case NetworkType.STARKNET:
-                return True
-        raise ValueError("no network found")
+from mm_crypto_utils import NetworkType
 
 
 @unique

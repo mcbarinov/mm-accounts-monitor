@@ -41,10 +41,10 @@ class HistoryService(AppService):
 
     async def create(self, group_id: ObjectId) -> MongoInsertOneResult:
         group = await self.db.group.get(group_id)
-        group_balances = await self.db.group_balance.find({"group_id": group_id})
+        group_balances = await self.db.group_balance.find({"group": group_id})
         balances = {b.coin: b.balances for b in group_balances}
         balances_checked_at = {b.coin: b.checked_at for b in group_balances}
-        group_namings = await self.db.group_name.find({"group_id": group_id})
+        group_namings = await self.db.group_name.find({"group": group_id})
         names = {n.naming: n.names for n in group_namings}
         names_checked_at = {n.naming: n.checked_at for n in group_namings}
         return await self.db.history.insert_one(
@@ -64,7 +64,7 @@ class HistoryService(AppService):
 
         group_balances: dict[str, dict[str, Decimal]] = {}
         group_balances_checked_at: dict[str, dict[str, datetime]] = {}
-        for gb in await self.db.group_balance.find({"group_id": group.id}):
+        for gb in await self.db.group_balance.find({"group": group.id}):
             group_balances[gb.coin] = gb.balances
             group_balances_checked_at[gb.coin] = gb.checked_at
 
@@ -102,5 +102,4 @@ class HistoryService(AppService):
             balances=balances,
             names=history.names,
             coins_map=self.coin_service.get_coins_map(),
-            networks=self.network_service.get_networks(),
         )

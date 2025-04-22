@@ -14,7 +14,7 @@
     <tbody>
     {% for key, value in stats.networks.items() %}
       <tr>
-        <td>{{ key }}</td>
+        <td>{{ key.value }}</td>
         <td>{{ value.oldest_checked_time | dt }}</td>
         <td>{{ value.all_count }}</td>
         <td>{{ value.never_checked_count }}</td>

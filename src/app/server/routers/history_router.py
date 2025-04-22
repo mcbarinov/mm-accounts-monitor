@@ -11,8 +11,8 @@ router = APIRouter(prefix="/api/history", tags=["history"])
 @cbv(router)
 class CBV(View):
     @router.post("/")
-    async def create_history(self, group_id: ObjectId) -> None:
-        await self.core.history_service.create(group_id)
+    async def create_history(self, group: ObjectId) -> None:
+        await self.core.history_service.create(group)
 
     @router.delete("/{id}")
     async def delete_history(self, id: ObjectId) -> MongoDeleteResult:
