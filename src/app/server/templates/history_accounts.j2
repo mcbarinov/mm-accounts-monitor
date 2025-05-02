@@ -15,7 +15,7 @@
       {% endfor %}
       {% for coin in history.group.coins %}
         <th>
-          {{ info.coins_map[coin].network }}<br>
+          {{ info.coins_map[coin].network.value }}<br>
           {{ info.coins_map[coin].symbol }}
         </th>
       {% endfor %}

@@ -1,13 +1,13 @@
 [project]
 name = "app"
-version = "0.0.7"
+version = "0.0.8"
 description = ""
 requires-python = ">=3.12"
 dependencies = [
-    "mm-base6==0.1.1",
-    "mm-eth~=0.6.1",
+    "mm-base6==0.1.2",
+    "mm-eth~=0.6.2",
     "mm-sol~=0.6.2",
-    "mm-apt~=0.3.3",
+    "mm-apt~=0.3.4",
     "mm-strk~=0.3.0",
     "deepdiff==8.4.2",
 ]
@@ -21,7 +21,7 @@ dev-dependencies = [
     "pytest~=8.3.5",
     "pytest-xdist~=3.6.1",
     "pytest-httpserver~=1.1.2",
-    "ruff~=0.11.6",
+    "ruff~=0.11.8",
     "pip-audit~=2.9.0",
     "bandit~=1.8.3",
     "mypy~=1.15.0",
