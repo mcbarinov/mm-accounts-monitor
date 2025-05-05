@@ -20,6 +20,17 @@ class Naming(str, Enum):
                 return "starknet"
         raise ValueError("no network found")
 
+    @property
+    def network_type(self) -> NetworkType:
+        match self:
+            case Naming.ENS:
+                return NetworkType.EVM
+            case Naming.ANS:
+                return NetworkType.APTOS
+            case Naming.STARKNET_ID:
+                return NetworkType.STARKNET
+        raise ValueError("no network type found")
+
     def is_consistent(self, network_type: NetworkType) -> bool:
         match self:
             case Naming.ENS:

@@ -28,7 +28,7 @@
       <header>Add a group</header>
       <form action="/groups" method="post">
         <input type="text" name="name" placeholder="name" required>
-        <select name="network_type" required>
+        <select name="network_type" required onchange="addGroupChangeNetworkType(event)">
           <option value="" disabled selected>network type...</option>
           {% for nt in network_types %}
             <option value="{{ nt.value }}">{{ nt.value }}</option>
@@ -37,14 +37,14 @@
         <input type="text" name="notes" placeholder="notes">
         <select name="namings" multiple title="namings">
           {% for n in namings %}
-            <option value="{{ n.value }}">{{ n.value }}</option>
+            <option value="{{ n.value }}" id="naming-{{ n.network_type.value }}">{{ n.value }}</option>
           {% endfor %}
         </select>
         <select name="coins" multiple style="height:300px" title="coins">
           {% for network_type, coins in coins_by_network_type.items() %}
-            <optgroup label="{{ network_type.value }}">
+            <optgroup label="{{ network_type.value }}" id="coins-{{ network_type.value }}">
               {% for c in coins %}
-                <option value="{{ c.id }}">{{ c.network }} / {{ c.symbol }}</option>
+                <option value="{{ c.id }}">{{ c.network.value }} / {{ c.symbol }}</option>
               {% endfor %}
             </optgroup>
           {% endfor %}
@@ -143,5 +143,50 @@
       </tr>
     {% endfor %}
   </table>
+
+
+  <script>
+    function addGroupChangeNetworkType(event) {
+      const selectedNetwork = event.target.value;
+
+      // ————— NAMINGS SELECT —————
+      const namingSelect = document.querySelector('select[name="namings"]');
+      // Loop through all naming options
+      namingSelect.querySelectorAll('option').forEach(opt => {
+        if (opt.id === 'naming-' + selectedNetwork) {
+          // Show the option matching the selected network
+          opt.hidden = false;
+          opt.disabled = false;
+        } else {
+          // Hide all other naming options
+          opt.hidden = true;
+          opt.disabled = true;
+        }
+        // Deselect everything to reset prior selections
+        opt.selected = false;
+      });
+
+      // ————— COINS SELECT —————
+      const coinsSelect = document.querySelector('select[name="coins"]');
+      // Loop through each optgroup of coins
+      coinsSelect.querySelectorAll('optgroup').forEach(group => {
+        if (group.id === 'coins-' + selectedNetwork) {
+          // Show only the matching coin group
+          group.hidden = false;
+          group.querySelectorAll('option').forEach(opt => {
+            opt.disabled = false;   // enable its options
+          });
+        } else {
+          // Hide all other coin groups
+          group.hidden = true;
+          group.querySelectorAll('option').forEach(opt => {
+            opt.disabled = true;    // disable their options
+            opt.selected = false;   // deselect any previously selected
+          });
+        }
+      });
+    }
+
+  </script>
 
 {% endblock %}

@@ -84,7 +84,7 @@ class GroupBalance(MongoModel[ObjectId]):
     group: ObjectId
     coin: str
     balances: dict[str, Decimal] = Field(default_factory=dict)  # account -> balance
-    checked_at: dict[str, datetime] = Field(default_factory=dict)  # account -> checked_at
+    checked_at: dict[str, datetime] = Field(default_factory=dict)  # account -> checked_at # TODO: is it needed?
 
     __collection__: str = "group_balance"
     __indexes__ = ["!group,coin", "group"]

@@ -1,8 +1,11 @@
+from typing import Annotated
+
 from bson import ObjectId
-from fastapi import APIRouter
+from fastapi import APIRouter, Body
 from mm_base6 import cbv
 from starlette.responses import PlainTextResponse
 
+from app.core.constants import Naming
 from app.core.db import Group
 from app.core.services.group_service import ProcessAccountBalancesResult, ProcessAccountNamingsResult
 from app.server.deps import View
@@ -32,6 +35,22 @@ class CBV(View):
     @router.delete("/{id}")
     async def delete_group(self, id: ObjectId) -> None:
         await self.core.group_service.delete_group(ObjectId(id))
+
+    @router.post("/{id}/coins")
+    async def add_coin_to_group(self, id: ObjectId, coin_id: Annotated[str, Body(..., embed=True)]) -> None:
+        return await self.core.group_service.add_coin(id, coin_id)
+
+    @router.post("/{id}/namings")
+    async def add_namings_to_group(self, id: ObjectId) -> None:
+        pass
+
+    @router.delete("/{id}/coins/{coin_id}")
+    async def remove_coin_from_group(self, id: ObjectId, coin_id: str) -> None:
+        pass
+
+    @router.delete("/{id}/namings/{naming}")
+    async def remove_naming_from_group(self, id: ObjectId, naming: Naming) -> None:
+        pass
 
     @router.post("/{id}/process-account-balances")
     async def process_account_balances(self, id: ObjectId) -> ProcessAccountBalancesResult:
