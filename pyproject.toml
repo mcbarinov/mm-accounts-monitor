@@ -10,6 +10,7 @@ dependencies = [
     "mm-apt~=0.3.4",
     "mm-strk~=0.3.0",
     "deepdiff==8.4.2",
+    "mm-mongo~=0.5.4",
 ]
 
 [build-system]

@@ -120,6 +120,7 @@ dependencies = [
     { name = "mm-apt" },
     { name = "mm-base6" },
     { name = "mm-eth" },
+    { name = "mm-mongo" },
     { name = "mm-sol" },
     { name = "mm-strk" },
 ]
@@ -143,6 +144,7 @@ requires-dist = [
     { name = "mm-apt", specifier = "~=0.3.4" },
     { name = "mm-base6", specifier = "==0.1.2" },
     { name = "mm-eth", specifier = "~=0.6.2" },
+    { name = "mm-mongo", specifier = "~=0.5.4" },
     { name = "mm-sol", specifier = "~=0.6.2" },
     { name = "mm-strk", specifier = "~=0.3.0" },
 ]
@@ -1112,14 +1114,14 @@ wheels = [
 
 [[package]]
 name = "mm-mongo"
-version = "0.5.2"
+version = "0.5.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "mm-std" },
     { name = "pymongo" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6b/3a/e9cb4b02ba891c7fb5e38f7f276c099772a921f01b743c32fac6fb2a6ce4/mm_mongo-0.5.2-py3-none-any.whl", hash = "sha256:6313e7691a1a25e26dad65313c36feb746ad197b93f41ebc125f1ec298c062cb", size = 8825, upload-time = "2025-05-02T06:24:37.418Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/36/94f75394bcffa7e3db48c466ad5d892c249528724090a56a548b443f237e/mm_mongo-0.5.4-py3-none-any.whl", hash = "sha256:7fa41b25155a5c0e28f94ae295fc8a5b83c74aaee5af814b7a2b1226dc7d4685", size = 8898, upload-time = "2025-05-05T10:09:24.785Z" },
 ]
 
 [[package]]

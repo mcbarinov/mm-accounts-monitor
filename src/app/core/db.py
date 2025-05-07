@@ -39,7 +39,7 @@ class Group(MongoModel[ObjectId]):
     name: str
     network_type: NetworkType
     notes: str
-    coins: list[str]  # Coin.id
+    coins: list[str] = Field(default_factory=list)  # coin_id list
     namings: list[Naming] = Field(default_factory=list)
     accounts: list[str] = Field(default_factory=list)
     account_notes: dict[str, str] = Field(default_factory=dict)  # account -> note

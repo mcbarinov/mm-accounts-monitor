@@ -1,6 +1,6 @@
 from enum import Enum, unique
 
-from mm_crypto_utils import NetworkType
+from mm_crypto_utils import Network, NetworkType
 
 
 @unique
@@ -10,14 +10,14 @@ class Naming(str, Enum):
     STARKNET_ID = "starknet_id"
 
     @property
-    def network(self) -> str:
+    def network(self) -> Network:
         match self:
             case Naming.ENS:
-                return "ethereum"
+                return Network.ETHEREUM
             case Naming.ANS:
-                return "aptos"
+                return Network.APTOS
             case Naming.STARKNET_ID:
-                return "starknet"
+                return Network.STARKNET
         raise ValueError("no network found")
 
     @property

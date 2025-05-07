@@ -126,12 +126,14 @@
               <form method="post" action="/groups/{{ g.id }}/coins">
                 <select name="value" multiple style="min-height:300px">
                   {% for network_type, coins in coins_by_network_type.items() %}
-                    <optgroup label="{{ network_type.value }}">
-                      {% for c in coins %}
-                        <option value="{{ c.id }}" {{ 'selected' if c.id in g.coins else '' }}>{{ c.network }}
-                          / {{ c.symbol }}</option>
-                      {% endfor %}
-                    </optgroup>
+                    {% if g.network_type == network_type %}
+                      <optgroup label="{{ network_type.value }}">
+                        {% for c in coins %}
+                          <option value="{{ c.id }}" {{ 'selected' if c.id in g.coins else '' }}>{{ c.network }}
+                            / {{ c.symbol }}</option>
+                        {% endfor %}
+                      </optgroup>
+                    {% endif %}
                   {% endfor %}
                 </select>
                 <input type="submit" value="save">

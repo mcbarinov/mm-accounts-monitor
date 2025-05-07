@@ -41,16 +41,16 @@ class CBV(View):
         return await self.core.group_service.add_coin(id, coin_id)
 
     @router.post("/{id}/namings")
-    async def add_namings_to_group(self, id: ObjectId) -> None:
-        pass
+    async def add_namings_to_group(self, id: ObjectId, naming: Annotated[Naming, Body(..., embed=True)]) -> None:
+        return await self.core.group_service.add_naming(id, naming)
 
     @router.delete("/{id}/coins/{coin_id}")
     async def remove_coin_from_group(self, id: ObjectId, coin_id: str) -> None:
-        pass
+        return await self.core.group_service.remove_coin(id, coin_id)
 
     @router.delete("/{id}/namings/{naming}")
     async def remove_naming_from_group(self, id: ObjectId, naming: Naming) -> None:
-        pass
+        return await self.core.group_service.remove_naming(id, naming)
 
     @router.post("/{id}/process-account-balances")
     async def process_account_balances(self, id: ObjectId) -> ProcessAccountBalancesResult:
