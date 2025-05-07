@@ -74,7 +74,11 @@ class CBV(View):
     async def group(self, group_id: ObjectId) -> HTMLResponse:
         group = await self.core.db.group.get(group_id)
         info = await self.core.group_service.get_group_accounts_info(group_id)
-        return await self.render.html("group.j2", group=group, info=info)
+        coins_by_network_type = self.core.coin_service.get_coins_by_network_type()
+        namings = list(Naming)
+        return await self.render.html(
+            "group.j2", group=group, info=info, coins_by_network_type=coins_by_network_type, namings=namings
+        )
 
     @router.get("/balances")
     async def balances(self, group: ObjectId | None = None, coin: str | None = None, limit: int = 1000) -> HTMLResponse:
@@ -204,13 +208,19 @@ class ActionCBV(View):
     async def update_accounts(self, id: ObjectId, value: Annotated[str, Form()]) -> RedirectResponse:
         await self.core.group_service.update_accounts(id, str_to_list(value, unique=True))
         self.render.flash("accounts updated successfully")
-        return redirect("/groups")
+        return redirect(f"/groups/{id}")
 
     @router.post("/groups/{id}/coins")
-    async def update_coins(self, id: ObjectId, value: Annotated[list[str], Form()]) -> RedirectResponse:
-        await self.core.group_service.update_coins(id, value)
+    async def update_coins(self, id: ObjectId, value: Annotated[list[str] | None, Form()] = None) -> RedirectResponse:
+        await self.core.group_service.update_coins(id, value or [])
         self.render.flash("coins updated successfully")
-        return redirect("/groups")
+        return redirect(f"/groups/{id}")
+
+    @router.post("/groups/{id}/namings")
+    async def update_namings(self, id: ObjectId, value: Annotated[list[Naming] | None, Form()] = None) -> RedirectResponse:
+        await self.core.group_service.update_namings(id, value or [])
+        self.render.flash("namings updated successfully")
+        return redirect(f"/groups/{id}")
 
     @router.post("/groups/{id}/update-account-notes")
     async def update_account_notes(
@@ -218,4 +228,4 @@ class ActionCBV(View):
     ) -> RedirectResponse:
         await self.core.db.group.set(id, {f"account_notes.{account}": notes})
         self.render.flash("account notes updated successfully")
-        return redirect("/groups/" + str(id))
+        return redirect(f"/groups/{id}")

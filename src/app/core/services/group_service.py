@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from decimal import Decimal
 from typing import cast
@@ -16,6 +17,8 @@ from app.core.db import AccountBalance, AccountName, Coin, Group, GroupBalance, 
 from app.core.services.coin_service import CoinService
 from app.core.services.network_service import NetworkService
 from app.core.types_ import AppService, AppServiceParams
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -141,6 +144,7 @@ class GroupService(AppService):
         return await self.db.group.delete(id)
 
     async def update_accounts(self, id: ObjectId, accounts: list[str]) -> None:
+        logger.debug("update_accounts", extra={"group_id": id, "accounts length": len(accounts)})
         group = await self.db.group.get(id)
         if group.network_type.lowercase_address():
             accounts = [a.lower() for a in accounts]
@@ -149,6 +153,7 @@ class GroupService(AppService):
         await self.process_account_names(id)
 
     async def update_coins(self, id: ObjectId, coin_ids: list[str]) -> None:
+        logger.debug("update_coins", extra={"group_id": id, "coin_ids": coin_ids})
         group = await self.db.group.get(id)
         # Check if the coins are consistent with the network type
         for coin_id in coin_ids:
@@ -161,40 +166,37 @@ class GroupService(AppService):
             await self.add_coin(id, coin_id)
 
         # Delete coins that are not in the list
-        delete_coins = [coin_id for coin_id in group.coins if coin_id not in new_coins]
+        delete_coins = [coin_id for coin_id in group.coins if coin_id not in coin_ids]
         for coin_id in delete_coins:
             await self.remove_coin(id, coin_id)
 
         if len(new_coins) > 0 or len(delete_coins) > 0:
             await self.process_account_balances(id)
 
-    @async_synchronized
-    async def process_account_names(self, id: ObjectId) -> ProcessAccountNamingsResult:
-        """Create account names for all namings and accounts in the group.
-        And delete docs for accounts that are not in the group."""
+    async def update_namings(self, id: ObjectId, namings: list[Naming]) -> None:
+        logger.debug("update_namings", extra={"group_id": id, "namings": namings})
         group = await self.db.group.get(id)
-        inserted = 0
-        for naming in group.namings:
-            known_accounts = [
-                a["account"]
-                async for a in self.db.account_name.collection.find(
-                    {"group": id, "naming": naming}, {"_id": False, "account": True}
-                )
-            ]
-            new_accounts = [account for account in group.accounts if account not in known_accounts]
-            if len(new_accounts) > 0:
-                insert_many = [
-                    AccountName(id=ObjectId(), group=id, network=naming.network, naming=naming, account=account)
-                    for account in new_accounts
-                ]
-                await self.db.account_name.insert_many(insert_many)
-                inserted += len(new_accounts)
+        # Check if the namings are consistent with the network type
+        for naming in namings:
+            if not naming.is_consistent(group.network_type):
+                raise UserError(f"Naming {naming.name} is not from the network type {group.network_type.value}")
 
-        deleted = (await self.db.account_name.delete_many({"group": id, "account": {"$nin": group.accounts}})).deleted_count
-        return ProcessAccountNamingsResult(inserted, deleted)
+        # Add new namings
+        new_namings = [naming for naming in namings if naming not in group.namings]
+        for naming in new_namings:
+            await self.add_naming(id, naming)
+
+        # Delete namings that are not in the list
+        delete_namings = [naming for naming in group.namings if naming not in namings]
+        for naming in delete_namings:
+            await self.remove_naming(id, naming)
+
+        if len(new_namings) > 0 or len(delete_namings) > 0:
+            await self.process_account_names(id)
 
     @async_synchronized
     async def add_coin(self, group_id: ObjectId, coin_id: str) -> None:
+        logger.debug("add_coin", extra={"group_id": group_id, "coin_id": coin_id})
         if not await self.db.coin.exists({"_id": coin_id}):
             raise UserError(f"Coin {coin_id} not found")
         group = await self.db.group.get(group_id)
@@ -215,17 +217,20 @@ class GroupService(AppService):
 
     @async_synchronized
     async def remove_coin(self, group_id: ObjectId, coin_id: str) -> None:
+        logger.debug("remove_coin", extra={"group_id": group_id, "coin_id": coin_id})
         await self.db.account_balance.delete_many({"group": group_id, "coin": coin_id})
         await self.db.group_balance.delete_one({"group": group_id, "coin": coin_id})
         await self.db.group.pull(group_id, {"coins": coin_id})
 
     async def remove_naming(self, group_id: ObjectId, naming: Naming) -> None:
+        logger.debug("remove_naming", extra={"group_id": group_id, "naming": naming})
         await self.db.account_name.delete_many({"group": group_id, "naming": naming})
         await self.db.group_name.delete_one({"group": group_id, "naming": naming})
         await self.db.group.pull(group_id, {"namings": naming.value})
 
     @async_synchronized
     async def add_naming(self, group_id: ObjectId, naming: Naming) -> None:
+        logger.debug("add_naming", extra={"group_id": group_id, "naming": naming})
         group = await self.db.group.get(group_id)
         if naming in group.namings:
             raise UserError(f"Naming {naming.value} already in group {group.name}")
@@ -245,6 +250,7 @@ class GroupService(AppService):
     async def process_account_balances(self, id: ObjectId) -> ProcessAccountBalancesResult:
         """Create account balances for all coins and accounts in the group.
         And delete balances for accounts that are not in the group."""
+        logger.debug("process_account_balances", extra={"group_id": id})
         group = await self.db.group.get(id)
         inserted = 0
         for coin_id in group.coins:
@@ -265,6 +271,32 @@ class GroupService(AppService):
         deleted = (await self.db.account_balance.delete_many({"group": id, "account": {"$nin": group.accounts}})).deleted_count
 
         return ProcessAccountBalancesResult(inserted=inserted, deleted=deleted)
+
+    @async_synchronized
+    async def process_account_names(self, id: ObjectId) -> ProcessAccountNamingsResult:
+        """Create account names for all namings and accounts in the group.
+        And delete docs for accounts that are not in the group."""
+        logger.debug("process_account_names", extra={"group_id": id})
+        group = await self.db.group.get(id)
+        inserted = 0
+        for naming in group.namings:
+            known_accounts = [
+                a["account"]
+                async for a in self.db.account_name.collection.find(
+                    {"group": id, "naming": naming}, {"_id": False, "account": True}
+                )
+            ]
+            new_accounts = [account for account in group.accounts if account not in known_accounts]
+            if len(new_accounts) > 0:
+                insert_many = [
+                    AccountName(id=ObjectId(), group=id, network=naming.network, naming=naming, account=account)
+                    for account in new_accounts
+                ]
+                await self.db.account_name.insert_many(insert_many)
+                inserted += len(new_accounts)
+
+        deleted = (await self.db.account_name.delete_many({"group": id, "account": {"$nin": group.accounts}})).deleted_count
+        return ProcessAccountNamingsResult(inserted, deleted)
 
     async def reset_group_balances(self, id: ObjectId) -> None:
         await self.db.group_balance.update_many({"group": id}, {"$set": {"balances": {}}})

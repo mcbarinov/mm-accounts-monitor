@@ -23,6 +23,37 @@
     </fieldset>
   </form>
 
+
+  <table>
+    <tr>
+      <th>name</th>
+      <th>notes</th>
+      <th>namings</th>
+      <th>coins</th>
+      <th>accounts</th>
+      <th>view</th>
+    </tr>
+    {% for g in groups %}
+      <tr>
+        <td>
+          {{ g.name }}<br>
+          {{ g.network_type.value }}
+        </td>
+        <td>{{ g.notes }}</td>
+        <td>{% for n in g.namings %} {{ n.value }} {% endfor %}</td>
+        <td>
+          {% for n in g.get_coin_networks() %}
+            {{ n }}:
+            {% for s in g.get_coin_symbols(n) %}{{ s }} {% endfor %}
+            <br>
+          {% endfor %}
+        </td>
+        <td>{{ g.accounts | length }}</td>
+        <td><a href="/groups/{{ g.id }}">view</a></td>
+      </tr>
+    {% endfor %}
+  </table>
+
   <dialog id="modal-add">
     <article>
       <header>Add a group</header>
@@ -64,87 +95,6 @@
       </form>
     </article>
   </dialog>
-
-  <table>
-    <tr>
-      <th>name</th>
-      <th>notes</th>
-      <th>namings</th>
-      <th>coins</th>
-      <th>accounts</th>
-      <th>actions</th>
-    </tr>
-    {% for g in groups %}
-      <tr>
-        <td>
-          <a href="/groups/{{ g.id }}">{{ g.name }}</a><br>
-          {{ g.network_type.value }}
-        </td>
-        <td>{{ g.notes }}</td>
-        <td>{% for n in g.namings %} {{ n.value }} {% endfor %}</td>
-        <td>
-          {% for n in g.get_coin_networks() %}
-            {{ n }}:
-            {% for s in g.get_coin_symbols(n) %}{{ s }} {% endfor %}
-            <br>
-          {% endfor %}
-        </td>
-        <td>{{ g.accounts | length }}</td>
-        <td>
-          <details class="dropdown">
-            <summary>actions</summary>
-            <ul>
-              <li><a data-target="modal-update-accounts-{{ g.id }}" onclick="toggleModal(event)">update accounts</a>
-              </li>
-              <li><a data-target="modal-update-coins-{{ g.id }}" onclick="toggleModal(event)">update coins</a></li>
-              <li><a href="/api-post/history?group={{ g.id }}">create history</a></li>
-              <li><a href="/api-post/groups/{{ g.id }}/reset-group-balances" {{ confirm }}>reset group balances</a></li>
-              <li><a href="/api-post/groups/{{ g.id }}/process-account-names">process account names</a></li>
-              <li><a href="/api-post/groups/{{ g.id }}/process-account-balances">process account balances</a></li>
-              <li><a href="/api-delete/groups/{{ g.id }}" {{ confirm }}>delete</a></li>
-              <li><a href="/api/groups/{{ g.id }}">view</a></li>
-            </ul>
-          </details>
-
-          <dialog id="modal-update-accounts-{{ g.id }}">
-            <article>
-              <header>
-                <h3>update accounts for {{ g.name }}</h3>
-              </header>
-              <form method="post" action="/groups/{{ g.id }}/accounts">
-                <textarea name="value" rows="20" required>{{ "\n".join(g.accounts) }}</textarea>
-                <input type="submit" value="save">
-              </form>
-            </article>
-          </dialog>
-
-          <dialog id="modal-update-coins-{{ g.id }}">
-            <article>
-              <header>
-                <h3>update coins for {{ g.name }}</h3>
-              </header>
-              <form method="post" action="/groups/{{ g.id }}/coins">
-                <select name="value" multiple style="min-height:300px">
-                  {% for network_type, coins in coins_by_network_type.items() %}
-                    {% if g.network_type == network_type %}
-                      <optgroup label="{{ network_type.value }}">
-                        {% for c in coins %}
-                          <option value="{{ c.id }}" {{ 'selected' if c.id in g.coins else '' }}>{{ c.network }}
-                            / {{ c.symbol }}</option>
-                        {% endfor %}
-                      </optgroup>
-                    {% endif %}
-                  {% endfor %}
-                </select>
-                <input type="submit" value="save">
-              </form>
-            </article>
-          </dialog>
-
-        </td>
-      </tr>
-    {% endfor %}
-  </table>
 
 
   <script>

@@ -4,9 +4,23 @@
   <nav>
     <ul>
       <li><h3>group / {{ group.name }}</h3></li>
-      <li><a href="/names?group={{ group.id }}">names</a></li>
-      <li><a href="/balances?group={{ group.id }}">balances</a></li>
+      <li><a data-target="modal-accounts" onclick="toggleModal(event)">accounts ({{ group.accounts | length }})</a></li>
+      <li><a data-target="modal-coins" onclick="toggleModal(event)">coins ({{ group.coins | length }})</a></li>
+      <li><a data-target="modal-namings" onclick="toggleModal(event)">namings ({{ group.namings | length }})</a></li>
       <li><a href="/api-post/history?group={{ group.id }}" {{ confirm }}>create history</a></li>
+      <li>
+        <details class="dropdown">
+          <summary>other actions</summary>
+          <ul>
+            <li><a href="/names?group={{ group.id }}">names</a></li>
+            <li><a href="/balances?group={{ group.id }}">balances</a></li>
+            <li><a href="/api-post/groups/{{ group.id }}/reset-group-balances" {{ confirm }}>reset balances</a>
+            </li>
+            <li><a href="/api-delete/groups/{{ group.id }}" {{ confirm }}>delete</a></li>
+            <li><a href="/api/groups/{{ group.id }}">view</a></li>
+          </ul>
+        </details>
+      </li>
     </ul>
   </nav>
 
@@ -72,4 +86,57 @@
     </tbody>
   </table>
 
+
+  <dialog id="modal-accounts">
+    <article>
+      <header>
+        <h3>update accounts</h3>
+      </header>
+      <form method="post" action="/groups/{{ group.id }}/accounts">
+        <textarea name="value" rows="20" required>{{ "\n".join(group.accounts) }}</textarea>
+        <input type="submit" value="save">
+      </form>
+    </article>
+  </dialog>
+
+  <dialog id="modal-coins">
+    <article>
+      <header>
+        <h3>update coins</h3>
+      </header>
+      <form method="post" action="/groups/{{ group.id }}/coins">
+        <select name="value" multiple style="min-height:300px">
+          {% for network_type, coins in coins_by_network_type.items() %}
+            {% if group.network_type == network_type %}
+              <optgroup label="{{ network_type.value }}">
+                {% for c in coins %}
+                  <option value="{{ c.id }}" {{ 'selected' if c.id in group.coins else '' }}>{{ c.network.value }}
+                    / {{ c.symbol }}</option>
+                {% endfor %}
+              </optgroup>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <input type="submit" value="save">
+      </form>
+    </article>
+  </dialog>
+
+  <dialog id="modal-namings">
+    <article>
+      <header>
+        <h3>update namings</h3>
+      </header>
+      <form method="post" action="/groups/{{ group.id }}/namings">
+        <select name="value" multiple style="min-height:300px">
+          {% for naming in namings %}
+            {% if naming.network_type == group.network_type %}
+              <option value="{{ naming.value }}" {{ 'selected' if naming in group.namings }}>{{ naming.value }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <input type="submit" value="save">
+      </form>
+    </article>
+  </dialog>
 {% endblock %}
