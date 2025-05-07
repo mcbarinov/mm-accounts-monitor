@@ -12,8 +12,9 @@
         <details class="dropdown">
           <summary>other actions</summary>
           <ul>
-            <li><a href="/names?group={{ group.id }}">names</a></li>
-            <li><a href="/balances?group={{ group.id }}">balances</a></li>
+            <li><a href="/names?group={{ group.id }}">view names</a></li>
+            <li><a href="/balances?group={{ group.id }}">view balances</a></li>
+            <li><a data-target="modal-name-and-notes" onclick="toggleModal(event)">update name and notes</a></li>
             <li><a href="/api-post/groups/{{ group.id }}/reset-group-balances" {{ confirm }}>reset balances</a>
             </li>
             <li><a href="/api-delete/groups/{{ group.id }}" {{ confirm }}>delete</a></li>
@@ -135,6 +136,19 @@
             {% endif %}
           {% endfor %}
         </select>
+        <input type="submit" value="save">
+      </form>
+    </article>
+  </dialog>
+
+  <dialog id="modal-name-and-notes">
+    <article>
+      <header>
+        <h3>update group</h3>
+      </header>
+      <form method="post" action="/groups/{{ group.id }}/name-and-notes">
+        <input name="name" value="{{ group.name }}">
+        <input name="notes" value="{{ group.notes }}">
         <input type="submit" value="save">
       </form>
     </article>

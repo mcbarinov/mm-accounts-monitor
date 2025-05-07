@@ -229,3 +229,11 @@ class ActionCBV(View):
         await self.core.db.group.set(id, {f"account_notes.{account}": notes})
         self.render.flash("account notes updated successfully")
         return redirect(f"/groups/{id}")
+
+    @router.post("/groups/{group_id}/name-and-notes")
+    async def update_group_name_and_notes(
+        self, group_id: ObjectId, name: Annotated[str, Form()], notes: Annotated[str, Form()]
+    ) -> RedirectResponse:
+        await self.core.db.group.set(group_id, {"name": name, "notes": notes})
+        self.render.flash("group name and notes updated successfully")
+        return redirect(f"/groups/{group_id}")
