@@ -1,7 +1,10 @@
+import shutil
+import tempfile
+from pathlib import Path
 from typing import Annotated
 
 from bson import ObjectId
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, File, UploadFile
 from mm_base6 import cbv
 from starlette.responses import PlainTextResponse
 
@@ -23,6 +26,20 @@ class CBV(View):
     async def delete_all_groups(self) -> None:
         for group in await self.core.db.group.find({}, "_id"):
             await self.core.group_service.delete_group(group.id)
+
+    @router.post("/import-archive")
+    async def import_archive(self, file: Annotated[UploadFile, File()]) -> None:
+        """
+        Import a group from a zip file.
+        """
+        if file.filename is None or not file.filename.endswith(".zip"):
+            raise ValueError("File must be a zip file")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            zip_path = tmp_path / file.filename
+            with zip_path.open("wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            await self.core.group_service.import_from_zip(zip_path)
 
     @router.get("/export", response_class=PlainTextResponse)
     async def export_groups(self) -> str:

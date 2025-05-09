@@ -7,10 +7,11 @@ dependencies = [
     "mm-base6==0.1.2",
     "mm-eth~=0.6.2",
     "mm-sol~=0.6.2",
-    "mm-apt~=0.3.4",
-    "mm-strk~=0.3.0",
+    "mm-apt~=0.3.5",
+    "mm-strk~=0.3.4",
     "deepdiff==8.4.2",
     "mm-mongo~=0.5.4",
+    "aiofiles~=24.1.0",
 ]
 
 [build-system]
@@ -28,6 +29,7 @@ dev-dependencies = [
     "mypy~=1.15.0",
     "watchfiles>=1.0.4",
     "pyinstrument>=5.0.1",
+    "types-aiofiles>=24.1.0.20250326",
 ]
 override-dependencies = ["websockets~=15.0.1"]
 

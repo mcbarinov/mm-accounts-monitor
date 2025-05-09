@@ -6,6 +6,15 @@ requires-python = ">=3.12"
 overrides = [{ name = "websockets", specifier = "~=15.0.1" }]
 
 [[package]]
+name = "aiofiles"
+version = "24.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0b/03/a88171e277e8caa88a4c77808c20ebb04ba74cc4681bf1e9416c862de237/aiofiles-24.1.0.tar.gz", hash = "sha256:22a075c9e5a3810f0c2e48f3008c94d68c65d763b9b03857924c99e57355166c", size = 30247, upload-time = "2024-06-24T11:02:03.584Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a5/45/30bb92d442636f570cb5651bc661f52b610e2eec3f891a5dc3a4c3667db0/aiofiles-24.1.0-py3-none-any.whl", hash = "sha256:b4ec55f4195e3eb5d7abd1bf7e061763e864dd4954231fb8539a0ef8bb8260e5", size = 15896, upload-time = "2024-06-24T11:02:01.529Z" },
+]
+
+[[package]]
 name = "aiohappyeyeballs"
 version = "2.6.1"
 source = { registry = "https://pypi.org/simple" }
@@ -116,6 +125,7 @@ name = "app"
 version = "0.0.9"
 source = { editable = "." }
 dependencies = [
+    { name = "aiofiles" },
     { name = "deepdiff" },
     { name = "mm-apt" },
     { name = "mm-base6" },
@@ -135,18 +145,20 @@ dev = [
     { name = "pytest-httpserver" },
     { name = "pytest-xdist" },
     { name = "ruff" },
+    { name = "types-aiofiles" },
     { name = "watchfiles" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "aiofiles", specifier = "~=24.1.0" },
     { name = "deepdiff", specifier = "==8.4.2" },
-    { name = "mm-apt", specifier = "~=0.3.4" },
+    { name = "mm-apt", specifier = "~=0.3.5" },
     { name = "mm-base6", specifier = "==0.1.2" },
     { name = "mm-eth", specifier = "~=0.6.2" },
     { name = "mm-mongo", specifier = "~=0.5.4" },
     { name = "mm-sol", specifier = "~=0.6.2" },
-    { name = "mm-strk", specifier = "~=0.3.0" },
+    { name = "mm-strk", specifier = "~=0.3.4" },
 ]
 
 [package.metadata.requires-dev]
@@ -159,6 +171,7 @@ dev = [
     { name = "pytest-httpserver", specifier = "~=1.1.2" },
     { name = "pytest-xdist", specifier = "~=3.6.1" },
     { name = "ruff", specifier = "~=0.11.8" },
+    { name = "types-aiofiles", specifier = ">=24.1.0.20250326" },
     { name = "watchfiles", specifier = ">=1.0.4" },
 ]
 
@@ -1045,14 +1058,14 @@ wheels = [
 
 [[package]]
 name = "mm-apt"
-version = "0.3.4"
+version = "0.3.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "mm-crypto-utils" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/30/84/2f5e8a5173b0021ef7c47ad0e8da918d8f33d80d445c03c30f368f19d21d/mm_apt-0.3.4.tar.gz", hash = "sha256:46769d066fca9d05c5d041213e197dcffd4cafdafcc1f00c6cc8a46a51fb7c63", size = 57565, upload-time = "2025-04-23T07:04:56.843Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0f/5d/ae1477d8cf8e338843baeb0d3cccaf14dfe77b1d1a238ca81c3a73cc42e0/mm_apt-0.3.5.tar.gz", hash = "sha256:737460f97ccde1fc081ccdd3ef87e4e843ea1cad42f94ed83ffbc0a6c56c36c0", size = 58667, upload-time = "2025-05-08T11:16:38.588Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/24/57/08b9ca993256ec38897842b7cea8c91120bd7486654c333527a58e8ddb88/mm_apt-0.3.4-py3-none-any.whl", hash = "sha256:4edff463354408989b6f81eacae0f9933bc02eb73678051e85b957369ef57550", size = 2561, upload-time = "2025-04-23T07:04:55.237Z" },
+    { url = "https://files.pythonhosted.org/packages/a4/9b/69941667fa1de738cfe9b0c762f8e4651970f4214e80f36f8aa10ece3d61/mm_apt-0.3.5-py3-none-any.whl", hash = "sha256:90badb3cb1dee58633c6081a6eb868ff4b28561f9de5215c14994424a2b505aa", size = 3228, upload-time = "2025-05-08T11:16:36.89Z" },
 ]
 
 [[package]]
@@ -1075,14 +1088,14 @@ wheels = [
 
 [[package]]
 name = "mm-crypto-utils"
-version = "0.3.6"
+version = "0.3.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "loguru" },
     { name = "mm-std" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1c/09/c6dcf43a19d9d31a3f1dcc2367fdf7fde73c7bf5f8eaad7ada907930324e/mm_crypto_utils-0.3.6-py3-none-any.whl", hash = "sha256:ad4328130100e178b7c7388c58b4a6ccb2b7b3635e52a1fc21b323063573652c", size = 10484, upload-time = "2025-04-22T06:57:01.239Z" },
+    { url = "https://files.pythonhosted.org/packages/78/e7/841201d63191668a9a7a81e1f149c48e77bde35a301252df7db1216cc211/mm_crypto_utils-0.3.7-py3-none-any.whl", hash = "sha256:2bcd2c4e24887628e14c37947e225905c3fbaafaf4572ebe3a06c0d06e8f4999", size = 10483, upload-time = "2025-04-30T07:06:01.572Z" },
 ]
 
 [[package]]
@@ -1165,7 +1178,7 @@ wheels = [
 
 [[package]]
 name = "mm-strk"
-version = "0.3.2"
+version = "0.3.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "mm-crypto-utils" },
@@ -1173,7 +1186,7 @@ dependencies = [
     { name = "typer" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/52/53/54093bbe92ecf859227f5d6bd031b1803d069c33e6fd5594646690633d33/mm_strk-0.3.2-py3-none-any.whl", hash = "sha256:826c29aec3e2e11a83bdd23b21eb2ff71e4a40990af2c3e7899a48b9cc3c3ee2", size = 4518, upload-time = "2025-04-19T15:00:35.336Z" },
+    { url = "https://files.pythonhosted.org/packages/c8/5b/7d4c5f25a41db69c5b153556d62cb22a42aeb46a160fd4a5411d1fe85318/mm_strk-0.3.4-py3-none-any.whl", hash = "sha256:127ca246594afef31165b3604f085c1bae0deb99ddda1ab3dd1a08ec51f5ac3e", size = 5210, upload-time = "2025-05-09T06:14:54.388Z" },
 ]
 
 [[package]]
@@ -2181,7 +2194,7 @@ wheels = [
 
 [[package]]
 name = "typer"
-version = "0.15.2"
+version = "0.15.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -2189,9 +2202,18 @@ dependencies = [
     { name = "shellingham" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8b/6f/3991f0f1c7fcb2df31aef28e0594d8d54b05393a0e4e34c65e475c2a5d41/typer-0.15.2.tar.gz", hash = "sha256:ab2fab47533a813c49fe1f16b1a370fd5819099c00b119e0633df65f22144ba5", size = 100711, upload-time = "2025-02-27T19:17:34.807Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/98/1a/5f36851f439884bcfe8539f6a20ff7516e7b60f319bbaf69a90dc35cc2eb/typer-0.15.3.tar.gz", hash = "sha256:818873625d0569653438316567861899f7e9972f2e6e0c16dab608345ced713c", size = 101641, upload-time = "2025-04-28T21:40:59.204Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7f/fc/5b29fea8cee020515ca82cc68e3b8e1e34bb19a3535ad854cac9257b414c/typer-0.15.2-py3-none-any.whl", hash = "sha256:46a499c6107d645a9c13f7ee46c5d5096cae6f5fc57dd11eccbbb9ae3e44ddfc", size = 45061, upload-time = "2025-02-27T19:17:32.111Z" },
+    { url = "https://files.pythonhosted.org/packages/48/20/9d953de6f4367163d23ec823200eb3ecb0050a2609691e512c8b95827a9b/typer-0.15.3-py3-none-any.whl", hash = "sha256:c86a65ad77ca531f03de08d1b9cb67cd09ad02ddddf4b34745b5008f43b239bd", size = 45253, upload-time = "2025-04-28T21:40:56.269Z" },
+]
+
+[[package]]
+name = "types-aiofiles"
+version = "24.1.0.20250326"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8d/25/c76a9ee91eefac376ed8905b029272e27c44739e3f148faf5c00afe71e43/types_aiofiles-24.1.0.20250326.tar.gz", hash = "sha256:c4bbe432fd043911ba83fb635456f5cc54f6d05fda2aadf6bef12a84f07a6efe", size = 14369, upload-time = "2025-03-26T02:53:32.846Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0e/18/1016ffd4c7775f24371f6a0309483dc5597e8245b5add67924e54ea3b83a/types_aiofiles-24.1.0.20250326-py3-none-any.whl", hash = "sha256:dfb58c9aa18bd449e80fb5d7f49dc3dd20d31de920a46223a61798ee4a521a70", size = 14344, upload-time = "2025-03-26T02:53:31.856Z" },
 ]
 
 [[package]]

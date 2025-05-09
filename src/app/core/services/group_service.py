@@ -1,17 +1,22 @@
+import asyncio
 import logging
 from dataclasses import dataclass
 from decimal import Decimal
+from pathlib import Path
 from typing import cast
+from zipfile import ZipFile
 
+import aiofiles
 import pydash
 import tomlkit
 from bson import ObjectId
 from mm_base6 import UserError
 from mm_crypto_utils import Network, NetworkType
 from mm_mongo import MongoDeleteResult
-from mm_std import async_synchronized, toml_dumps, toml_loads
+from mm_std import async_synchronized, str_to_list, toml_dumps, toml_loads
 from pydantic import BaseModel
 
+from app.core import utils
 from app.core.constants import Naming
 from app.core.db import AccountBalance, AccountName, Coin, Group, GroupBalance, GroupName
 from app.core.services.coin_service import CoinService
@@ -135,6 +140,44 @@ class GroupService(AppService):
                 await self.update_accounts(created_group.id, accounts)
                 count += 1
         return count
+
+    @async_synchronized
+    async def import_from_zip(self, archive: Path) -> int:
+        def unzip(source: Path) -> None:
+            with ZipFile(source, "r") as zip_file:
+                zip_file.extractall(path=archive.parent)
+
+        await asyncio.to_thread(unzip, archive)
+
+        result = 0
+        network_types = [n.value for n in NetworkType]
+        for network_type_dir in await asyncio.to_thread(archive.parent.iterdir):
+            if network_type_dir.is_dir() and network_type_dir.name in network_types:
+                for file in await asyncio.to_thread(network_type_dir.iterdir):
+                    if file.is_file() and file.name.endswith(".txt"):
+                        network_type = NetworkType(network_type_dir.name)
+                        group_name = file.name.removesuffix(".txt")
+                        if await self.db.group.exists({"name": group_name}):
+                            continue
+
+                        async with aiofiles.open(file) as f:
+                            addresses = str_to_list(await f.read())
+                            invalid_address = utils.find_invalid_address(network_type, addresses)
+                            if invalid_address is not None:
+                                raise UserError(f"Invalid address: {invalid_address}, for network_type: {network_type}")
+
+                            namings = [n for n in Naming if n.is_consistent(network_type)]
+                            networks = [n for n in Network if n.network_type == network_type]
+                            coins = await self.db.coin.find({"network": {"$in": networks}})
+                            coin_ids = [c.id for c in coins]
+
+                            created_group = await self.create_group(
+                                name=group_name, network_type=network_type, namings=namings, coin_ids=coin_ids, notes=""
+                            )
+                            await self.update_accounts(created_group.id, addresses)
+
+        archive.unlink()
+        return result
 
     async def delete_group(self, id: ObjectId) -> MongoDeleteResult:
         await self.db.account_balance.delete_many({"group": id})
