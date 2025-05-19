@@ -12,8 +12,8 @@ router = APIRouter(prefix="/api/coins", tags=["coin"])
 class CBV(View):
     @router.get("/{id}")
     async def get_coin(self, id: str) -> Coin:
-        return self.core.coin_service.get_coin(id)
+        return self.core.services.coin.get_coin(id)
 
     @router.delete("/{id}")
     async def delete_coin(self, id: str) -> MongoDeleteResult:
-        return await self.core.coin_service.delete(id)
+        return await self.core.services.coin.delete(id)

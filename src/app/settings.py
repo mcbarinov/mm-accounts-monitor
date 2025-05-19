@@ -30,27 +30,18 @@ class DynamicValues(DynamicValuesModel):
 
 
 def get_router() -> APIRouter:
-    from app.server.routers import (
-        account_balance_router,
-        account_name_router,
-        bot_router,
-        coin_router,
-        group_router,
-        history_router,
-        network_router,
-        rpc_monitoring_router,
-        ui_router,
-    )
+    from app.server import routers
 
     router = APIRouter()
-    router.include_router(ui_router.router)
-    router.include_router(bot_router.router)
-    router.include_router(network_router.router)
-    router.include_router(coin_router.router)
-    router.include_router(group_router.router)
-    router.include_router(account_name_router.router)
-    router.include_router(account_balance_router.router)
-    router.include_router(rpc_monitoring_router.router)
-    router.include_router(history_router.router)
+
+    router.include_router(routers.ui.router)
+    router.include_router(routers.bot.router)
+    router.include_router(routers.network.router)
+    router.include_router(routers.coin.router)
+    router.include_router(routers.group.router)
+    router.include_router(routers.account_name.router)
+    router.include_router(routers.account_balance.router)
+    router.include_router(routers.rpc_monitoring.router)
+    router.include_router(routers.history.router)
 
     return router

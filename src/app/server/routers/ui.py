@@ -32,34 +32,38 @@ class CBV(View):
     @router.get("/networks")
     async def networks(self) -> HTMLResponse:
         mm_node_checker = self.core.dynamic_values.mm_node_checker or {}
-        return await self.render.html("networks.j2", mm_node_checker=mm_node_checker, rpc_urls=self.core.network_service.rpc_urls)
+        return await self.render.html(
+            "networks.j2", mm_node_checker=mm_node_checker, rpc_urls=self.core.services.network.rpc_urls
+        )
 
     @router.get("/networks/check-stats")
     async def networks_check_stats(self) -> HTMLResponse:
-        stats = await self.core.network_service.calc_network_check_stats()
+        stats = await self.core.services.network.calc_network_check_stats()
         return await self.render.html("networks_check_stats.j2", stats=stats)
 
     @router.get("/namings")
     async def namings(self) -> HTMLResponse:
-        oldest_checked_time = await self.core.name_service.calc_oldest_checked_time()
+        oldest_checked_time = await self.core.services.name.calc_oldest_checked_time()
         return await self.render.html("namings.j2", namings=list(Naming), oldest_checked_time=oldest_checked_time)
 
     @router.get("/coins")
     async def coins(self) -> HTMLResponse:
-        explorer_token_map = self.core.coin_service.explorer_token_map()
-        return await self.render.html("coins.j2", coins=self.core.coin_service.get_coins(), explorer_token_map=explorer_token_map)
+        explorer_token_map = self.core.services.coin.explorer_token_map()
+        return await self.render.html(
+            "coins.j2", coins=self.core.services.coin.get_coins(), explorer_token_map=explorer_token_map
+        )
 
     @router.get("/coins/check-stats")
     async def coins_check_stats(self) -> HTMLResponse:
-        stats = await self.core.coin_service.calc_coin_check_stats()
+        stats = await self.core.services.coin.calc_coin_check_stats()
         return await self.render.html("coins_check_stats.j2", stats=stats)
 
     @router.get("/groups")
     async def groups(self, network_type: Annotated[NetworkType | None, Query()] = None) -> HTMLResponse:
         query = {"network_type": network_type} if network_type else {}
         groups = await self.core.db.group.find(query, "name")
-        coins = self.core.coin_service.get_coins()
-        coins_by_network_type = self.core.coin_service.get_coins_by_network_type()
+        coins = self.core.services.coin.get_coins()
+        coins_by_network_type = self.core.services.coin.get_coins_by_network_type()
         return await self.render.html(
             "groups.j2",
             groups=groups,
@@ -73,8 +77,8 @@ class CBV(View):
     @router.get("/groups/{group_id}")
     async def group(self, group_id: ObjectId) -> HTMLResponse:
         group = await self.core.db.group.get(group_id)
-        info = await self.core.group_service.get_group_accounts_info(group_id)
-        coins_by_network_type = self.core.coin_service.get_coins_by_network_type()
+        info = await self.core.services.group.get_group_accounts_info(group_id)
+        coins_by_network_type = self.core.services.coin.get_coins_by_network_type()
         namings = list(Naming)
         return await self.render.html(
             "group.j2", group=group, info=info, coins_by_network_type=coins_by_network_type, namings=namings
@@ -89,7 +93,7 @@ class CBV(View):
             query["coin"] = coin
         balances = await self.core.db.account_balance.find(query, "account,coin", limit=limit)
         groups = await self.core.db.group.find({}, "name")
-        coins = self.core.coin_service.get_coins()
+        coins = self.core.services.coin.get_coins()
         form = {"group": group, "coin": coin, "limit": limit}
         return await self.render.html("balances.j2", balances=balances, form=form, groups=groups, coins=coins)
 
@@ -141,14 +145,14 @@ class CBV(View):
     @router.get("/history/{id}")
     async def history_accounts_page(self, id: ObjectId) -> HTMLResponse:
         history = await self.core.db.history.get(id)
-        info = await self.core.history_service.get_history_group_accounts_info(id)
+        info = await self.core.services.history.get_history_group_accounts_info(id)
         return await self.render.html("history_accounts.j2", history=history, info=info)
 
     @router.get("/history/{id}/diff")
     async def get_history_diff_page(self, id: ObjectId) -> HTMLResponse:
         history = await self.core.db.history.get(id)
-        coins_map = self.core.coin_service.get_coins_map()
-        diff = await self.core.history_service.get_balances_diff(id)
+        coins_map = self.core.services.coin.get_coins_map()
+        diff = await self.core.services.history.get_balances_diff(id)
         return await self.render.html("history_diff.j2", history=history, diff=diff, coins_map=coins_map)
 
 
@@ -156,17 +160,17 @@ class CBV(View):
 class ActionCBV(View):
     @router.post("/networks/{network}/add-rpc-url")
     async def add_rpc_url(self, network: Network, url: Annotated[str, Form()]) -> RedirectResponse:
-        await self.core.network_service.add_rpc_url(network, url)
+        await self.core.services.network.add_rpc_url(network, url)
         self.render.flash("rpc url added successfully")
         return redirect("/networks")
 
     @router.get("/coins/export", response_class=PlainTextResponse)
     async def export_coins(self) -> str:
-        return self.core.coin_service.export_as_toml()
+        return self.core.services.coin.export_as_toml()
 
     @router.post("/coins/import")
     async def import_coins(self, value: Annotated[str, Form()]) -> RedirectResponse:
-        res = await self.core.coin_service.import_from_toml(value)
+        res = await self.core.services.coin.import_from_toml(value)
         if res < 0:
             self.render.flash("can't import coins", is_error=True)
         else:
@@ -194,31 +198,31 @@ class ActionCBV(View):
 
     @router.post("/groups")
     async def create_group(self, data: Annotated[CreateGroupForm, Form()]) -> RedirectResponse:
-        await self.core.group_service.create_group(data.name, data.network_type, data.notes, data.namings_list, data.coins_list)
+        await self.core.services.group.create_group(data.name, data.network_type, data.notes, data.namings_list, data.coins_list)
         self.render.flash("group added successfully")
         return redirect("/groups")
 
     @router.post("/groups/import")
     async def import_groups(self, toml: Annotated[str, Form()]) -> RedirectResponse:
-        count = await self.core.group_service.import_from_toml(toml)
+        count = await self.core.services.group.import_from_toml(toml)
         self.render.flash(f"groups imported successfully: {count}")
         return redirect("/groups")
 
     @router.post("/groups/{id}/accounts")
     async def update_accounts(self, id: ObjectId, value: Annotated[str, Form()]) -> RedirectResponse:
-        await self.core.group_service.update_accounts(id, str_to_list(value, unique=True))
+        await self.core.services.group.update_accounts(id, str_to_list(value, unique=True))
         self.render.flash("accounts updated successfully")
         return redirect(f"/groups/{id}")
 
     @router.post("/groups/{id}/coins")
     async def update_coins(self, id: ObjectId, value: Annotated[list[str] | None, Form()] = None) -> RedirectResponse:
-        await self.core.group_service.update_coins(id, value or [])
+        await self.core.services.group.update_coins(id, value or [])
         self.render.flash("coins updated successfully")
         return redirect(f"/groups/{id}")
 
     @router.post("/groups/{id}/namings")
     async def update_namings(self, id: ObjectId, value: Annotated[list[Naming] | None, Form()] = None) -> RedirectResponse:
-        await self.core.group_service.update_namings(id, value or [])
+        await self.core.services.group.update_namings(id, value or [])
         self.render.flash("namings updated successfully")
         return redirect(f"/groups/{id}")
 

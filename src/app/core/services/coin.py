@@ -9,7 +9,7 @@ from mm_std import async_synchronized, replace_empty_dict_values, toml_dumps
 from pydantic import BaseModel
 
 from app.core.db import Coin
-from app.core.services.network_service import NetworkService
+from app.core.services.network import NetworkService
 from app.core.types_ import AppService, AppServiceParams
 
 logger = logging.getLogger(__name__)

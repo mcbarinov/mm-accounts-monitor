@@ -17,4 +17,4 @@ class CBV(View):
 
     @router.post("/{id}/check")
     async def check_account_name(self, id: ObjectId) -> Result[str | None]:
-        return await self.core.name_service.check_account_name(id)
+        return await self.core.services.name.check_account_name(id)

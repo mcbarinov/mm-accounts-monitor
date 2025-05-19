@@ -13,12 +13,12 @@ router = APIRouter(prefix="/api/networks", tags=["network"])
 class CBV(View):
     @router.post("/update-mm-node-checker")
     async def update_node_checker(self) -> dict[str, list[str]] | None:
-        return await self.core.network_service.update_mm_node_checker()
+        return await self.core.services.network.update_mm_node_checker()
 
     @router.delete("/{id}/delete-rpc-url")
     async def delete_rpc_url(self, id: Network, url: Annotated[str, Query()]) -> None:
-        await self.core.network_service.delete_rpc_url(id, url)
+        await self.core.services.network.delete_rpc_url(id, url)
 
     @router.post("/{id}/check-next-network-balances")
     async def check_next_network_balances(self, id: Network) -> int | None:
-        return await self.core.balance_service.check_next_network(id)
+        return await self.core.services.balance.check_next_network(id)

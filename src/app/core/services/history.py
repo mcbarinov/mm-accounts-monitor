@@ -10,9 +10,9 @@ from mm_mongo import MongoInsertOneResult
 from pydantic import BaseModel
 
 from app.core.db import History
-from app.core.services.coin_service import CoinService
-from app.core.services.group_service import GroupAccountsInfo
-from app.core.services.network_service import NetworkService
+from app.core.services.coin import CoinService
+from app.core.services.group import GroupAccountsInfo
+from app.core.services.network import NetworkService
 from app.core.types_ import AppService, AppServiceParams
 
 

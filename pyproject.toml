@@ -1,15 +1,15 @@
 [project]
 name = "app"
-version = "0.0.9"
+version = "0.0.10"
 description = ""
 requires-python = ">=3.12"
 dependencies = [
-    "mm-base6==0.1.2",
+    "mm-base6==0.2.1",
     "mm-eth~=0.6.2",
-    "mm-sol~=0.6.2",
+    "mm-sol~=0.6.3",
     "mm-apt~=0.3.5",
     "mm-strk~=0.3.4",
-    "deepdiff==8.4.2",
+    "deepdiff==8.5.0",
     "mm-mongo~=0.5.4",
     "aiofiles~=24.1.0",
 ]
@@ -23,13 +23,13 @@ dev-dependencies = [
     "pytest~=8.3.5",
     "pytest-xdist~=3.6.1",
     "pytest-httpserver~=1.1.2",
-    "ruff~=0.11.8",
+    "ruff~=0.11.10",
     "pip-audit~=2.9.0",
     "bandit~=1.8.3",
     "mypy~=1.15.0",
     "watchfiles>=1.0.4",
     "pyinstrument>=5.0.1",
-    "types-aiofiles>=24.1.0.20250326",
+    "types-aiofiles>=24.1.0.20250516",
 ]
 override-dependencies = ["websockets~=15.0.1"]
 

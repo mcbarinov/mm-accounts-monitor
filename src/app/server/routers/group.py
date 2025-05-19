@@ -10,7 +10,7 @@ from starlette.responses import PlainTextResponse
 
 from app.core.constants import Naming
 from app.core.db import Group
-from app.core.services.group_service import ProcessAccountBalancesResult, ProcessAccountNamingsResult
+from app.core.services.group import ProcessAccountBalancesResult, ProcessAccountNamingsResult
 from app.server.deps import View
 
 router = APIRouter(prefix="/api/groups", tags=["group"])
@@ -25,7 +25,7 @@ class CBV(View):
     @router.delete("/")
     async def delete_all_groups(self) -> None:
         for group in await self.core.db.group.find({}, "_id"):
-            await self.core.group_service.delete_group(group.id)
+            await self.core.services.group.delete_group(group.id)
 
     @router.post("/import-archive")
     async def import_archive(self, file: Annotated[UploadFile, File()]) -> None:
@@ -39,11 +39,11 @@ class CBV(View):
             zip_path = tmp_path / file.filename
             with zip_path.open("wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
-            await self.core.group_service.import_from_zip(zip_path)
+            await self.core.services.group.import_from_zip(zip_path)
 
     @router.get("/export", response_class=PlainTextResponse)
     async def export_groups(self) -> str:
-        return await self.core.group_service.export_as_toml()
+        return await self.core.services.group.export_as_toml()
 
     @router.get("/{id}")
     async def get_group(self, id: ObjectId) -> Group:
@@ -51,32 +51,32 @@ class CBV(View):
 
     @router.delete("/{id}")
     async def delete_group(self, id: ObjectId) -> None:
-        await self.core.group_service.delete_group(ObjectId(id))
+        await self.core.services.group.delete_group(ObjectId(id))
 
     @router.post("/{id}/coins")
     async def add_coin_to_group(self, id: ObjectId, coin_id: Annotated[str, Body(..., embed=True)]) -> None:
-        return await self.core.group_service.add_coin(id, coin_id)
+        return await self.core.services.group.add_coin(id, coin_id)
 
     @router.post("/{id}/namings")
     async def add_namings_to_group(self, id: ObjectId, naming: Annotated[Naming, Body(..., embed=True)]) -> None:
-        return await self.core.group_service.add_naming(id, naming)
+        return await self.core.services.group.add_naming(id, naming)
 
     @router.delete("/{id}/coins/{coin_id}")
     async def remove_coin_from_group(self, id: ObjectId, coin_id: str) -> None:
-        return await self.core.group_service.remove_coin(id, coin_id)
+        return await self.core.services.group.remove_coin(id, coin_id)
 
     @router.delete("/{id}/namings/{naming}")
     async def remove_naming_from_group(self, id: ObjectId, naming: Naming) -> None:
-        return await self.core.group_service.remove_naming(id, naming)
+        return await self.core.services.group.remove_naming(id, naming)
 
     @router.post("/{id}/process-account-balances")
     async def process_account_balances(self, id: ObjectId) -> ProcessAccountBalancesResult:
-        return await self.core.group_service.process_account_balances(ObjectId(id))
+        return await self.core.services.group.process_account_balances(ObjectId(id))
 
     @router.post("/{id}/process-account-names")
     async def process_account_names(self, id: ObjectId) -> ProcessAccountNamingsResult:
-        return await self.core.group_service.process_account_names(ObjectId(id))
+        return await self.core.services.group.process_account_names(ObjectId(id))
 
     @router.post("/{id}/reset-group-balances")
     async def reset_group_balances(self, id: ObjectId) -> None:
-        await self.core.group_service.reset_group_balances(ObjectId(id))
+        await self.core.services.group.reset_group_balances(ObjectId(id))

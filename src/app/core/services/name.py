@@ -7,7 +7,7 @@ from mm_std import AsyncTaskRunner, Result, async_synchronized_parameter, utc_de
 from app.core.blockchains import aptos, evm, starknet
 from app.core.constants import Naming
 from app.core.db import NamingProblem
-from app.core.services.network_service import NetworkService
+from app.core.services.network import NetworkService
 from app.core.types_ import AppService, AppServiceParams
 
 logger = logging.getLogger(__name__)

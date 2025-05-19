@@ -8,8 +8,8 @@ from mm_std import AsyncTaskRunner, Result, async_synchronized_parameter, utc_de
 
 from app.core.blockchains import aptos, evm, solana, starknet
 from app.core.db import Coin, RpcMonitoring
-from app.core.services.coin_service import CoinService
-from app.core.services.network_service import NetworkService
+from app.core.services.coin import CoinService
+from app.core.services.network import NetworkService
 from app.core.types_ import AppService, AppServiceParams
 
 logger = logging.getLogger(__name__)

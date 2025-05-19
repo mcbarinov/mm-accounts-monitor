@@ -10,8 +10,8 @@ router = APIRouter(prefix="/api/bot", tags=["bot"])
 class CBV(View):
     @router.post("/toggle-check-balances")
     async def toggle_check_balances(self) -> None:
-        self.core.bot_service.toggle_check_balances()
+        self.core.services.bot.toggle_check_balances()
 
     @router.post("/toggle-check-namings")
     async def toggle_check_namings(self) -> None:
-        self.core.bot_service.toggle_check_namings()
+        self.core.services.bot.toggle_check_namings()

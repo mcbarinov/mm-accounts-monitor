@@ -17,4 +17,4 @@ class CBV(View):
 
     @router.post("/{id}/check")
     async def check_account_balance(self, id: ObjectId) -> Result[int]:
-        return await self.core.balance_service.check_account_balance(id)
+        return await self.core.services.balance.check_account_balance(id)

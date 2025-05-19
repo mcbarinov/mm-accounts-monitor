@@ -19,8 +19,8 @@ from pydantic import BaseModel
 from app.core import utils
 from app.core.constants import Naming
 from app.core.db import AccountBalance, AccountName, Coin, Group, GroupBalance, GroupName
-from app.core.services.coin_service import CoinService
-from app.core.services.network_service import NetworkService
+from app.core.services.coin import CoinService
+from app.core.services.network import NetworkService
 from app.core.types_ import AppService, AppServiceParams
 
 logger = logging.getLogger(__name__)
