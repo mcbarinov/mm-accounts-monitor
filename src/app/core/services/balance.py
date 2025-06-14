@@ -84,7 +84,7 @@ class BalanceService(BaseService):
                 success=res.is_ok(),
                 response_time=round(time.perf_counter() - start_at, ndigits=2),
                 error=res.unwrap_err() if res.is_err() else None,
-                data=res.extra,
+                data=res.to_dict(safe_exception=True)["extra"],
             )
             await self.core.db.rpc_monitoring.insert_one(rpc_monitoring)
 
