@@ -1,7 +1,12 @@
+import logging
 from datetime import datetime
 
 from fastapi import APIRouter
 from mm_base6 import DC, DV, CoreConfig, DynamicConfigsModel, DynamicValuesModel, ServerConfig
+from mm_cryptocurrency import Network
+
+from app.core.constants import Naming
+from app.core.types import AppCore
 
 core_config = CoreConfig()
 
@@ -27,6 +32,36 @@ class DynamicValues(DynamicValuesModel):
     proxies_updated_at: DV[datetime | None] = DV(None)
     mm_node_checker: DV[dict[str, list[str]] | None] = DV(None)
     mm_node_checker_updated_at: DV[datetime | None] = DV(None)
+
+
+async def configure_scheduler(core: AppCore) -> None:
+    """Configure background scheduler tasks."""
+    # check balances
+    for network in Network:
+        task_id = "balances_on_" + network.value
+        core.scheduler.add_task(task_id, 2, core.services.balance.check_next_network, args=(network,))
+
+    # check namings
+    for naming in list(Naming):
+        task_id = "names_on_" + naming
+        core.scheduler.add_task(task_id, 2, core.services.name.check_next_naming, args=(naming,))
+
+    # mm-node-checker
+    core.scheduler.add_task("mm-node-checker", 30, core.services.network.update_mm_node_checker)
+
+
+async def start_core(core: AppCore) -> None:
+    """Startup logic for the application."""
+    libraries = ["httpcore", "httpx", "web3"]
+    for lib in libraries:
+        logging.getLogger(lib).setLevel(logging.WARNING)
+
+    await core.services.network.load_rpc_urls_from_db()
+    await core.services.coin.load_coins_from_db()
+
+
+async def stop_core(core: AppCore) -> None:
+    """Cleanup logic for the application."""
 
 
 def get_router() -> APIRouter:

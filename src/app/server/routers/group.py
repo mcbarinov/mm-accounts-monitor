@@ -11,13 +11,13 @@ from starlette.responses import PlainTextResponse
 from app.core.constants import Naming
 from app.core.db import Group
 from app.core.services.group import ProcessAccountBalancesResult, ProcessAccountNamingsResult
-from app.server.deps import View
+from app.core.types import AppView
 
 router = APIRouter(prefix="/api/groups", tags=["group"])
 
 
 @cbv(router)
-class CBV(View):
+class CBV(AppView):
     @router.get("/")
     async def get_all_groups(self) -> list[Group]:
         return await self.core.db.group.find({}, "_id")

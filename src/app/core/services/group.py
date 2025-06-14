@@ -10,18 +10,18 @@ import aiofiles
 import pydash
 import tomlkit
 from bson import ObjectId
-from mm_base6 import UserError
-from mm_crypto_utils import Network, NetworkType
+from mm_base6 import BaseService, UserError
+from mm_base6.core.utils import toml_dumps
+from mm_concurrency import async_synchronized
+from mm_cryptocurrency import Network, NetworkType
 from mm_mongo import MongoDeleteResult
-from mm_std import async_synchronized, str_to_list, toml_dumps, toml_loads
+from mm_std import parse_lines
 from pydantic import BaseModel
 
 from app.core import utils
 from app.core.constants import Naming
 from app.core.db import AccountBalance, AccountName, Coin, Group, GroupBalance, GroupName
-from app.core.services.coin import CoinService
-from app.core.services.network import NetworkService
-from app.core.types_ import AppService, AppServiceParams
+from app.core.types import AppCore
 
 logger = logging.getLogger(__name__)
 
@@ -64,15 +64,12 @@ class GroupAccountsInfo(BaseModel):
         return network.explorer_account(account)
 
 
-class GroupService(AppService):
-    def __init__(self, base_params: AppServiceParams, network_service: NetworkService, coin_service: CoinService) -> None:
-        super().__init__(base_params)
-        self.network_service = network_service
-        self.coin_service = coin_service
+class GroupService(BaseService):
+    core: AppCore
 
     async def get_group_accounts_info(self, group: ObjectId) -> GroupAccountsInfo:
         balances: dict[str, dict[str, Decimal]] = {}
-        for gb in await self.db.group_balance.find({"group": group}):
+        for gb in await self.core.db.group_balance.find({"group": group}):
             balances[gb.coin] = gb.balances
 
         coins_sum: dict[str, Decimal] = {}
@@ -81,11 +78,11 @@ class GroupService(AppService):
                 coins_sum[coin] = cast(Decimal, sum(coin_balances.values()))
 
         namings: dict[Naming, dict[str, str]] = {}
-        for gn in await self.db.group_name.find({"group": group}):
+        for gn in await self.core.db.group_name.find({"group": group}):
             namings[gn.naming] = gn.names
 
         return GroupAccountsInfo(
-            coins_sum=coins_sum, balances=balances, names=namings, coins_map=self.coin_service.get_coins_map()
+            coins_sum=coins_sum, balances=balances, names=namings, coins_map=self.core.services.coin.get_coins_map()
         )
 
     async def create_group(
@@ -97,11 +94,11 @@ class GroupService(AppService):
                 raise UserError(f"Naming {naming.name} is not consistent with the network type {network_type.value}")
         # Check if the coins are consistent with the network type
         for coin_id in coin_ids:
-            if self.coin_service.get_coin(coin_id).network.network_type != network_type:
+            if self.core.services.coin.get_coin(coin_id).network.network_type != network_type:
                 raise UserError(f"Coin {coin_id} is not consistent with the network type {network_type.value}")
 
         new_group = Group(id=ObjectId(), name=name, network_type=network_type, notes=notes)
-        await self.db.group.insert_one(new_group)
+        await self.core.db.group.insert_one(new_group)
         for naming in namings:
             await self.add_naming(new_group.id, naming)
         for coin in coin_ids:
@@ -110,7 +107,7 @@ class GroupService(AppService):
 
     async def export_as_toml(self) -> str:
         groups = []
-        for group in await self.db.group.find({}):
+        for group in await self.core.db.group.find({}):
             obj = group.model_dump()
             obj = pydash.omit(obj, "_id")
             obj["coins"] = tomlkit.string("\n".join(obj["coins"]), multiline=True)
@@ -122,11 +119,11 @@ class GroupService(AppService):
 
     @async_synchronized
     async def import_from_toml(self, toml: str) -> int:
-        known_coins = [c.id for c in self.coin_service.get_coins()]
+        known_coins = [c.id for c in self.core.services.coin.get_coins()]
         count = 0
-        for data in toml_loads(toml)["groups"]:  # type:ignore[union-attr]
+        for data in utils.toml_loads(toml)["groups"]:  # type:ignore[union-attr]
             group = ImportGroupItem(**cast(dict[str, object], data))
-            if not await self.db.group.exists({"name": group.name}):
+            if not await self.core.db.group.exists({"name": group.name}):
                 coin_ids = [c.strip() for c in group.coins.split("\n") if c.strip()]
                 unknown_coins = [c for c in coin_ids if c not in known_coins]
                 if unknown_coins:
@@ -157,18 +154,18 @@ class GroupService(AppService):
                     if file.is_file() and file.name.endswith(".txt"):
                         network_type = NetworkType(network_type_dir.name)
                         group_name = file.name.removesuffix(".txt")
-                        if await self.db.group.exists({"name": group_name}):
+                        if await self.core.db.group.exists({"name": group_name}):
                             continue
 
                         async with aiofiles.open(file) as f:
-                            addresses = str_to_list(await f.read())
+                            addresses = parse_lines(await f.read())
                             invalid_address = utils.find_invalid_address(network_type, addresses)
                             if invalid_address is not None:
                                 raise UserError(f"Invalid address: {invalid_address}, for network_type: {network_type}")
 
                             namings = [n for n in Naming if n.is_consistent(network_type)]
                             networks = [n for n in Network if n.network_type == network_type]
-                            coins = await self.db.coin.find({"network": {"$in": networks}})
+                            coins = await self.core.db.coin.find({"network": {"$in": networks}})
                             coin_ids = [c.id for c in coins]
 
                             created_group = await self.create_group(
@@ -180,27 +177,27 @@ class GroupService(AppService):
         return result
 
     async def delete_group(self, id: ObjectId) -> MongoDeleteResult:
-        await self.db.account_balance.delete_many({"group": id})
-        await self.db.account_name.delete_many({"group": id})
-        await self.db.group_name.delete_many({"group": id})
-        await self.db.group_balance.delete_many({"group": id})
-        return await self.db.group.delete(id)
+        await self.core.db.account_balance.delete_many({"group": id})
+        await self.core.db.account_name.delete_many({"group": id})
+        await self.core.db.group_name.delete_many({"group": id})
+        await self.core.db.group_balance.delete_many({"group": id})
+        return await self.core.db.group.delete(id)
 
     async def update_accounts(self, id: ObjectId, accounts: list[str]) -> None:
         logger.debug("update_accounts", extra={"group_id": id, "accounts length": len(accounts)})
-        group = await self.db.group.get(id)
+        group = await self.core.db.group.get(id)
         if group.network_type.lowercase_address():
             accounts = [a.lower() for a in accounts]
-        await self.db.group.set(id, {"accounts": accounts})
+        await self.core.db.group.set(id, {"accounts": accounts})
         await self.process_account_balances(id)
         await self.process_account_names(id)
 
     async def update_coins(self, id: ObjectId, coin_ids: list[str]) -> None:
         logger.debug("update_coins", extra={"group_id": id, "coin_ids": coin_ids})
-        group = await self.db.group.get(id)
+        group = await self.core.db.group.get(id)
         # Check if the coins are consistent with the network type
         for coin_id in coin_ids:
-            if self.coin_service.get_coin(coin_id).network.network_type != group.network_type:
+            if self.core.services.coin.get_coin(coin_id).network.network_type != group.network_type:
                 raise UserError(f"Coin {coin_id} is not from the network type {group.network_type.value}")
 
         # Add new coins
@@ -218,7 +215,7 @@ class GroupService(AppService):
 
     async def update_namings(self, id: ObjectId, namings: list[Naming]) -> None:
         logger.debug("update_namings", extra={"group_id": id, "namings": namings})
-        group = await self.db.group.get(id)
+        group = await self.core.db.group.get(id)
         # Check if the namings are consistent with the network type
         for naming in namings:
             if not naming.is_consistent(group.network_type):
@@ -240,66 +237,66 @@ class GroupService(AppService):
     @async_synchronized
     async def add_coin(self, group_id: ObjectId, coin_id: str) -> None:
         logger.debug("add_coin", extra={"group_id": group_id, "coin_id": coin_id})
-        if not await self.db.coin.exists({"_id": coin_id}):
+        if not await self.core.db.coin.exists({"_id": coin_id}):
             raise UserError(f"Coin {coin_id} not found")
-        group = await self.db.group.get(group_id)
-        coin = self.coin_service.get_coin(coin_id)
+        group = await self.core.db.group.get(group_id)
+        coin = self.core.services.coin.get_coin(coin_id)
         if coin.network.network_type != group.network_type:
             raise UserError(f"Coin {coin_id} is not from the network {group.network_type.value}")
         if coin_id in group.coins:
             raise UserError(f"Coin {coin_id} already in group {group.name}")
 
-        await self.db.group.push(group_id, {"coins": coin_id})
-        await self.db.group_balance.insert_one(GroupBalance(id=ObjectId(), group=group_id, coin=coin_id))
+        await self.core.db.group.push(group_id, {"coins": coin_id})
+        await self.core.db.group_balance.insert_one(GroupBalance(id=ObjectId(), group=group_id, coin=coin_id))
         if len(group.accounts) > 0:
             insert_many = [
                 AccountBalance(id=ObjectId(), group=group_id, network=coin.network, coin=coin_id, account=account)
                 for account in group.accounts
             ]
-            await self.db.account_balance.insert_many(insert_many)
+            await self.core.db.account_balance.insert_many(insert_many)
 
     @async_synchronized
     async def remove_coin(self, group_id: ObjectId, coin_id: str) -> None:
         logger.debug("remove_coin", extra={"group_id": group_id, "coin_id": coin_id})
-        await self.db.account_balance.delete_many({"group": group_id, "coin": coin_id})
-        await self.db.group_balance.delete_one({"group": group_id, "coin": coin_id})
-        await self.db.group.pull(group_id, {"coins": coin_id})
+        await self.core.db.account_balance.delete_many({"group": group_id, "coin": coin_id})
+        await self.core.db.group_balance.delete_one({"group": group_id, "coin": coin_id})
+        await self.core.db.group.pull(group_id, {"coins": coin_id})
 
     async def remove_naming(self, group_id: ObjectId, naming: Naming) -> None:
         logger.debug("remove_naming", extra={"group_id": group_id, "naming": naming})
-        await self.db.account_name.delete_many({"group": group_id, "naming": naming})
-        await self.db.group_name.delete_one({"group": group_id, "naming": naming})
-        await self.db.group.pull(group_id, {"namings": naming.value})
+        await self.core.db.account_name.delete_many({"group": group_id, "naming": naming})
+        await self.core.db.group_name.delete_one({"group": group_id, "naming": naming})
+        await self.core.db.group.pull(group_id, {"namings": naming.value})
 
     @async_synchronized
     async def add_naming(self, group_id: ObjectId, naming: Naming) -> None:
         logger.debug("add_naming", extra={"group_id": group_id, "naming": naming})
-        group = await self.db.group.get(group_id)
+        group = await self.core.db.group.get(group_id)
         if naming in group.namings:
             raise UserError(f"Naming {naming.value} already in group {group.name}")
         if naming.network_type != group.network_type:
             raise UserError(f"Naming {naming.value} is not from the network {group.network_type.value}")
 
-        await self.db.group.push(group_id, {"namings": naming.value})
-        await self.db.group_name.insert_one(GroupName(id=ObjectId(), group=group_id, naming=naming))
+        await self.core.db.group.push(group_id, {"namings": naming.value})
+        await self.core.db.group_name.insert_one(GroupName(id=ObjectId(), group=group_id, naming=naming))
         if len(group.accounts) > 0:
             insert_many = [
                 AccountName(id=ObjectId(), group=group_id, network=naming.network, naming=naming, account=account)
                 for account in group.accounts
             ]
-            await self.db.account_name.insert_many(insert_many)
+            await self.core.db.account_name.insert_many(insert_many)
 
     @async_synchronized
     async def process_account_balances(self, id: ObjectId) -> ProcessAccountBalancesResult:
         """Create account balances for all coins and accounts in the group.
         And delete balances for accounts that are not in the group."""
         logger.debug("process_account_balances", extra={"group_id": id})
-        group = await self.db.group.get(id)
+        group = await self.core.db.group.get(id)
         inserted = 0
         for coin_id in group.coins:
             known_accounts = [
                 a["account"]
-                async for a in self.db.account_balance.collection.find(
+                async for a in self.core.db.account_balance.collection.find(
                     {"group": id, "coin": coin_id}, {"_id": False, "account": True}
                 )
             ]
@@ -309,9 +306,11 @@ class GroupService(AppService):
                     AccountBalance(id=ObjectId(), group=id, network=coin_id.split("__")[0], coin=coin_id, account=account)
                     for account in new_accounts
                 ]
-                await self.db.account_balance.insert_many(insert_many)
+                await self.core.db.account_balance.insert_many(insert_many)
                 inserted += len(new_accounts)
-        deleted = (await self.db.account_balance.delete_many({"group": id, "account": {"$nin": group.accounts}})).deleted_count
+        deleted = (
+            await self.core.db.account_balance.delete_many({"group": id, "account": {"$nin": group.accounts}})
+        ).deleted_count
 
         return ProcessAccountBalancesResult(inserted=inserted, deleted=deleted)
 
@@ -320,12 +319,12 @@ class GroupService(AppService):
         """Create account names for all namings and accounts in the group.
         And delete docs for accounts that are not in the group."""
         logger.debug("process_account_names", extra={"group_id": id})
-        group = await self.db.group.get(id)
+        group = await self.core.db.group.get(id)
         inserted = 0
         for naming in group.namings:
             known_accounts = [
                 a["account"]
-                async for a in self.db.account_name.collection.find(
+                async for a in self.core.db.account_name.collection.find(
                     {"group": id, "naming": naming}, {"_id": False, "account": True}
                 )
             ]
@@ -335,14 +334,14 @@ class GroupService(AppService):
                     AccountName(id=ObjectId(), group=id, network=naming.network, naming=naming, account=account)
                     for account in new_accounts
                 ]
-                await self.db.account_name.insert_many(insert_many)
+                await self.core.db.account_name.insert_many(insert_many)
                 inserted += len(new_accounts)
 
-        deleted = (await self.db.account_name.delete_many({"group": id, "account": {"$nin": group.accounts}})).deleted_count
+        deleted = (await self.core.db.account_name.delete_many({"group": id, "account": {"$nin": group.accounts}})).deleted_count
         return ProcessAccountNamingsResult(inserted, deleted)
 
     async def reset_group_balances(self, id: ObjectId) -> None:
-        await self.db.group_balance.update_many({"group": id}, {"$set": {"balances": {}}})
-        await self.db.account_balance.update_many(
+        await self.core.db.group_balance.update_many({"group": id}, {"$set": {"balances": {}}})
+        await self.core.db.account_balance.update_many(
             {"group": id}, {"$set": {"balance": None, "balance_raw": None, "checked_at": None}}
         )

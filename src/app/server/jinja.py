@@ -1,16 +1,16 @@
 from markupsafe import Markup
 from mm_base6 import JinjaConfig
-from mm_crypto_utils import Network, NetworkType
+from mm_cryptocurrency import Network, NetworkType
 
-from app.core.core import Core
+from app.core.types import AppCore
 
 
-async def header_info(_core: Core) -> Markup:
+async def header_info(_core: AppCore) -> Markup:
     info = ""
     return Markup(info)  # noqa: S704 # nosec
 
 
-async def footer_info(_core: Core) -> Markup:
+async def footer_info(_core: AppCore) -> Markup:
     info = ""
     return Markup(info)  # noqa: S704 # nosec
 

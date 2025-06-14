@@ -2,15 +2,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 from mm_base6 import cbv
-from mm_crypto_utils import Network
+from mm_cryptocurrency import Network
 
-from app.server.deps import View
+from app.core.types import AppView
 
 router = APIRouter(prefix="/api/networks", tags=["network"])
 
 
 @cbv(router)
-class CBV(View):
+class CBV(AppView):
     @router.post("/update-mm-node-checker")
     async def update_node_checker(self) -> dict[str, list[str]] | None:
         return await self.core.services.network.update_mm_node_checker()

@@ -4,14 +4,14 @@ from typing import Annotated
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Form, Query
 from mm_base6 import cbv, redirect
-from mm_crypto_utils import Network, NetworkType
-from mm_std import str_to_list
+from mm_cryptocurrency import Network, NetworkType
+from mm_std import parse_lines
 from pydantic import BaseModel, Field
 from starlette.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 
 from app.core.constants import Naming
+from app.core.types import AppView
 from app.server import utils
-from app.server.deps import View
 
 router = APIRouter(include_in_schema=False)
 
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 @cbv(router)
-class CBV(View):
+class CBV(AppView):
     @router.get("/")
     async def index(self) -> HTMLResponse:
         return await self.render.html("index.j2")
@@ -157,7 +157,7 @@ class CBV(View):
 
 
 @cbv(router)
-class ActionCBV(View):
+class ActionCBV(AppView):
     @router.post("/networks/{network}/add-rpc-url")
     async def add_rpc_url(self, network: Network, url: Annotated[str, Form()]) -> RedirectResponse:
         await self.core.services.network.add_rpc_url(network, url)
@@ -181,8 +181,8 @@ class ActionCBV(View):
         name: str
         network_type: NetworkType
         notes: str
-        coins: list[str] | str = Field(default_factory=list)  # type: ignore[arg-type]
-        namings: list[str] | str = Field(default_factory=list)  # type: ignore[arg-type]
+        coins: list[str] | str = Field(default_factory=list)
+        namings: list[str] | str = Field(default_factory=list)
 
         @property
         def coins_list(self) -> list[str]:
@@ -210,7 +210,7 @@ class ActionCBV(View):
 
     @router.post("/groups/{id}/accounts")
     async def update_accounts(self, id: ObjectId, value: Annotated[str, Form()]) -> RedirectResponse:
-        await self.core.services.group.update_accounts(id, str_to_list(value, unique=True))
+        await self.core.services.group.update_accounts(id, parse_lines(value, deduplicate=True))
         self.render.flash("accounts updated successfully")
         return redirect(f"/groups/{id}")
 

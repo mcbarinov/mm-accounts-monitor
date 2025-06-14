@@ -1,6 +1,6 @@
-from mm_crypto_utils import Proxies
+from mm_cryptocurrency import Proxies
 from mm_eth import retry, rpc
-from mm_std import Result
+from mm_result import Result
 
 
 async def get_balance(

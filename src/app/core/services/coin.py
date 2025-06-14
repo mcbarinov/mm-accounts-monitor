@@ -3,14 +3,16 @@ from datetime import datetime
 
 import pydash
 import tomlkit
-from mm_crypto_utils import Network, NetworkType
+from mm_base6 import BaseService
+from mm_base6.core.utils import toml_dumps
+from mm_concurrency import async_synchronized
+from mm_cryptocurrency import Network, NetworkType
 from mm_mongo import MongoDeleteResult
-from mm_std import async_synchronized, replace_empty_dict_values, toml_dumps
+from mm_std import replace_empty_dict_entries
 from pydantic import BaseModel
 
 from app.core.db import Coin
-from app.core.services.network import NetworkService
-from app.core.types_ import AppService, AppServiceParams
+from app.core.types import AppCore
 
 logger = logging.getLogger(__name__)
 
@@ -41,10 +43,11 @@ class CoinCheckStats(BaseModel):
     coins: dict[str, Stats]  # coin_id -> Stats
 
 
-class CoinService(AppService):
-    def __init__(self, base_params: AppServiceParams, network_service: NetworkService) -> None:
-        super().__init__(base_params)
-        self.network_service = network_service
+class CoinService(BaseService):
+    core: AppCore
+
+    def __init__(self) -> None:
+        super().__init__()
         self.coins: list[Coin] = []
 
     @async_synchronized
@@ -53,8 +56,8 @@ class CoinService(AppService):
             count = 0
             coins = [ImportCoinItem(**n) for n in tomlkit.loads(toml_str)["coins"]]  # type:ignore[arg-type,union-attr]
             for c in coins:
-                if not await self.db.coin.exists({"_id": c.id}):
-                    await self.db.coin.insert_one(c.to_db())
+                if not await self.core.db.coin.exists({"_id": c.id}):
+                    await self.core.db.coin.insert_one(c.to_db())
                     count += 1
             return count  # noqa: TRY300
         except Exception:
@@ -66,14 +69,14 @@ class CoinService(AppService):
     def export_as_toml(self) -> str:
         coins = []
         for c in self.get_coins():
-            coin = replace_empty_dict_values(
+            coin = replace_empty_dict_entries(
                 {"network": c.network, "symbol": c.symbol, "decimals": c.decimals, "token": c.token, "notes": c.notes}
             )
             coins.append(coin)
         return toml_dumps({"coins": coins})
 
     async def load_coins_from_db(self) -> None:
-        self.coins = await self.db.coin.find({}, "_id")
+        self.coins = await self.core.db.coin.find({}, "_id")
 
     def get_coins(self) -> list[Coin]:
         return self.coins
@@ -109,10 +112,10 @@ class CoinService(AppService):
 
     @async_synchronized
     async def delete(self, id: str) -> MongoDeleteResult:
-        await self.db.group_balance.delete_many({"coin": id})
-        await self.db.account_balance.delete_many({"coin": id})
-        await self.db.group.update_many({"coins": id}, {"$pull": {"coins": id}})
-        res = await self.db.coin.delete(id)
+        await self.core.db.group_balance.delete_many({"coin": id})
+        await self.core.db.account_balance.delete_many({"coin": id})
+        await self.core.db.group.update_many({"coins": id}, {"$pull": {"coins": id}})
+        res = await self.core.db.coin.delete(id)
         await self.load_coins_from_db()
         return res
 
@@ -120,15 +123,15 @@ class CoinService(AppService):
         result = CoinCheckStats(coins={})
         for coin in self.get_coins():
             oldest_checked_time = None
-            never_checked_count = await self.db.account_balance.count({"coin": coin.id, "checked_at": None})
+            never_checked_count = await self.core.db.account_balance.count({"coin": coin.id, "checked_at": None})
             if never_checked_count == 0:
-                account_balance = await self.db.account_balance.find_one({"coin": coin.id}, "checked_at")
+                account_balance = await self.core.db.account_balance.find_one({"coin": coin.id}, "checked_at")
                 if account_balance:
                     oldest_checked_time = account_balance.checked_at
             result.coins[coin.id] = CoinCheckStats.Stats(
                 oldest_checked_time=oldest_checked_time,
                 never_checked_count=never_checked_count,
-                all_count=await self.db.account_balance.count({"coin": coin.id}),
+                all_count=await self.core.db.account_balance.count({"coin": coin.id}),
             )
 
         return result

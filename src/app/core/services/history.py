@@ -6,14 +6,13 @@ from typing import cast
 import pydash
 from bson import ObjectId
 from deepdiff import DeepDiff
+from mm_base6 import BaseService
 from mm_mongo import MongoInsertOneResult
 from pydantic import BaseModel
 
 from app.core.db import History
-from app.core.services.coin import CoinService
 from app.core.services.group import GroupAccountsInfo
-from app.core.services.network import NetworkService
-from app.core.types_ import AppService, AppServiceParams
+from app.core.types import AppCore
 
 
 class Diff(BaseModel):
@@ -33,21 +32,18 @@ def extract_keys(path: str) -> list[str]:
     return re.findall(r"\['([^']+)']", path)
 
 
-class HistoryService(AppService):
-    def __init__(self, base_params: AppServiceParams, network_service: NetworkService, coin_service: CoinService) -> None:
-        super().__init__(base_params)
-        self.network_service = network_service
-        self.coin_service = coin_service
+class HistoryService(BaseService):
+    core: AppCore
 
     async def create(self, group_id: ObjectId) -> MongoInsertOneResult:
-        group = await self.db.group.get(group_id)
-        group_balances = await self.db.group_balance.find({"group": group_id})
+        group = await self.core.db.group.get(group_id)
+        group_balances = await self.core.db.group_balance.find({"group": group_id})
         balances = {b.coin: b.balances for b in group_balances}
         balances_checked_at = {b.coin: b.checked_at for b in group_balances}
-        group_namings = await self.db.group_name.find({"group": group_id})
+        group_namings = await self.core.db.group_name.find({"group": group_id})
         names = {n.naming: n.names for n in group_namings}
         names_checked_at = {n.naming: n.checked_at for n in group_namings}
-        return await self.db.history.insert_one(
+        return await self.core.db.history.insert_one(
             History(
                 id=ObjectId(),
                 group=group,
@@ -59,12 +55,12 @@ class HistoryService(AppService):
         )
 
     async def get_balances_diff(self, history_id: ObjectId) -> Diff:
-        history = await self.db.history.get(history_id)
-        group = await self.db.group.get(history.group.id)
+        history = await self.core.db.history.get(history_id)
+        group = await self.core.db.group.get(history.group.id)
 
         group_balances: dict[str, dict[str, Decimal]] = {}
         group_balances_checked_at: dict[str, dict[str, datetime]] = {}
-        for gb in await self.db.group_balance.find({"group": group.id}):
+        for gb in await self.core.db.group_balance.find({"group": group.id}):
             group_balances[gb.coin] = gb.balances
             group_balances_checked_at[gb.coin] = gb.checked_at
 
@@ -88,7 +84,7 @@ class HistoryService(AppService):
         return Diff(balance_changed=balances_changed)
 
     async def get_history_group_accounts_info(self, history_id: ObjectId) -> GroupAccountsInfo:
-        history = await self.db.history.get(history_id)
+        history = await self.core.db.history.get(history_id)
 
         balances = history.balances
 
@@ -101,5 +97,5 @@ class HistoryService(AppService):
             coins_sum=coins_sum,
             balances=balances,
             names=history.names,
-            coins_map=self.coin_service.get_coins_map(),
+            coins_map=self.core.services.coin.get_coins_map(),
         )

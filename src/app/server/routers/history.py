@@ -3,13 +3,13 @@ from fastapi import APIRouter
 from mm_base6 import cbv
 from mm_mongo import MongoDeleteResult
 
-from app.server.deps import View
+from app.core.types import AppView
 
 router = APIRouter(prefix="/api/history", tags=["history"])
 
 
 @cbv(router)
-class CBV(View):
+class CBV(AppView):
     @router.post("/")
     async def create_history(self, group: ObjectId) -> None:
         await self.core.services.history.create(group)

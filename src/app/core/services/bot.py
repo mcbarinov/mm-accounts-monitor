@@ -1,12 +1,13 @@
-from app.core.types_ import AppService, AppServiceParams
+from mm_base6 import BaseService
+
+from app.core.types import AppCore
 
 
-class BotService(AppService):
-    def __init__(self, base_params: AppServiceParams) -> None:
-        super().__init__(base_params)
+class BotService(BaseService):
+    core: AppCore
 
     def toggle_check_balances(self) -> None:
-        self.dynamic_values.check_balances = not self.dynamic_values.check_balances
+        self.core.dynamic_values.check_balances = not self.core.dynamic_values.check_balances
 
     def toggle_check_namings(self) -> None:
-        self.dynamic_values.check_namings = not self.dynamic_values.check_namings
+        self.core.dynamic_values.check_namings = not self.core.dynamic_values.check_namings

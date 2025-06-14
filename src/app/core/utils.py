@@ -1,7 +1,8 @@
 import pydash
+import tomlkit
 from eth_utils import address as ethereum_account
 from mm_apt import account as aptos_account
-from mm_crypto_utils import NetworkType
+from mm_cryptocurrency import NetworkType
 from mm_sol import account as solana_account
 from mm_strk import account as starknet_account
 
@@ -16,3 +17,7 @@ def find_invalid_address(network_type: NetworkType, addresses: list[str]) -> str
     if network_type == NetworkType.STARKNET:
         return pydash.find(addresses, lambda a: not starknet_account.is_address(a))
     raise ValueError(f"Unknown network type: {network_type}")
+
+
+def toml_loads(string: str | bytes) -> tomlkit.TOMLDocument:
+    return tomlkit.loads(string)

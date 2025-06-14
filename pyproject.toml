@@ -1,16 +1,15 @@
 [project]
 name = "app"
-version = "0.0.10"
+version = "0.0.11"
 description = ""
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
-    "mm-base6==0.2.1",
-    "mm-eth~=0.6.2",
-    "mm-sol~=0.6.3",
-    "mm-apt~=0.3.5",
-    "mm-strk~=0.3.4",
+    "mm-base6==0.4.1",
+    "mm-apt~=0.4.1",
+    "mm-eth~=0.7.0",
+    "mm-sol~=0.7.0",
+    "mm-strk~=0.4.1",
     "deepdiff==8.5.0",
-    "mm-mongo~=0.5.4",
     "aiofiles~=24.1.0",
 ]
 
@@ -20,18 +19,17 @@ build-backend = "hatchling.build"
 
 [tool.uv]
 dev-dependencies = [
-    "pytest~=8.3.5",
-    "pytest-xdist~=3.6.1",
-    "pytest-httpserver~=1.1.2",
-    "ruff~=0.11.10",
+    "pytest~=8.4.0",
+    "pytest-xdist~=3.7.0",
+    "ruff~=0.11.13",
     "pip-audit~=2.9.0",
     "bandit~=1.8.3",
-    "mypy~=1.15.0",
+    "mypy~=1.16.0",
     "watchfiles>=1.0.4",
-    "pyinstrument>=5.0.1",
-    "types-aiofiles>=24.1.0.20250516",
+    "types-aiofiles>=24.1.0.20250606",
 ]
-override-dependencies = ["websockets~=15.0.1"]
+override-dependencies = ["pywin32 ; sys_platform == 'win32'"]
+# override-dependencies = ["websockets~=15.0.1"]
 
 [tool.mypy]
 python_version = "3.13"

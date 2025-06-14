@@ -1,5 +1,5 @@
+from mm_result import Result
 from mm_sol import rpc, spl_token
-from mm_std import Result
 
 
 async def get_balance(rpc_url: str, account: str, token: str | None = None, proxy: str | None = None) -> Result[int]:

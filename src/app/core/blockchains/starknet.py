@@ -1,5 +1,5 @@
-from mm_crypto_utils import Proxies, retry_with_proxy
-from mm_std import Result
+from mm_cryptocurrency import Proxies, retry_with_proxy
+from mm_result import Result
 from mm_strk import balance, domain
 
 
