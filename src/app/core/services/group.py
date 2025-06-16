@@ -13,9 +13,9 @@ from bson import ObjectId
 from mm_base6 import BaseService, UserError
 from mm_base6.core.utils import toml_dumps
 from mm_concurrency import async_synchronized
-from mm_cryptocurrency import Network, NetworkType
 from mm_mongo import MongoDeleteResult
 from mm_std import parse_lines
+from mm_web3 import Network, NetworkType
 from pydantic import BaseModel
 
 from app.core import utils

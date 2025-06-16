@@ -5,9 +5,9 @@ from decimal import Decimal
 from bson import ObjectId
 from mm_base6 import BaseService
 from mm_concurrency import AsyncTaskRunner, async_synchronized_by_arg_value
-from mm_cryptocurrency import Network, NetworkType, random_node, random_proxy
 from mm_result import Result
 from mm_std import utc_delta, utc_now
+from mm_web3 import Network, NetworkType, random_node, random_proxy
 
 from app.core.blockchains import aptos, evm, solana, starknet
 from app.core.db import Coin, RpcMonitoring

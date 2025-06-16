@@ -5,9 +5,9 @@ from datetime import datetime
 import pydash
 from mm_base6 import BaseService
 from mm_concurrency import async_synchronized
-from mm_cryptocurrency import Network
 from mm_http import http_request
 from mm_std import utc_now
+from mm_web3 import Network
 from pydantic import BaseModel
 
 from app.core.db import RpcUrl

@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 from mm_base6 import cbv
-from mm_cryptocurrency import Network
+from mm_web3 import Network
 
 from app.core.types import AppView
 

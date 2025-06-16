@@ -4,8 +4,8 @@ from typing import Annotated
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Form, Query
 from mm_base6 import cbv, redirect
-from mm_cryptocurrency import Network, NetworkType
 from mm_std import parse_lines
+from mm_web3 import Network, NetworkType
 from pydantic import BaseModel, Field
 from starlette.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 

@@ -3,7 +3,7 @@ from datetime import datetime
 
 from fastapi import APIRouter
 from mm_base6 import DC, DV, CoreConfig, DynamicConfigsModel, DynamicValuesModel, ServerConfig
-from mm_cryptocurrency import Network
+from mm_web3 import Network
 
 from app.core.constants import Naming
 from app.core.types import AppCore

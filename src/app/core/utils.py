@@ -2,9 +2,9 @@ import pydash
 import tomlkit
 from eth_utils import address as ethereum_account
 from mm_apt import account as aptos_account
-from mm_cryptocurrency import NetworkType
 from mm_sol import account as solana_account
 from mm_strk import account as starknet_account
+from mm_web3 import NetworkType
 
 
 def find_invalid_address(network_type: NetworkType, addresses: list[str]) -> str | None:

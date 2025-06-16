@@ -1,6 +1,6 @@
-from mm_cryptocurrency import Proxies, retry_with_proxy
 from mm_result import Result
 from mm_strk import balance, domain
+from mm_web3 import Proxies, retry_with_proxy
 
 
 async def get_balance(rpc_url: str, account: str, token: str, proxy: str | None = None) -> Result[int]:

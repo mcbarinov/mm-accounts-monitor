@@ -1,6 +1,6 @@
 from enum import Enum, unique
 
-from mm_cryptocurrency import Network, NetworkType
+from mm_web3 import Network, NetworkType
 
 
 @unique

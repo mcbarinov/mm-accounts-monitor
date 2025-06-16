@@ -6,9 +6,9 @@ import tomlkit
 from mm_base6 import BaseService
 from mm_base6.core.utils import toml_dumps
 from mm_concurrency import async_synchronized
-from mm_cryptocurrency import Network, NetworkType
 from mm_mongo import MongoDeleteResult
 from mm_std import replace_empty_dict_entries
+from mm_web3 import Network, NetworkType
 from pydantic import BaseModel
 
 from app.core.db import Coin
