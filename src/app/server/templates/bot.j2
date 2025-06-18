@@ -17,12 +17,12 @@
   <table>
     <tr>
       <th>check namings</th>
-      <th>{{ dynamic_values.check_namings | yes_no }}</th>
+      <th>{{ state.check_namings | yes_no }}</th>
       <td><a href="/api-post/bot/toggle-check-namings">toggle</a></td>
     </tr>
     <tr>
       <th>check balances</th>
-      <th>{{ dynamic_values.check_balances | yes_no }}</th>
+      <th>{{ state.check_balances | yes_no }}</th>
       <td><a href="/api-post/bot/toggle-check-balances">toggle</a></td>
     </tr>
   </table>
