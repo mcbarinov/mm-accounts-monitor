@@ -5,6 +5,7 @@ from app.core.services.group import GroupService
 from app.core.services.history import HistoryService
 from app.core.services.name import NameService
 from app.core.services.network import NetworkService
+from app.core.services.proxy import ProxyService
 
 
 class ServiceRegistry:
@@ -15,3 +16,4 @@ class ServiceRegistry:
     history: HistoryService
     name: NameService
     network: NetworkService
+    proxy: ProxyService

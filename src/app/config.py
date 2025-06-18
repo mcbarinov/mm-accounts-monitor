@@ -48,6 +48,7 @@ class AppCoreLifecycle(CoreLifecycle[AppCore]):
 
         # mm-node-checker
         self.core.scheduler.add_task("mm-node-checker", 30, self.core.services.network.update_mm_node_checker)
+        self.core.scheduler.add_task("update_proxies", 60, self.core.services.proxy.update)
 
     async def on_startup(self) -> None:
         """Startup logic for the application."""
