@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pydash
 import tomlkit
-from mm_base6 import BaseService
+from mm_base6 import Service
 from mm_base6.core.utils import toml_dumps
 from mm_concurrency import async_synchronized
 from mm_mongo import MongoDeleteResult
@@ -43,7 +43,7 @@ class CoinCheckStats(BaseModel):
     coins: dict[str, Stats]  # coin_id -> Stats
 
 
-class CoinService(BaseService):
+class CoinService(Service):
     core: AppCore
 
     def __init__(self) -> None:

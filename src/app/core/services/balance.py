@@ -3,7 +3,7 @@ import time
 from decimal import Decimal
 
 from bson import ObjectId
-from mm_base6 import BaseService
+from mm_base6 import Service
 from mm_concurrency import AsyncTaskRunner, async_synchronized_by_arg_value
 from mm_result import Result
 from mm_std import utc_delta, utc_now
@@ -16,32 +16,32 @@ from app.core.types import AppCore
 logger = logging.getLogger(__name__)
 
 
-class BalanceService(BaseService):
+class BalanceService(Service):
     core: AppCore
 
     @async_synchronized_by_arg_value(index=1)
     async def check_next_network(self, network: Network) -> int:
         # logger.debug("Checking next network", extra={"network": network})
-        if not self.core.dynamic_values.check_balances:
+        if not self.core.state.check_balances:
             return -1
         # first check accounts that were never checked
         need_to_check = await self.core.db.account_balance.find(
-            {"network": network, "checked_at": None}, limit=self.core.dynamic_configs.limit_network_workers
+            {"network": network, "checked_at": None}, limit=self.core.settings.limit_network_workers
         )
         # next check accounts that were checked more than 5 minutes ago
-        if len(need_to_check) < self.core.dynamic_configs.limit_network_workers:
+        if len(need_to_check) < self.core.settings.limit_network_workers:
             need_to_check += await self.core.db.account_balance.find(
                 {
                     "network": network,
-                    "checked_at": {"$lt": utc_delta(minutes=-1 * self.core.dynamic_configs.check_balance_interval)},
+                    "checked_at": {"$lt": utc_delta(minutes=-1 * self.core.settings.check_balance_interval)},
                 },
                 "checked_at",
-                limit=self.core.dynamic_configs.limit_network_workers - len(need_to_check),
+                limit=self.core.settings.limit_network_workers - len(need_to_check),
             )
         if not need_to_check:
             return 0
 
-        runner = AsyncTaskRunner(self.core.dynamic_configs.limit_network_workers, name="check_balances")
+        runner = AsyncTaskRunner(self.core.settings.limit_network_workers, name="check_balances")
         for ab in need_to_check:
             runner.add(str(ab.id), self.check_account_balance(ab.id))
         await runner.run()
@@ -58,7 +58,7 @@ class BalanceService(BaseService):
 
             # print("rpc_urls", rpc_urls)
             rpc_url = random_node(urls)
-            proxy = random_proxy(self.core.dynamic_values.proxies)
+            proxy = random_proxy(self.core.state.proxies)
 
             match network.network_type:
                 case NetworkType.EVM:
@@ -108,7 +108,7 @@ class BalanceService(BaseService):
         balance = (
             Decimal(0)
             if balance_raw == 0
-            else round(Decimal(balance_raw) / 10**coin.decimals, ndigits=self.core.dynamic_configs.round_ndigits)
+            else round(Decimal(balance_raw) / 10**coin.decimals, ndigits=self.core.settings.round_ndigits)
         )
         await self.core.db.group_balance.update_one(
             {"group": account_balance.group, "coin": account_balance.coin},

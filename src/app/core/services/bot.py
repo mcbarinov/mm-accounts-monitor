@@ -1,13 +1,13 @@
-from mm_base6 import BaseService
+from mm_base6 import Service
 
 from app.core.types import AppCore
 
 
-class BotService(BaseService):
+class BotService(Service):
     core: AppCore
 
     def toggle_check_balances(self) -> None:
-        self.core.dynamic_values.check_balances = not self.core.dynamic_values.check_balances
+        self.core.state.check_balances = not self.core.state.check_balances
 
     def toggle_check_namings(self) -> None:
-        self.core.dynamic_values.check_namings = not self.core.dynamic_values.check_namings
+        self.core.state.check_namings = not self.core.state.check_namings

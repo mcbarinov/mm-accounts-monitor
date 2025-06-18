@@ -10,7 +10,7 @@ import aiofiles
 import pydash
 import tomlkit
 from bson import ObjectId
-from mm_base6 import BaseService, UserError
+from mm_base6 import Service, UserError
 from mm_base6.core.utils import toml_dumps
 from mm_concurrency import async_synchronized
 from mm_mongo import MongoDeleteResult
@@ -64,7 +64,7 @@ class GroupAccountsInfo(BaseModel):
         return network.explorer_account(account)
 
 
-class GroupService(BaseService):
+class GroupService(Service):
     core: AppCore
 
     async def get_group_accounts_info(self, group: ObjectId) -> GroupAccountsInfo:

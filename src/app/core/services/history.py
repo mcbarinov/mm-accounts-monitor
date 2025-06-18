@@ -6,7 +6,7 @@ from typing import cast
 import pydash
 from bson import ObjectId
 from deepdiff import DeepDiff
-from mm_base6 import BaseService
+from mm_base6 import Service
 from mm_mongo import MongoInsertOneResult
 from pydantic import BaseModel
 
@@ -32,7 +32,7 @@ def extract_keys(path: str) -> list[str]:
     return re.findall(r"\['([^']+)']", path)
 
 
-class HistoryService(BaseService):
+class HistoryService(Service):
     core: AppCore
 
     async def create(self, group_id: ObjectId) -> MongoInsertOneResult:

@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 
 from bson import ObjectId
-from mm_base6 import BaseService
+from mm_base6 import Service
 from mm_concurrency import AsyncTaskRunner, async_synchronized_by_arg_value
 from mm_result import Result
 from mm_std import utc_delta, utc_now
@@ -15,29 +15,29 @@ from app.core.types import AppCore
 logger = logging.getLogger(__name__)
 
 
-class NameService(BaseService):
+class NameService(Service):
     core: AppCore
 
     @async_synchronized_by_arg_value(index=1)
     async def check_next_naming(self, naming: Naming) -> None:
-        if not self.core.dynamic_values.check_namings:
+        if not self.core.state.check_namings:
             return
         # self.logger.debug("check_next_naming called: %s", naming)
 
         # first check accounts that were never checked
         need_to_check = await self.core.db.account_name.find(
-            {"naming": naming, "checked_at": None}, limit=self.core.dynamic_configs.limit_naming_workers
+            {"naming": naming, "checked_at": None}, limit=self.core.settings.limit_naming_workers
         )
-        if len(need_to_check) < self.core.dynamic_configs.limit_naming_workers:
+        if len(need_to_check) < self.core.settings.limit_naming_workers:
             need_to_check += await self.core.db.account_name.find(
-                {"naming": naming, "checked_at": {"$lt": utc_delta(minutes=-1 * self.core.dynamic_configs.check_name_interval)}},
+                {"naming": naming, "checked_at": {"$lt": utc_delta(minutes=-1 * self.core.settings.check_name_interval)}},
                 "checked_at",
-                limit=self.core.dynamic_configs.limit_naming_workers - len(need_to_check),
+                limit=self.core.settings.limit_naming_workers - len(need_to_check),
             )
         if not need_to_check:
             return
 
-        runner = AsyncTaskRunner(self.core.dynamic_configs.limit_naming_workers, name="check_names")
+        runner = AsyncTaskRunner(self.core.settings.limit_naming_workers, name="check_names")
         for an in need_to_check:
             runner.add(str(an.id), self.check_account_name(an.id))
         await runner.run()
@@ -52,11 +52,11 @@ class NameService(BaseService):
                 urls = self.core.services.network.get_rpc_urls(account_name.network)
                 if not urls:
                     return Result.err("no_rpc_urls")
-                res = await evm.get_ens_name(urls, account_name.account, proxies=self.core.dynamic_values.proxies)
+                res = await evm.get_ens_name(urls, account_name.account, proxies=self.core.state.proxies)
             case Naming.ANS:
-                res = await aptos.get_ans_name(account_name.account, proxies=self.core.dynamic_values.proxies)
+                res = await aptos.get_ans_name(account_name.account, proxies=self.core.state.proxies)
             case Naming.STARKNET_ID:
-                res = await starknet.get_starknet_id(account_name.account, proxies=self.core.dynamic_values.proxies)
+                res = await starknet.get_starknet_id(account_name.account, proxies=self.core.state.proxies)
             case _:
                 return Result.err("not_implemented")
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 
 import pydash
-from mm_base6 import BaseService
+from mm_base6 import Service
 from mm_concurrency import async_synchronized
 from mm_http import http_request
 from mm_std import utc_now
@@ -22,24 +22,24 @@ class NetworkCheckStats(BaseModel):
     networks: dict[Network, Stats]  # network_id -> Stats
 
 
-class NetworkService(BaseService):
+class NetworkService(Service):
     def __init__(self) -> None:
         super().__init__()
         self.rpc_urls: dict[Network, list[str]] = {}
 
     @async_synchronized
     async def update_mm_node_checker(self) -> dict[str, list[str]] | None:
-        if not self.core.dynamic_configs.mm_node_checker:
+        if not self.core.settings.mm_node_checker:
             return None
 
-        res = await http_request(self.core.dynamic_configs.mm_node_checker)
+        res = await http_request(self.core.settings.mm_node_checker)
         json_body = res.parse_json_body()
         if res.status_code == 200 and not res.is_err() and json_body:
             for key in json_body:
                 if not isinstance(json_body[key], list):
                     return None
-            self.core.dynamic_values.mm_node_checker = json_body
-            self.core.dynamic_values.mm_node_checker_updated_at = utc_now()
+            self.core.state.mm_node_checker = json_body
+            self.core.state.mm_node_checker_updated_at = utc_now()
             return json_body  # type:ignore[no-any-return]
 
     async def calc_network_check_stats(self) -> NetworkCheckStats:
@@ -59,8 +59,8 @@ class NetworkService(BaseService):
         return result
 
     def get_rpc_urls(self, network: Network) -> list[str]:
-        if self.core.dynamic_values.mm_node_checker:
-            return self.core.dynamic_values.mm_node_checker.get(network.value) or []
+        if self.core.state.mm_node_checker:
+            return self.core.state.mm_node_checker.get(network.value) or []
         return []
 
     @async_synchronized

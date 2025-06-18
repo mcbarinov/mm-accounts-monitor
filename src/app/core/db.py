@@ -65,7 +65,7 @@ class AccountBalance(MongoModel[ObjectId]):
     checked_at: datetime | None = None
 
     __collection__: str = "account_balance"
-    __indexes__ = ["!group,account,coin", "group", "account", "coin", "network", "checked_at"]
+    __indexes__ = ["!group:account:coin", "group", "account", "coin", "network", "checked_at"]
 
 
 class AccountName(MongoModel[ObjectId]):
@@ -87,7 +87,7 @@ class GroupBalance(MongoModel[ObjectId]):
     checked_at: dict[str, datetime] = Field(default_factory=dict)  # account -> checked_at # TODO: is it needed?
 
     __collection__: str = "group_balance"
-    __indexes__ = ["!group,coin", "group"]
+    __indexes__ = ["!group:coin", "group"]
 
 
 class GroupName(MongoModel[ObjectId]):
@@ -97,7 +97,7 @@ class GroupName(MongoModel[ObjectId]):
     checked_at: dict[str, datetime] = Field(default_factory=dict)  # account -> checked_at
 
     __collection__: str = "group_name"
-    __indexes__ = ["!group,naming", "group"]
+    __indexes__ = ["!group:naming", "group"]
 
 
 class NamingProblem(MongoModel[ObjectId]):

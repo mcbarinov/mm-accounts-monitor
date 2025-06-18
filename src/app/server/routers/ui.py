@@ -31,7 +31,7 @@ class CBV(AppView):
 
     @router.get("/networks")
     async def networks(self) -> HTMLResponse:
-        mm_node_checker = self.core.dynamic_values.mm_node_checker or {}
+        mm_node_checker = self.core.state.mm_node_checker or {}
         return await self.render.html(
             "networks.j2", mm_node_checker=mm_node_checker, rpc_urls=self.core.services.network.rpc_urls
         )
