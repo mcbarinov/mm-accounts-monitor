@@ -1,10 +1,10 @@
-from enum import Enum, unique
+from enum import StrEnum, unique
 
 from mm_web3 import Network, NetworkType
 
 
 @unique
-class Naming(str, Enum):
+class Naming(StrEnum):
     ENS = "ens"
     ANS = "ans"
     STARKNET_ID = "starknet_id"

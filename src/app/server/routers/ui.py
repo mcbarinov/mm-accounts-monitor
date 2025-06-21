@@ -19,6 +19,15 @@ router = APIRouter(include_in_schema=False)
 logger = logging.getLogger(__name__)
 
 
+def optional_object_id(value: str | None = None) -> ObjectId | None:
+    if not value or value.strip() == "":
+        return None
+    return ObjectId(value)
+
+
+OptionalObjectId = Annotated[ObjectId | None, Depends(optional_object_id)]
+
+
 @cbv(router)
 class CBV(AppView):
     @router.get("/")
@@ -85,7 +94,7 @@ class CBV(AppView):
         )
 
     @router.get("/balances")
-    async def balances(self, group: ObjectId | None = None, coin: str | None = None, limit: int = 1000) -> HTMLResponse:
+    async def balances(self, group: OptionalObjectId = None, coin: str | None = None, limit: int = 1000) -> HTMLResponse:
         query: dict[str, object] = {}
         if group:
             query["group"] = group
@@ -100,7 +109,7 @@ class CBV(AppView):
     @router.get("/names")
     async def names(
         self,
-        group: ObjectId | None = None,
+        group: OptionalObjectId = None,
         naming_str: Annotated[str | None, Query(alias="naming")] = None,
         limit: int = 1000,
     ) -> HTMLResponse:
