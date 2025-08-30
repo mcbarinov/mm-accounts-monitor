@@ -3,7 +3,7 @@ import logging
 from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 from zipfile import ZipFile
 
 import aiofiles
@@ -122,7 +122,7 @@ class GroupService(Service):
         known_coins = [c.id for c in self.core.services.coin.get_coins()]
         count = 0
         for data in utils.toml_loads(toml)["groups"]:  # type:ignore[union-attr]
-            group = ImportGroupItem(**cast(dict[str, object], data))
+            group = ImportGroupItem(**cast(dict[str, Any], data))
             if not await self.core.db.group.exists({"name": group.name}):
                 coin_ids = [c.strip() for c in group.coins.split("\n") if c.strip()]
                 unknown_coins = [c for c in coin_ids if c not in known_coins]
@@ -303,7 +303,9 @@ class GroupService(Service):
             new_accounts = [account for account in group.accounts if account not in known_accounts]
             if len(new_accounts) > 0:
                 insert_many = [
-                    AccountBalance(id=ObjectId(), group=id, network=coin_id.split("__")[0], coin=coin_id, account=account)
+                    AccountBalance(
+                        id=ObjectId(), group=id, network=Network(coin_id.split("__")[0]), coin=coin_id, account=account
+                    )
                     for account in new_accounts
                 ]
                 await self.core.db.account_balance.insert_many(insert_many)

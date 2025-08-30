@@ -1,15 +1,15 @@
 [project]
 name = "app"
-version = "0.0.17"
+version = "0.0.18"
 description = ""
 requires-python = ">=3.13"
 dependencies = [
-    "mm-base6==0.6.1",
+    "mm-base6==0.6.3",
     "mm-apt~=0.4.2",
-    "mm-eth~=0.7.1",
-    "mm-sol~=0.7.1",
+    "mm-eth~=0.7.2",
+    "mm-sol~=0.7.2",
     "mm-strk~=0.4.2",
-    "deepdiff==8.5.0",
+    "deepdiff==8.6.0",
     "aiofiles~=24.1.0",
 ]
 
@@ -20,13 +20,13 @@ build-backend = "hatchling.build"
 [tool.uv]
 dev-dependencies = [
     "pytest~=8.4.1",
-    "pytest-xdist~=3.7.0",
-    "ruff~=0.12.0",
+    "pytest-xdist~=3.8.0",
+    "ruff~=0.12.11",
     "pip-audit~=2.9.0",
-    "bandit~=1.8.5",
-    "mypy~=1.16.1",
+    "bandit~=1.8.6",
+    "mypy~=1.17.1",
     "watchfiles~=1.1.0",
-    "types-aiofiles>=24.1.0.20250606",
+    "types-aiofiles>=24.1.0.20250822",
 ]
 override-dependencies = ["pywin32 ; sys_platform == 'win32'"]
 # override-dependencies = ["websockets~=15.0.1"]
@@ -70,7 +70,6 @@ ignore = [
     "RUF012", # ruff: mutable-class-default
     "COM812", # it's used in ruff formatter
     "ASYNC109", # flake8-async: async-function-with-timeout
-    # "T201", # DELETE ME!
 ]
 [tool.ruff.lint.flake8-builtins]
 builtins-ignorelist = ["id"]

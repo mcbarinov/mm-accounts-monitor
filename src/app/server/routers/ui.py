@@ -19,13 +19,13 @@ router = APIRouter(include_in_schema=False)
 logger = logging.getLogger(__name__)
 
 
-def optional_object_id(value: str | None = None) -> ObjectId | None:
-    if not value or value.strip() == "":
-        return None
-    return ObjectId(value)
+# def optional_object_id(value: str | None = None) -> ObjectId | None:
+#     if not value or value.strip() == "":
+#         return None
+#     return ObjectId(value)
 
 
-OptionalObjectId = Annotated[ObjectId | None, Depends(optional_object_id)]
+# OptionalObjectId = Annotated[ObjectId | None, Depends(optional_object_id)]
 
 
 @cbv(router)
@@ -94,12 +94,13 @@ class CBV(AppView):
         )
 
     @router.get("/balances")
-    async def balances(self, group: OptionalObjectId = None, coin: str | None = None, limit: int = 1000) -> HTMLResponse:
+    async def balances(self, group: str | None = None, coin: str | None = None, limit: int = 1000) -> HTMLResponse:
         query: dict[str, object] = {}
         if group:
-            query["group"] = group
+            query["group"] = ObjectId(group)
         if coin:
             query["coin"] = coin
+        logger.debug("balances query: %s", query)
         balances = await self.core.db.account_balance.find(query, "account,coin", limit=limit)
         groups = await self.core.db.group.find({}, "name")
         coins = self.core.services.coin.get_coins()
@@ -109,16 +110,17 @@ class CBV(AppView):
     @router.get("/names")
     async def names(
         self,
-        group: OptionalObjectId = None,
+        group: str | None = None,
         naming_str: Annotated[str | None, Query(alias="naming")] = None,
         limit: int = 1000,
     ) -> HTMLResponse:
         naming = Naming(naming_str) if naming_str else None
         query: dict[str, object] = {}
         if group:
-            query["group"] = group
+            query["group"] = ObjectId(group)
         if naming:
             query["naming"] = naming
+        logger.debug("names query: %s", query)
         names = await self.core.db.account_name.find(query, "account,naming", limit=limit)
         namings = list(Naming)
         groups = await self.core.db.group.find({}, "name")
