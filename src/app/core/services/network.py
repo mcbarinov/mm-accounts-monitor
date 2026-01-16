@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import override
 
 import pydash
 from mm_base6 import Service
@@ -11,6 +12,7 @@ from mm_web3 import Network
 from pydantic import BaseModel
 
 from app.core.db import RpcUrl
+from app.core.types import AppCore
 
 
 class NetworkCheckStats(BaseModel):
@@ -22,10 +24,18 @@ class NetworkCheckStats(BaseModel):
     networks: dict[Network, Stats]  # network_id -> Stats
 
 
-class NetworkService(Service):
+class NetworkService(Service[AppCore]):
     def __init__(self) -> None:
         super().__init__()
         self.rpc_urls: dict[Network, list[str]] = {}
+
+    @override
+    def configure_scheduler(self) -> None:
+        self.core.scheduler.add_task("mm-node-checker", 30, self.update_mm_node_checker)
+
+    @override
+    async def on_start(self) -> None:
+        await self.load_rpc_urls_from_db()
 
     @async_synchronized
     async def update_mm_node_checker(self) -> dict[str, list[str]] | None:
@@ -33,7 +43,7 @@ class NetworkService(Service):
             return None
 
         res = await http_request(self.core.settings.mm_node_checker)
-        json_body = res.parse_json_body()
+        json_body = res.parse_json()
         if res.status_code == 200 and not res.is_err() and json_body:
             for key in json_body:
                 if not isinstance(json_body[key], list):

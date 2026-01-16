@@ -1,6 +1,7 @@
 import logging
 import time
 from decimal import Decimal
+from typing import override
 
 from bson import ObjectId
 from mm_base6 import Service
@@ -16,8 +17,12 @@ from app.core.types import AppCore
 logger = logging.getLogger(__name__)
 
 
-class BalanceService(Service):
-    core: AppCore
+class BalanceService(Service[AppCore]):
+    @override
+    def configure_scheduler(self) -> None:
+        for network in Network:
+            task_id = "balances_on_" + network.value
+            self.core.scheduler.add_task(task_id, 2, self.check_next_network, args=(network,))
 
     @async_synchronized_by_arg_value(index=1)
     async def check_next_network(self, network: Network) -> int:

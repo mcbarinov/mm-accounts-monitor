@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import override
 
 import pydash
 import tomlkit
@@ -43,12 +44,14 @@ class CoinCheckStats(BaseModel):
     coins: dict[str, Stats]  # coin_id -> Stats
 
 
-class CoinService(Service):
-    core: AppCore
-
+class CoinService(Service[AppCore]):
     def __init__(self) -> None:
         super().__init__()
         self.coins: list[Coin] = []
+
+    @override
+    async def on_start(self) -> None:
+        await self.load_coins_from_db()
 
     @async_synchronized
     async def import_from_toml(self, toml_str: str) -> int:

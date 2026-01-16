@@ -64,9 +64,7 @@ class GroupAccountsInfo(BaseModel):
         return network.explorer_account(account)
 
 
-class GroupService(Service):
-    core: AppCore
-
+class GroupService(Service[AppCore]):
     async def get_group_accounts_info(self, group: ObjectId) -> GroupAccountsInfo:
         balances: dict[str, dict[str, Decimal]] = {}
         for gb in await self.core.db.group_balance.find({"group": group}):

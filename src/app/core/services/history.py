@@ -32,9 +32,7 @@ def extract_keys(path: str) -> list[str]:
     return re.findall(r"\['([^']+)']", path)
 
 
-class HistoryService(Service):
-    core: AppCore
-
+class HistoryService(Service[AppCore]):
     async def create(self, group_id: ObjectId) -> MongoInsertOneResult:
         group = await self.core.db.group.get(group_id)
         group_balances = await self.core.db.group_balance.find({"group": group_id})

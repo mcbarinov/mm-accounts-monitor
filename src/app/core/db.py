@@ -16,7 +16,7 @@ from app.core.constants import Naming
 class RpcUrl(MongoModel[str]):  # id = network
     urls: list[str] = Field(default_factory=list)
 
-    __collection__: str = "rpc_url"
+    __collection__ = "rpc_url"
 
 
 class Coin(MongoModel[str]):  # id = {network}__{symbol}, lowercased
@@ -26,7 +26,7 @@ class Coin(MongoModel[str]):  # id = {network}__{symbol}, lowercased
     decimals: int
     notes: str = ""
 
-    __collection__: str = "coin"
+    __collection__ = "coin"
 
     @field_validator("id", mode="before")
     def ensure_lowercase_id(cls, v: str) -> str:
@@ -44,7 +44,7 @@ class Group(MongoModel[ObjectId]):
     accounts: list[str] = Field(default_factory=list)
     account_notes: dict[str, str] = Field(default_factory=dict)  # account -> note
 
-    __collection__: str = "group"
+    __collection__ = "group"
 
     def get_coin_networks(self) -> list[str]:
         networks = [c.split("__")[0] for c in self.coins]
@@ -64,7 +64,7 @@ class AccountBalance(MongoModel[ObjectId]):
     balance_raw: str | None = None  # mongo can't store very large integers
     checked_at: datetime | None = None
 
-    __collection__: str = "account_balance"
+    __collection__ = "account_balance"
     __indexes__ = ["!group:account:coin", "group", "account", "coin", "network", "checked_at"]
 
 
@@ -76,7 +76,7 @@ class AccountName(MongoModel[ObjectId]):
     name: str | None = None  # domains, ids, etc..
     checked_at: datetime | None = None
 
-    __collection__: str = "account_name"
+    __collection__ = "account_name"
     __indexes__ = ["group", "account", "network", "naming", "checked_at"]
 
 
@@ -86,7 +86,7 @@ class GroupBalance(MongoModel[ObjectId]):
     balances: dict[str, Decimal] = Field(default_factory=dict)  # account -> balance
     checked_at: dict[str, datetime] = Field(default_factory=dict)  # account -> checked_at # TODO: is it needed?
 
-    __collection__: str = "group_balance"
+    __collection__ = "group_balance"
     __indexes__ = ["!group:coin", "group"]
 
 
@@ -96,7 +96,7 @@ class GroupName(MongoModel[ObjectId]):
     names: dict[str, str] = Field(default_factory=dict)  # account -> name, name can be empty string
     checked_at: dict[str, datetime] = Field(default_factory=dict)  # account -> checked_at
 
-    __collection__: str = "group_name"
+    __collection__ = "group_name"
     __indexes__ = ["!group:naming", "group"]
 
 
@@ -107,7 +107,7 @@ class NamingProblem(MongoModel[ObjectId]):
     message: str
     created_at: datetime = Field(default_factory=utc_now)
 
-    __collection__: str = "naming_problem"
+    __collection__ = "naming_problem"
     __indexes__ = ["network", "naming", "account", "created_at"]
 
 
@@ -123,7 +123,7 @@ class RpcMonitoring(MongoModel[ObjectId]):
     data: object | None = None
     created_at: datetime = Field(default_factory=utc_now)
 
-    __collection__: str = "rpc_monitoring"
+    __collection__ = "rpc_monitoring"
     __indexes__ = [
         "network",
         "rpc_url",
@@ -144,7 +144,7 @@ class History(MongoModel[ObjectId]):
     names_checked_at: dict[str, dict[str, datetime]]  # naming -> account -> checked_at
     created_at: datetime = Field(default_factory=utc_now)
 
-    __collection__: str = "history"
+    __collection__ = "history"
 
 
 class Db(BaseDb):

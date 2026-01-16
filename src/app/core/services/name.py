@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import override
 
 from bson import ObjectId
 from mm_base6 import Service
@@ -15,8 +16,12 @@ from app.core.types import AppCore
 logger = logging.getLogger(__name__)
 
 
-class NameService(Service):
-    core: AppCore
+class NameService(Service[AppCore]):
+    @override
+    def configure_scheduler(self) -> None:
+        for naming in list(Naming):
+            task_id = "names_on_" + naming
+            self.core.scheduler.add_task(task_id, 2, self.check_next_naming, args=(naming,))
 
     @async_synchronized_by_arg_value(index=1)
     async def check_next_naming(self, naming: Naming) -> None:

@@ -1,3 +1,5 @@
+from typing import override
+
 from mm_base6 import Service
 from mm_concurrency import async_synchronized
 from mm_http import http_request
@@ -6,14 +8,16 @@ from mm_std import utc_now
 from app.core.types import AppCore
 
 
-class ProxyService(Service):
-    core: AppCore
+class ProxyService(Service[AppCore]):
+    @override
+    def configure_scheduler(self) -> None:
+        self.core.scheduler.add_task("update_proxies", 60, self.update)
 
     @async_synchronized
     async def update(self) -> int:
         res = await http_request(self.core.settings.proxies_url)
         if res.is_err():
-            await self.core.event("update_proxies", {"response": res.to_dict()})
+            await self.core.event("update_proxies", {"response": res.model_dump()})
             return -1
         proxies = (res.body or "").strip().splitlines()
         proxies = [p.strip() for p in proxies if p.strip()]
