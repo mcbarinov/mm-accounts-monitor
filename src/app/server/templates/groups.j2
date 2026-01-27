@@ -3,40 +3,41 @@
 
 <div class="page-header">
   <h2>groups / {{ groups | length }}</h2>
-  <sl-divider vertical></sl-divider>
-  <form class="inline">
-    <sl-select name="network_type" placeholder="network type" value="{{ form.network_type }}">
+  <form>
+    <select name="network_type" placeholder="network type" value="{{ form.network_type }}">
       {% for nt in network_types %}
-      <sl-option value="{{ nt }}">{{ nt }}</sl-option>
+      {{option(nt, form.network_type)}}
       {% endfor %}
-    </sl-select>
-    <sl-button type="submit">filter</sl-button>
+    </select>
+    <button type="submit" class="outline">filter</button>
   </form>
-  <sl-divider vertical></sl-divider>
-  <sl-button-group>
-    <sl-button onclick="document.querySelector('#dialog-add').show()">add</sl-button>
-    <sl-button href="/api/groups/export">export</sl-button>
-    <sl-button onclick="document.querySelector('#dialog-import').show()">import</sl-button>
-  </sl-button-group>
+  <nav>
+    <a onclick="dialog('dialog-add')">add</a>
+    <a href="/api/groups/export">export</a>
+    <a onclick="dialog('dialog-import')">import</a>
+  </nav>
 </div>
 
-<sl-dialog id="dialog-import" label="import groups as TOML document">
-  <form action="/groups/import" method="post" class="stack">
-    <sl-textarea name="toml" placeholder="TOML" rows="10"></sl-textarea>
-    <sl-button type="submit" variant="primary">import</sl-button>
-  </form>
-</sl-dialog>
+<dialog id="dialog-import" label="import groups as TOML document">
+  <article>
+    <form action="/groups/import" method="post" class="stack">
+      <textarea name="toml" placeholder="TOML" rows="10"></textarea>
+      <button type="submit">import</button>
+    </form>
+  </article>
+</dialog>
 
-<sl-dialog id="dialog-add" label="add a group">
+<dialog id="dialog-add" label="add a group">
+  <article>
     <form action="/groups" method="post" class="stack">
-      <sl-input type="text" name="name" placeholder="name" required></sl-input>
+      <input type="text" name="name" placeholder="name" required></input>
       <select name="network_type" required onchange="addGroupChangeNetworkType(event)">
         <option value="" disabled selected>network type...</option>
         {% for nt in network_types %}
         <option value="{{ nt.value }}">{{ nt.value }}</option>
         {% endfor %}
       </select>
-      <sl-input type="text" name="notes" placeholder="notes"></sl-input>
+      <input type="text" name="notes" placeholder="notes"></input>
       <select name="namings" multiple title="namings">
         {% for n in namings %}
         <option value="{{ n.value }}" id="naming-{{ n.network_type.value }}">{{ n.value }}</option>
@@ -51,21 +52,24 @@
         </optgroup>
         {% endfor %}
       </select>
-      <sl-button type="submit" variant="primary">add</sl-button>
+      <button type="submit">add</button>
     </form>
-</sl-dialog>
+  </article>
+</dialog>
 
 
 
 <table>
-  <tr>
-    <th>name</th>
-    <th>notes</th>
-    <th>namings</th>
-    <th>coins</th>
-    <th>accounts</th>
-    <th>view</th>
-  </tr>
+  <thead>
+    <tr>
+      <th>name</th>
+      <th>notes</th>
+      <th>namings</th>
+      <th>coins</th>
+      <th>accounts</th>
+      <th>view</th>
+    </tr>
+  </thead>
   {% for g in groups %}
   <tr>
     <td>

@@ -5,12 +5,14 @@
 </div>
 
 <table>
-  <tr>
-    <th>created_at</th>
-    <th>group</th>
-    <th>view</th>
-    <th>delete</th>
-  </tr>
+  <thead>
+    <tr>
+      <th>created_at</th>
+      <th>group</th>
+      <th>view</th>
+      <th>delete</th>
+    </tr>
+  </thead>
   {% for h in history %}
   <tr>
     <td>{{ h.created_at | dt }}</td>

@@ -7,4 +7,3 @@ from app.core.types import AppCore
 class AppJinjaConfig(JinjaConfig[AppCore]):
     filters = {}
     globals = {"networks": list(Network), "network_types": list(NetworkType)}
-    header_info_new_line = False

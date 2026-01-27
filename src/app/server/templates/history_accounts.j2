@@ -3,8 +3,9 @@
 
 <div class="page-header">
   <h2>history / {{ history.group.name }} / {{ history.created_at | dt }}</h2>
-  <sl-divider vertical></sl-divider>
-  <sl-button href="/history/{{ history.id }}/diff">diff</sl-button>
+  <nav>
+    <a href="/history/{{ history.id }}/diff">diff</a>
+  </nav>
 </div>
 
 <table class="sortable">

@@ -5,11 +5,13 @@
 </div>
 
 <table>
-  <tr>
-    <th>naming</th>
-    <th>network</th>
-    <th>oldest checked time</th>
-  </tr>
+  <thead>
+    <tr>
+      <th>naming</th>
+      <th>network</th>
+      <th>oldest checked time</th>
+    </tr>
+  </thead>
   {% for n in namings %}
   <tr>
     <td>{{ n.value }}</td>
