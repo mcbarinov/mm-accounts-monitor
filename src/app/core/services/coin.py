@@ -6,9 +6,9 @@ import pydash
 import tomlkit
 from mm_base6 import Service
 from mm_base6.core.utils import toml_dumps
-from mm_concurrency import async_synchronized
+from mm_concurrency import async_mutex
 from mm_mongo import MongoDeleteResult
-from mm_std import replace_empty_dict_entries
+from mm_std import compact_dict
 from mm_web3 import Network, NetworkType
 from pydantic import BaseModel
 
@@ -53,7 +53,7 @@ class CoinService(Service[AppCore]):
     async def on_start(self) -> None:
         await self.load_coins_from_db()
 
-    @async_synchronized
+    @async_mutex
     async def import_from_toml(self, toml_str: str) -> int:
         try:
             count = 0
@@ -72,7 +72,7 @@ class CoinService(Service[AppCore]):
     def export_as_toml(self) -> str:
         coins = []
         for c in self.get_coins():
-            coin = replace_empty_dict_entries(
+            coin = compact_dict(
                 {"network": c.network, "symbol": c.symbol, "decimals": c.decimals, "token": c.token, "notes": c.notes}
             )
             coins.append(coin)
@@ -113,7 +113,7 @@ class CoinService(Service[AppCore]):
             raise ValueError(f"Coin with id {id} not found")
         return res
 
-    @async_synchronized
+    @async_mutex
     async def delete(self, id: str) -> MongoDeleteResult:
         await self.core.db.group_balance.delete_many({"coin": id})
         await self.core.db.account_balance.delete_many({"coin": id})

@@ -5,9 +5,9 @@ from typing import override
 
 import pydash
 from mm_base6 import Service
-from mm_concurrency import async_synchronized
+from mm_concurrency import async_mutex
 from mm_http import http_request
-from mm_std import utc_now
+from mm_std import utc
 from mm_web3 import Network
 from pydantic import BaseModel
 
@@ -31,25 +31,26 @@ class NetworkService(Service[AppCore]):
 
     @override
     def configure_scheduler(self) -> None:
-        self.core.scheduler.add_task("mm-node-checker", 30, self.update_mm_node_checker)
+        self.core.scheduler.add("mm-node-checker", 30, self.update_mm_node_checker)
 
     @override
     async def on_start(self) -> None:
         await self.load_rpc_urls_from_db()
 
-    @async_synchronized
+    @async_mutex
     async def update_mm_node_checker(self) -> dict[str, list[str]] | None:
         if not self.core.settings.mm_node_checker:
             return None
 
         res = await http_request(self.core.settings.mm_node_checker)
-        json_body = res.parse_json()
+        json_body = res.json_body().unwrap_or(None)
+
         if res.status_code == 200 and not res.is_err() and json_body:
             for key in json_body:
                 if not isinstance(json_body[key], list):
                     return None
             self.core.state.mm_node_checker = json_body
-            self.core.state.mm_node_checker_updated_at = utc_now()
+            self.core.state.mm_node_checker_updated_at = utc()
             return json_body  # type:ignore[no-any-return]
 
     async def calc_network_check_stats(self) -> NetworkCheckStats:
@@ -73,7 +74,7 @@ class NetworkService(Service[AppCore]):
             return self.core.state.mm_node_checker.get(network.value) or []
         return []
 
-    @async_synchronized
+    @async_mutex
     async def add_rpc_url(self, network: Network, url: str) -> None:
         if not await self.core.db.rpc_url.exists({"_id": network.value}):
             await self.core.db.rpc_url.insert_one(RpcUrl(id=network.value, urls=[]))
@@ -82,7 +83,7 @@ class NetworkService(Service[AppCore]):
         await self.core.db.rpc_url.set(network.value, {"urls": urls})
         await self.load_rpc_urls_from_db()
 
-    @async_synchronized
+    @async_mutex
     async def delete_rpc_url(self, network: Network, url: str) -> None:
         if not await self.core.db.rpc_url.exists({"_id": network.value}):
             return
@@ -91,7 +92,7 @@ class NetworkService(Service[AppCore]):
         await self.core.db.rpc_url.set(network.value, {"urls": urls})
         await self.load_rpc_urls_from_db()
 
-    @async_synchronized
+    @async_mutex
     async def load_rpc_urls_from_db(self) -> dict[Network, list[str]]:
         self.rpc_urls = {}
         for rpc_url in await self.core.db.rpc_url.find({}, "id,urls"):

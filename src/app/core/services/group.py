@@ -12,7 +12,7 @@ import tomlkit
 from bson import ObjectId
 from mm_base6 import Service, UserError
 from mm_base6.core.utils import toml_dumps
-from mm_concurrency import async_synchronized
+from mm_concurrency import async_mutex
 from mm_mongo import MongoDeleteResult
 from mm_std import parse_lines
 from mm_web3 import Network, NetworkType
@@ -60,7 +60,7 @@ class GroupAccountsInfo(BaseModel):
         return self.names.get(naming, {}).get(account, None)
 
     def explorer_address(self, coin: str, account: str) -> str:
-        network = Network(coin.split("__")[0])
+        network = Network(coin.split("__", maxsplit=1)[0])
         return network.explorer_account(account)
 
 
@@ -115,7 +115,7 @@ class GroupService(Service[AppCore]):
 
         return toml_dumps({"groups": groups})
 
-    @async_synchronized
+    @async_mutex
     async def import_from_toml(self, toml: str) -> int:
         known_coins = [c.id for c in self.core.services.coin.get_coins()]
         count = 0
@@ -136,7 +136,7 @@ class GroupService(Service[AppCore]):
                 count += 1
         return count
 
-    @async_synchronized
+    @async_mutex
     async def import_from_zip(self, archive: Path) -> int:
         def unzip(source: Path) -> None:
             with ZipFile(source, "r") as zip_file:
@@ -171,7 +171,7 @@ class GroupService(Service[AppCore]):
                             )
                             await self.update_accounts(created_group.id, addresses)
 
-        archive.unlink()
+        await asyncio.to_thread(archive.unlink)
         return result
 
     async def delete_group(self, id: ObjectId) -> MongoDeleteResult:
@@ -232,7 +232,7 @@ class GroupService(Service[AppCore]):
         if len(new_namings) > 0 or len(delete_namings) > 0:
             await self.process_account_names(id)
 
-    @async_synchronized
+    @async_mutex
     async def add_coin(self, group_id: ObjectId, coin_id: str) -> None:
         logger.debug("add_coin", extra={"group_id": group_id, "coin_id": coin_id})
         if not await self.core.db.coin.exists({"_id": coin_id}):
@@ -253,7 +253,7 @@ class GroupService(Service[AppCore]):
             ]
             await self.core.db.account_balance.insert_many(insert_many)
 
-    @async_synchronized
+    @async_mutex
     async def remove_coin(self, group_id: ObjectId, coin_id: str) -> None:
         logger.debug("remove_coin", extra={"group_id": group_id, "coin_id": coin_id})
         await self.core.db.account_balance.delete_many({"group": group_id, "coin": coin_id})
@@ -266,7 +266,7 @@ class GroupService(Service[AppCore]):
         await self.core.db.group_name.delete_one({"group": group_id, "naming": naming})
         await self.core.db.group.pull(group_id, {"namings": naming.value})
 
-    @async_synchronized
+    @async_mutex
     async def add_naming(self, group_id: ObjectId, naming: Naming) -> None:
         logger.debug("add_naming", extra={"group_id": group_id, "naming": naming})
         group = await self.core.db.group.get(group_id)
@@ -284,7 +284,7 @@ class GroupService(Service[AppCore]):
             ]
             await self.core.db.account_name.insert_many(insert_many)
 
-    @async_synchronized
+    @async_mutex
     async def process_account_balances(self, id: ObjectId) -> ProcessAccountBalancesResult:
         """Create account balances for all coins and accounts in the group.
         And delete balances for accounts that are not in the group."""
@@ -314,7 +314,7 @@ class GroupService(Service[AppCore]):
 
         return ProcessAccountBalancesResult(inserted=inserted, deleted=deleted)
 
-    @async_synchronized
+    @async_mutex
     async def process_account_names(self, id: ObjectId) -> ProcessAccountNamingsResult:
         """Create account names for all namings and accounts in the group.
         And delete docs for accounts that are not in the group."""

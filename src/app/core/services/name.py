@@ -4,9 +4,9 @@ from typing import override
 
 from bson import ObjectId
 from mm_base6 import Service
-from mm_concurrency import AsyncTaskRunner, async_synchronized_by_arg_value
+from mm_concurrency import AsyncTaskRunner, async_mutex_by
 from mm_result import Result
-from mm_std import utc_delta, utc_now
+from mm_std import utc
 
 from app.core.blockchains import aptos, evm, starknet
 from app.core.constants import Naming
@@ -21,9 +21,9 @@ class NameService(Service[AppCore]):
     def configure_scheduler(self) -> None:
         for naming in list(Naming):
             task_id = "names_on_" + naming
-            self.core.scheduler.add_task(task_id, 2, self.check_next_naming, args=(naming,))
+            self.core.scheduler.add(task_id, 2, self.check_next_naming, args=(naming,))
 
-    @async_synchronized_by_arg_value(index=1)
+    @async_mutex_by(param="naming")
     async def check_next_naming(self, naming: Naming) -> None:
         if not self.core.state.check_namings:
             return
@@ -35,7 +35,7 @@ class NameService(Service[AppCore]):
         )
         if len(need_to_check) < self.core.settings.limit_naming_workers:
             need_to_check += await self.core.db.account_name.find(
-                {"naming": naming, "checked_at": {"$lt": utc_delta(minutes=-1 * self.core.settings.check_name_interval)}},
+                {"naming": naming, "checked_at": {"$lt": utc(minutes=-1 * self.core.settings.check_name_interval)}},
                 "checked_at",
                 limit=self.core.settings.limit_naming_workers - len(need_to_check),
             )
@@ -81,9 +81,9 @@ class NameService(Service[AppCore]):
         name = res.unwrap() or ""
         await self.core.db.group_name.update_one(
             {"group": account_name.group, "naming": account_name.naming},
-            {"$set": {f"names.{account_name.account}": name, f"checked_at.{account_name.account}": utc_now()}},
+            {"$set": {f"names.{account_name.account}": name, f"checked_at.{account_name.account}": utc()}},
         )
-        await self.core.db.account_name.set(id, {"name": name, "checked_at": utc_now()})
+        await self.core.db.account_name.set(id, {"name": name, "checked_at": utc()})
 
         return res
 
