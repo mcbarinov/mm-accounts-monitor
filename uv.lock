@@ -160,11 +160,11 @@ dev = [
 requires-dist = [
     { name = "aiofiles", specifier = "~=25.1.0" },
     { name = "deepdiff", specifier = "==8.6.1" },
-    { name = "mm-apt", specifier = "~=0.6.0" },
+    { name = "mm-apt", specifier = "~=0.6.1" },
     { name = "mm-base6", specifier = "==0.9.2" },
-    { name = "mm-eth", specifier = "~=0.8.0" },
-    { name = "mm-sol", specifier = "~=0.8.0" },
-    { name = "mm-strk", specifier = "~=0.5.0" },
+    { name = "mm-eth", specifier = "~=0.8.1" },
+    { name = "mm-sol", specifier = "~=0.8.1" },
+    { name = "mm-strk", specifier = "~=0.5.1" },
 ]
 
 [package.metadata.requires-dev]
@@ -1066,14 +1066,14 @@ wheels = [
 
 [[package]]
 name = "mm-apt"
-version = "0.6.0"
+version = "0.6.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "mm-web3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4c/76/3b1b46eb0a8e2aa47d3ee9711c5783302a642d3ccd21d7c63ab7f10d0d0b/mm_apt-0.6.0.tar.gz", hash = "sha256:41d1b307b1c6849a2674bc39e42d5ed98ab3ea8040b061d0a8ea823ecfc315d8", size = 56243, upload-time = "2026-02-04T10:26:05.298Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/98/b2/ffbe4a0bc8135da9e5bd7d470cc03833e9dd9be536be18ae268af9593ca5/mm_apt-0.6.1.tar.gz", hash = "sha256:86a1519f97f95bb956ae720289510fd2fbf53ebb9f639d76600d321d861e9a69", size = 55799, upload-time = "2026-02-09T13:01:12.289Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/15/7b/f894993e226ff9d68a8d3761e8978c6302d721352f4a348fd9e7142705ef/mm_apt-0.6.0-py3-none-any.whl", hash = "sha256:99ecd29ebd50e275d33eecea890fafe9f6bf2f1a0de249bc93fa386401b3fd03", size = 3842, upload-time = "2026-02-04T10:26:03.688Z" },
+    { url = "https://files.pythonhosted.org/packages/28/ac/73d67e4a378db508fb9eeef2d9dbbe6b6b5abf3921e05b46fcb216644251/mm_apt-0.6.1-py3-none-any.whl", hash = "sha256:b77b9c529e8e4b50d9fd17141695d4c6a81356b9a1a369a924c42211325f5a47", size = 3843, upload-time = "2026-02-09T13:01:10.786Z" },
 ]
 
 [[package]]
@@ -1101,6 +1101,23 @@ wheels = [
 ]
 
 [[package]]
+name = "mm-clikit"
+version = "0.0.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mm-result" },
+    { name = "mm-std" },
+    { name = "pydantic" },
+    { name = "rich" },
+    { name = "tomlkit" },
+    { name = "typer" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/33/a1/bac45533483398d4789ba40926500dffa65d268efeb12363f4675fe09d10/mm_clikit-0.0.4.tar.gz", hash = "sha256:1c062908e2ae4528ae29d9139f2b6ec349365a584f62747baa3c57491ed11ccd", size = 43136, upload-time = "2026-02-09T13:24:34.894Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/df/a6/a633e45fc08e5b855ed05e2ed6571f9fb86f2ee3fb6ba186631cf983d147/mm_clikit-0.0.4-py3-none-any.whl", hash = "sha256:d71950c99daefba2b958613632a958739822669d6ca0481fed7193edac1ab8ba", size = 5965, upload-time = "2026-02-09T13:24:33.564Z" },
+]
+
+[[package]]
 name = "mm-concurrency"
 version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1111,16 +1128,16 @@ wheels = [
 
 [[package]]
 name = "mm-eth"
-version = "0.8.0"
+version = "0.8.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "mm-clikit" },
     { name = "mm-web3" },
-    { name = "typer" },
     { name = "web3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c0/2b/6ae479b276f8c0277fed2a41b8a475d8b847675c6068382293f4f434023a/mm_eth-0.8.0.tar.gz", hash = "sha256:ea86a536bd61186033cce5c2a8533b10efd37fa03d1ceab3d1cfd681ea7f8a8d", size = 97333, upload-time = "2026-02-04T12:11:39.819Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7c/e9/f505649e49e6bec712a0bebfd77617d13f747ae3bf61997d50b996fdfa65/mm_eth-0.8.1.tar.gz", hash = "sha256:840cc0c17d0753216ff53a576b427cb2d14636d20e538c6f0d0f753df2429b65", size = 97219, upload-time = "2026-02-09T12:28:14.926Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7d/63/27d6c61981195dadbacd42bf46e01b41d62cea8a415acf0edba0fe8d60c4/mm_eth-0.8.0-py3-none-any.whl", hash = "sha256:9407675ab51604571de6988eb685090ba6ed729f2d4db32b4bdf03e1dabf39b4", size = 30777, upload-time = "2026-02-04T12:11:38.582Z" },
+    { url = "https://files.pythonhosted.org/packages/c2/48/5047022ff1c672e7cfb080c2f6a2b428b8429c3c45d5b0e3e85e7f92f9b2/mm_eth-0.8.1-py3-none-any.whl", hash = "sha256:499b22689b258c3d0bfcfd733d2522a2741faa2d1a354176b7f9a07cc2ef2435", size = 30641, upload-time = "2026-02-09T12:28:13.558Z" },
 ]
 
 [[package]]
@@ -1166,20 +1183,6 @@ wheels = [
 ]
 
 [[package]]
-name = "mm-print"
-version = "0.3.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "mm-std" },
-    { name = "rich" },
-    { name = "tomlkit" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/2a/a2/ca30dcf0fc19f31f924328df4a20f09bbcc4068f9f7623fa003bad2d9bb0/mm_print-0.3.0.tar.gz", hash = "sha256:9b9ddc362ad7f1ee3231e65dc9ec2ff3a535f9d922f330a4d73694a5eada7fa7", size = 31303, upload-time = "2026-01-23T11:26:35.413Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/bf/db/737d1564f6f45fc920d899f029ca019a910383d7f17d086b4ab631fc6e52/mm_print-0.3.0-py3-none-any.whl", hash = "sha256:232adc794101374716d736c011a61c3dc7934e72384b096d57ebe89ddfd25de5", size = 2028, upload-time = "2026-01-23T11:26:34.375Z" },
-]
-
-[[package]]
 name = "mm-result"
 version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1190,19 +1193,19 @@ wheels = [
 
 [[package]]
 name = "mm-sol"
-version = "0.8.0"
+version = "0.8.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "base58" },
     { name = "jinja2" },
+    { name = "mm-clikit" },
     { name = "mm-web3" },
     { name = "mnemonic" },
     { name = "solana" },
-    { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ee/4d/70300b1f88bbadee7bcdca0176dfcc30b05e6114dbf62b43451c90225731/mm_sol-0.8.0.tar.gz", hash = "sha256:7830b30965b44bd865009f4bcd603ff0f20e8de224ca1a08dc4da494fb17b95e", size = 79352, upload-time = "2026-02-04T12:07:02.48Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4e/58/d98be466a362ce85c6f8fdd7533c132b7208109f99d16222c647d7efdc86/mm_sol-0.8.1.tar.gz", hash = "sha256:05629e1f7dd9adfc54dc1398665dfed8e62a648a1c9094310ef21a22075fb557", size = 79022, upload-time = "2026-02-09T12:59:13.509Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fd/8e/a7653c278649811f135e7c1240c2189c3a32ae56a4602cc24a2ad9c66d58/mm_sol-0.8.0-py3-none-any.whl", hash = "sha256:047be50f56a4d0d277c9fe4dcc6b526d845527988f4250b7b369fc2d4b9e31b9", size = 25315, upload-time = "2026-02-04T12:07:01.404Z" },
+    { url = "https://files.pythonhosted.org/packages/c4/08/b089995e24c8ef5474b80341c60c37469b999b8c6ff697a82873411f4bf5/mm_sol-0.8.1-py3-none-any.whl", hash = "sha256:767035840df61ca350a670785df6817cb866d1725a0d2810416885848095881d", size = 24916, upload-time = "2026-02-09T12:59:12.327Z" },
 ]
 
 [[package]]
@@ -1216,16 +1219,16 @@ wheels = [
 
 [[package]]
 name = "mm-strk"
-version = "0.5.0"
+version = "0.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "mm-clikit" },
     { name = "mm-web3" },
     { name = "starknet-py" },
-    { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6e/a6/01f00c84ab9ab2099fb118999c4d90d826cdb58bc62d2baa6d81aff67f3a/mm_strk-0.5.0.tar.gz", hash = "sha256:866b0e30208a9c0785857dfe2e6314e000ae3eae05197665448996fc7a5ae225", size = 67493, upload-time = "2026-02-05T07:21:18.719Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/69/57/28e6c1d533dff26ab57c21843301998731ccb572537a29a713474f2ae7da/mm_strk-0.5.1.tar.gz", hash = "sha256:5962d549c7adb26c2cc7611f439d09fe7a78b525c6b22fa7a7730e96b17388e9", size = 67315, upload-time = "2026-02-09T12:54:37.069Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b0/48/5bf70688c6c892d153ac52327b6ec581845f33b787bc8ac7e7781733127b/mm_strk-0.5.0-py3-none-any.whl", hash = "sha256:da119e79443734661162f0ae0e268aabd5afe9028ae1b1df5534dd415129e646", size = 5826, upload-time = "2026-02-05T07:21:17.553Z" },
+    { url = "https://files.pythonhosted.org/packages/6c/52/615f885e8db778fc966803b906ac7911c68a4774ae261042c88fdb066143/mm_strk-0.5.1-py3-none-any.whl", hash = "sha256:c03b126a18b3b57a9ecb63df0c5433e268cad114e6052ef2cd902d7007da6d60", size = 5397, upload-time = "2026-02-09T12:54:35.38Z" },
 ]
 
 [[package]]
@@ -1243,17 +1246,16 @@ wheels = [
 
 [[package]]
 name = "mm-web3"
-version = "0.6.2"
+version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "loguru" },
     { name = "mm-http" },
-    { name = "mm-print" },
     { name = "mm-std" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0e/b6/03b72575a62384b0937e495f8492a48d18b7d9b21170b2bf2f0a1cb94f3a/mm_web3-0.6.2.tar.gz", hash = "sha256:c87adf1f3573bb01c617f25fbb1e4eac233a1d0b9001a94f488c0726f4dfa167", size = 89719, upload-time = "2026-02-04T08:29:10.277Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/08/ed/a4c5fbd59a566bb7d52c43df02d54244d739e704b4320263bc531576bdc4/mm_web3-0.7.0.tar.gz", hash = "sha256:533bf5cea2440e41249345a1b0cca009c6112c55e2eb81681e70935767f417a4", size = 85337, upload-time = "2026-02-09T12:06:04.47Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ff/7b/64b2dd1cce0d2709d0673ffdad4db94f71aa458e3af7e0fe13942eca26fc/mm_web3-0.6.2-py3-none-any.whl", hash = "sha256:8da304d3c6eb467edbd2de2560a8ffdbe5dff69894e3c9d9edbf72d9de55613a", size = 15337, upload-time = "2026-02-04T08:29:11.207Z" },
+    { url = "https://files.pythonhosted.org/packages/b3/58/d994cb5e33a81ee1885f49db7d3a9f2df3fe1b967d77e7788bc3a0967ab8/mm_web3-0.7.0-py3-none-any.whl", hash = "sha256:923a052e502efd7c4f482e94123820a972b58dd79275aa9300ae8284f6e1bba0", size = 13528, upload-time = "2026-02-09T12:06:05.372Z" },
 ]
 
 [[package]]
@@ -1938,15 +1940,15 @@ socks = [
 
 [[package]]
 name = "rich"
-version = "14.2.0"
+version = "14.3.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markdown-it-py" },
     { name = "pygments" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fb/d2/8920e102050a0de7bfabeb4c4614a49248cf8d5d7a8d01885fbb24dc767a/rich-14.2.0.tar.gz", hash = "sha256:73ff50c7c0c1c77c8243079283f4edb376f0f6442433aecb8ce7e6d0b92d1fe4", size = 219990, upload-time = "2025-10-09T14:16:53.064Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/74/99/a4cab2acbb884f80e558b0771e97e21e939c5dfb460f488d19df485e8298/rich-14.3.2.tar.gz", hash = "sha256:e712f11c1a562a11843306f5ed999475f09ac31ffb64281f73ab29ffdda8b3b8", size = 230143, upload-time = "2026-02-01T16:20:47.908Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/25/7a/b0178788f8dc6cafce37a212c99565fa1fe7872c70c6c9c1e1a372d9d88f/rich-14.2.0-py3-none-any.whl", hash = "sha256:76bc51fe2e57d2b1be1f96c524b890b816e334ab4c1e45888799bfaab0021edd", size = 243393, upload-time = "2025-10-09T14:16:51.245Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/45/615f5babd880b4bd7d405cc0dc348234c5ffb6ed1ea33e152ede08b2072d/rich-14.3.2-py3-none-any.whl", hash = "sha256:08e67c3e90884651da3239ea668222d19bea7b589149d8014a21c633420dbb69", size = 309963, upload-time = "2026-02-01T16:20:46.078Z" },
 ]
 
 [[package]]

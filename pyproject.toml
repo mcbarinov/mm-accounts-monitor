@@ -6,10 +6,10 @@ requires-python = ">=3.14"
 dependencies = [
     "mm-base6==0.9.2",
     "aiofiles~=25.1.0",
-    "mm-apt~=0.6.0",
-    "mm-eth~=0.8.0",
-    "mm-sol~=0.8.0",
-    "mm-strk~=0.5.0",
+    "mm-apt~=0.6.1",
+    "mm-eth~=0.8.1",
+    "mm-sol~=0.8.1",
+    "mm-strk~=0.5.1",
     "deepdiff==8.6.1",
 
 ]
